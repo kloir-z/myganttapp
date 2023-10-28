@@ -32,22 +32,46 @@ const WBSInfo: React.FC<WBSInfoProps> = ({ data, setData }) => {
           return (
             <Row key={index}>
               <InputBox
-                value={entry.displayName}
-                onChange={(e) => updateField(index, 'displayName', e.target.value)}
-                inputSize={entry.displayName.length}
-              />
-              <InputBox
                 value={entry.majorCategory}
                 onChange={(e) => updateField(index, 'majorCategory', e.target.value)}
                 inputSize={entry.majorCategory.length}
               />
-              {/* Add more fields similarly */}
+              <InputBox
+                value={entry.middleCategory}
+                onChange={(e) => updateField(index, 'middleCategory', e.target.value)}
+                inputSize={entry.middleCategory.length}
+              />
+              <InputBox
+                value={entry.subCategory}
+                onChange={(e) => updateField(index, 'subCategory', e.target.value)}
+                inputSize={entry.subCategory.length}
+              />
+              <InputBox
+                value={entry.task}
+                onChange={(e) => updateField(index, 'task', e.target.value)}
+                inputSize={entry.task.length}
+              />
+              <InputBox
+                value={entry.plannedStartDate}
+                onChange={(e) => updateField(index, 'plannedStartDate', e.target.value)}
+                inputSize={entry.plannedStartDate.length}
+              />
+              <InputBox
+                value={entry.plannedEndDate}
+                onChange={(e) => updateField(index, 'plannedEndDate', e.target.value)}
+                inputSize={entry.plannedEndDate.length}
+              />
             </Row>
           );
         } else if (entry.rowType === 'Separator') {
           return (
             <Row key={index} style={{ backgroundColor: '#ddedff' }}>
-              {/* Separatorの詳細な内容をこちらに記述 */}
+              <InputBox
+                style={{background: 'transparent'}}
+                value={entry.displayName}
+                onChange={(e) => updateField(index, 'displayName', e.target.value)}
+                inputSize={entry.displayName.length}
+              />
             </Row>
           );
         } else if (entry.rowType === 'Event') {
