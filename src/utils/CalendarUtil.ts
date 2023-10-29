@@ -1,5 +1,4 @@
 // CalendarUtils.ts
-
 export const isHoliday = (date: Date) => {
   const dateString = date.toISOString().split('T')[0];
   return holidays.includes(dateString);
