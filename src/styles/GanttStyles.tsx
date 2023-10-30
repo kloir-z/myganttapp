@@ -8,11 +8,11 @@ export const Row = styled.div`
 `;
 
 interface CellProps {
-  type?: string;
-  isPlanned?: boolean;
-  isHovered?: boolean;
-  isActual?: boolean;
-  charge?: string;
+  $type?: string;
+  $isPlanned?: boolean;
+  $isHovered?: boolean;
+  $isActual?: boolean;
+  $charge?: string;
 }
 
 const lightenDarkenColor = (col: string, amt: number) => {
@@ -49,21 +49,21 @@ export const Cell = styled.div<CellProps>`
   width: 20px;
   height: 20px;
   border-left: 1px solid #80808047;
-  opacity: ${props => (props.isHovered ? '0.5' : '1')};
-  border-bottom: 1px solid ${props => (props.isHovered ? 'red' : '#80808047')};
+  border-bottom: 1px solid ${props => (props.$isHovered ? 'red' : '#80808047')};
   text-align: center;
   font-size: 0.8rem;
+  overflow: visible;
   background-color: ${props => {
     let baseColor = '#ffffff';
 
-    if (props.type === 'saturday') return '#cddeff';
-    if (props.type === 'sundayOrHoliday') return '#ffcaca';
+    if (props.$type === 'saturday') return '#cddeff';
+    if (props.$type === 'sundayOrHoliday') return '#ffcaca';
 
-    if (props.isPlanned) {
-      baseColor = props.charge === 'vendor' ? '#ccffcc' : '#e6ccff';
+    if (props.$isPlanned) {
+      baseColor = props.$charge === 'vendor' ? '#ccffcc' : '#e6ccff';
     }
 
-    if (props.isActual) {
+    if (props.$isActual) {
       return lightenDarkenColor(baseColor, -40);
     }
 
@@ -71,9 +71,31 @@ export const Cell = styled.div<CellProps>`
   }};
 `;
 
-export const PlanLabel = styled.label`
+export const DisplayLabel = styled.label<CellProps>`
   position: absolute;
   z-index: 1;
-  left: 2px;
-  top: 1px; 
+  left: 0px;
+  background: none;
+  border: solid 1px transparent;
+  overflow: visible;
+  white-space: nowrap;
+  top: ${props => (props.$isHovered ? '-10px' : '0px')};
+  opacity: ${props => (props.$isHovered ? '0.5' : '1')};
+  user-select: ${props => (props.$isHovered ? 'none' : 'auto')};
+  &:focus {
+    outline: none;
+    border: solid 1px #007bff;
+  }
+`;
+
+export const InputBox = styled.input<{ $inputSize?: number }>`
+  font-size: 0.8em;
+  line-height: 16px;
+  border: solid 1px transparent;
+  width: ${(props) => props.$inputSize ? props.$inputSize + "ch" : "20px"};
+  min-width: ${(props) => props.$inputSize ? "80px" : "0"};
+  &:focus {
+    outline: none;
+    border: solid 1px #007bff;
+  }
 `;

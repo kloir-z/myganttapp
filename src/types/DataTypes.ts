@@ -4,6 +4,7 @@ export type RowType = "Chart" | "Separator" | "Event";
 export interface BaseRow {
   rowType: RowType;
   displayName: string;
+  isChanged?: boolean;
 }
 
 export interface ChartRow extends BaseRow {

@@ -1,6 +1,6 @@
 // GanttCell.tsx
 import React from 'react';
-import { Cell, PlanLabel } from '../styles/GanttStyles';
+import { Cell, DisplayLabel } from '../styles/GanttStyles';
 
 interface MemoedCellProps {
   type: string;
@@ -27,17 +27,17 @@ const MemoedCell: React.FC<MemoedCellProps> = ({
 }) => {
   return (
     <Cell
-      type={type}
-      isPlanned={isPlanned}
-      isHovered={isHovered}
-      isActual={isActual}
-      charge={charge}
+      $type={type}
+      $isPlanned={isPlanned}
+      $isHovered={isHovered}
+      $isActual={isActual}
+      $charge={charge}
       onDoubleClick={onDoubleClick}
       onClick={onClick}
       onMouseMove={onMouseMove}
     >
       {displayName ? (
-        <PlanLabel>{displayName}</PlanLabel>
+        <DisplayLabel $isHovered={isHovered}>{displayName}</DisplayLabel>
       ) : null}
     </Cell>
   );

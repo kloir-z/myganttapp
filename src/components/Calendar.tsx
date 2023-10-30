@@ -9,7 +9,7 @@ interface CalendarProps {
 
 const Calendar: React.FC<CalendarProps> = ({ dateArray }) => {
   return (
-    <>
+    <div style={{display: 'flex', flexDirection: 'column'}}>
       <Row style={{borderTop: '1px solid gray'}}>
         {dateArray.map((date, index) => (
           date.getDate() === 1 ? (
@@ -28,13 +28,13 @@ const Calendar: React.FC<CalendarProps> = ({ dateArray }) => {
         if (date.getDay() === 0 || isHoliday(date)) type = 'sundayOrHoliday';
 
         return (
-          <Cell key={index} type={type}>
+          <Cell key={index} $type={type}>
             {date.getDate()}
           </Cell>
         );
       })}
       </Row>
-    </>
+    </div>
   );
 };
 
