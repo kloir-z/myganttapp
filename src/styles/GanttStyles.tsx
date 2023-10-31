@@ -5,15 +5,9 @@ export const Row = styled.div`
   display: flex;
   height: 20px;
   border-bottom: solid 1px #80808047;
+  position: relative;
+  user-select: none;
 `;
-
-interface CellProps {
-  $type?: string;
-  $isPlanned?: boolean;
-  $isHovered?: boolean;
-  $isActual?: boolean;
-  $charge?: string;
-}
 
 const lightenDarkenColor = (col: string, amt: number) => {
   let usePound = false;
@@ -43,12 +37,20 @@ const lightenDarkenColor = (col: string, amt: number) => {
   return (usePound ? "#" : "") + (g | (b << 8) | (r << 16)).toString(16);
 }
 
+interface CellProps {
+  $type?: string;
+  $isPlanned?: boolean;
+  $isHovered?: boolean;
+  $isActual?: boolean;
+  $charge?: string;
+}
+
 export const Cell = styled.div<CellProps>`
   position: relative;
   flex-shrink: 0;
-  width: 20px;
+  width: 21px;
   height: 20px;
-  border-left: 1px solid #80808047;
+  border-left: 1px solid ${props => (props.$isPlanned ? 'transparent' : '#80808047')};
   border-bottom: 1px solid ${props => (props.$isHovered ? 'red' : '#80808047')};
   text-align: center;
   font-size: 0.8rem;
@@ -60,7 +62,7 @@ export const Cell = styled.div<CellProps>`
     if (props.$type === 'sundayOrHoliday') return '#ffcaca';
 
     if (props.$isPlanned) {
-      baseColor = props.$charge === 'vendor' ? '#ccffcc' : '#e6ccff';
+      baseColor = props.$charge === 'vendor' ? '#74ff7451' : '#b05cff4d';
     }
 
     if (props.$isActual) {

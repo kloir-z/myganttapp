@@ -13,9 +13,11 @@ interface ChartRowProps {
     startDate: Date;
     endDate: Date;
   };
+  rowWidth: number;
+  columnXPositions: number[];
 }
 
-const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, dateRange }) => {
+const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, dateRange, rowWidth, columnXPositions }) => {
   const [majorCategory, setMajorCategory] = useState(entry.majorCategory);
   const [middleCategory, setMiddleCategory] = useState(entry.middleCategory);
   const [subCategory, setSubCategory] = useState(entry.subCategory);
@@ -27,10 +29,9 @@ const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, 
   const [estimatedDaysRequired, setEstimatedDaysRequired] = useState(entry.estimatedDaysRequired);
   const [actualStartDate, setActualStartDate] = useState(entry.actualStartDate ? new Date(entry.actualStartDate) : null);
   const [actualEndDate, setActualEndDate] = useState(entry.actualEndDate ? new Date(entry.actualEndDate) : null);
-  const [isEditing, setIsEditing] = useState<number | null>(null);
-  const [plannedStartIndex, setPlannedStartIndex] = useState<number | null>(null);
-  const [plannedEndIndex, setPlannedEndIndex] = useState<number | null>(null);
-  const [hoveredColIndex, setHoveredColIndex] = useState<number | null>(null);
+  const [startX, setStartX] = useState<number | null>(null);
+  const [endX, setEndX] = useState<number | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     if (plannedStartDate && plannedEndDate && plannedStartDate > plannedEndDate) {
@@ -39,40 +40,50 @@ const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, 
     }
   }, [plannedStartDate, plannedEndDate]);
 
-  const getDayIndex = useCallback((date: Date, start: Date) => {
-    const timeDiff = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) - Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
-    const dayDiff = timeDiff / (1000 * 60 * 60 * 24);
-    return dayDiff;
-  }, []);
-
-  const handleDoubleClick = useCallback((colIndex: number, rowIndex: number) => {
-    setIsEditing(rowIndex);
-    setPlannedStartIndex(colIndex); 
-    setPlannedEndIndex(null);
-    setHoveredColIndex(colIndex);
-    setPlannedStartDate(dateArray[colIndex]);
-    setPlannedEndDate(dateArray[colIndex]);
-  }, []);
-
-  const handleClick = useCallback((colIndex: number) => {
-    if (isEditing !== null) {
-      if (plannedStartIndex !== null) {
-        setPlannedStartDate(dateArray[plannedStartIndex]);
-        setPlannedEndDate(dateArray[colIndex]);
-      }
-      setIsEditing(null);
-    }
-  }, [isEditing, plannedStartIndex, dateArray]);
-
-  const handleMouseMove = useCallback((colIndex: number) => {
-    if (isEditing) {
-      setHoveredColIndex(colIndex);
-    }
-  }, [isEditing]);
+  const calculateDateFromX = (x: number) => {
+    const columnStartX = 650; 
+    const dateIndex = Math.floor((x - columnStartX) / 21);
+    return dateArray[dateIndex];
+  };
+  
+  const handleDoubleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const rect = event.currentTarget.getBoundingClientRect();  
+    const relativeX = event.clientX - rect.left;
+    setStartX(relativeX);
+    setEndX(null);
+    setIsEditing(true);
+    setPlannedStartDate(calculateDateFromX(relativeX));
+    setPlannedEndDate(calculateDateFromX(relativeX));
+  };
+  
+  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!isEditing) return;
+    const rect = event.currentTarget.getBoundingClientRect();  
+    const relativeX = event.clientX - rect.left;
+    const endDate = calculateDateFromX(relativeX);
+    setPlannedEndDate(endDate);
+  };
+  
+  const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!isEditing) return;
+    const rect = event.currentTarget.getBoundingClientRect();  
+    const relativeX = event.clientX - rect.left;
+    setEndX(relativeX);
+    
+    const endDate = calculateDateFromX(relativeX);
+    setPlannedEndDate(endDate);
+    setIsEditing(false);
+  };
 
   return (
-    <div style={{display:'flex', flexDirection: 'row'}}>
-      <Row key={index} style={{width: '650px'}}>
+    <div style={{width: `${rowWidth}px`}}>
+      <Row
+        key={index}
+        onDoubleClick={handleDoubleClick}
+        onClick={handleClick}
+        onMouseMove={handleMouseMove}
+      >
         <InputBox
           value={majorCategory}
           onChange={(e) => setMajorCategory(e.target.value)}
@@ -126,41 +137,34 @@ const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, 
           }}
           isClearable={false}
         />
-      </Row>
-      <Row key={index}>
-        {dateArray.map((date, colIndex) => {
-          const cellType = getDayType(date);
+        {plannedStartDate && plannedEndDate && columnXPositions.length > 0 ? (
+          <>
+            {
+              dateArray.map((date, i) => {
+                if (date >= plannedStartDate && date <= plannedEndDate) {
+                  const dateOnly = (d: Date) => new Date(d.setHours(0,0,0,0));
 
-          const plannedStartDayIndex = plannedStartDate ? getDayIndex(plannedStartDate, dateRange.startDate) : -1;
-          const plannedEndDayIndex = plannedEndDate ? getDayIndex(plannedEndDate, dateRange.startDate) : -1;      
-          const isPlanned = (plannedStartDayIndex <= plannedEndDayIndex)
-            ? (plannedStartDayIndex <= colIndex && colIndex <= plannedEndDayIndex)
-            : (plannedEndDayIndex <= colIndex && colIndex <= plannedStartDayIndex);
-          const isPlannedStart = plannedStartDayIndex === colIndex;
-          const isHovered = isEditing === index && hoveredColIndex !== null && plannedStartIndex !== null && 
-            ((plannedStartIndex <= hoveredColIndex) 
-              ? (plannedStartIndex <= colIndex && colIndex <= hoveredColIndex) 
-              : (hoveredColIndex <= colIndex && colIndex <= plannedStartIndex));
-
-          const actualStartDayIndex = actualStartDate ? getDayIndex(actualStartDate, dateRange.startDate) : -1;
-          const actualEndDayIndex = actualEndDate ? getDayIndex(actualEndDate, dateRange.startDate) : -1;
-          const isActual = actualStartDayIndex <= colIndex && colIndex <= actualEndDayIndex;
-
-          return (
-            <MemoizedCell
-              key={`${index}-${colIndex}`}
-              type={cellType}
-              isPlanned={isPlanned || isHovered} 
-              isHovered={isHovered}
-              isActual={isActual}
-              charge={charge}
-              displayName={isPlannedStart ? displayName : undefined}
-              onDoubleClick={() => handleDoubleClick(colIndex, index)}
-              onClick={() => handleClick(colIndex)}
-              onMouseMove={() => handleMouseMove(colIndex)}
-            />
-          );
-        })}
+                  return (
+                    <div
+                      key={i}
+                      style={{
+                        position: 'absolute',
+                        left: `${650+columnXPositions[i]}px`,
+                      }}
+                    >
+                      <MemoizedCell
+                        charge={charge}
+                        isPlanned={true}
+                        displayName={dateOnly(date).getTime() === dateOnly(plannedStartDate).getTime() ? displayName : undefined}
+                      />
+                    </div>
+                  );
+                }
+                return null;
+              })
+            }
+          </>
+        ) : null}
       </Row>
     </div>
   );

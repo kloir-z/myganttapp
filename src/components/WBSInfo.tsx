@@ -1,5 +1,5 @@
 // WBSInfo.tsx
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Calendar from './Calendar';
 import { ChartRow  } from '../types/DataTypes';
 import { Row, InputBox } from '../styles/GanttStyles';
@@ -14,25 +14,49 @@ interface GanttGridProps {
     startDate: Date;
     endDate: Date;
   };
+  wbsWidth: number;
 }
 
-const WBSInfo: React.FC<GanttGridProps> = ({ dateRange }) => {
+const WBSInfo: React.FC<GanttGridProps> = ({ dateRange, wbsWidth }) => {
+  const [calendarWidth, setCalendarWidth] = useState(0);
+  const [wbsHeight, setWbsHeight] = useState(0);
+  const [columnXPositions, setColumnXPositions] = useState<number[]>([]);
+  const divRef = useRef<HTMLDivElement>(null);
   const { data } = useWBSData();
   const dateArray = generateDates(dateRange.startDate, dateRange.endDate);
   const updateField = async (index: number, field: string, value: any) => {
     const newData = [...data];
     (newData[index] as any)[field] = value;
   };
+  
+  useEffect(() => {
+    const handleResize = () => {
+      if (divRef.current) {
+        setWbsHeight(divRef.current.offsetHeight);
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
 
   return (
     <>
-      <div style={{display: 'flex', flexDirection: 'column'}}>
+      <div ref={divRef} style={{display: 'flex', flexDirection: 'column'}}>
         <div style={{display: 'flex', flexDirection: 'row'}}>
-          <div style={{display: 'flex', width: '650px'}}>
+          <div style={{display: 'flex', width: `${wbsWidth}px`}}>
             <Row style={{borderTop: '1px solid gray', borderBottom: '1px solid transparent'}}></Row>
             <Row></Row>
           </div>
-          <Calendar dateArray={dateArray} />
+          <Calendar
+            dateArray={dateArray}
+            setCalendarWidth={setCalendarWidth}
+            wbsHeight={wbsHeight}
+            setColumnXPositions={setColumnXPositions}
+          />
         </div>
         <div>
           <div style={{display: 'flex'}}>
@@ -46,11 +70,13 @@ const WBSInfo: React.FC<GanttGridProps> = ({ dateRange }) => {
                       index={index}
                       dateArray={dateArray} 
                       dateRange={dateRange}
+                      rowWidth={wbsWidth + calendarWidth}
+                      columnXPositions={columnXPositions}
                     />
                   );
                 } else if (entry.rowType === 'Separator') {
                   return (
-                    <Row key={index} style={{ backgroundColor: '#ddedff' }}>
+                    <Row key={index} style={{ backgroundColor: '#ddedff', width: `${wbsWidth + calendarWidth}px`, zIndex: '2' }}>
                       <InputBox
                         style={{background: 'transparent'}}
                         value={entry.displayName}
@@ -61,7 +87,7 @@ const WBSInfo: React.FC<GanttGridProps> = ({ dateRange }) => {
                   );
                 } else if (entry.rowType === 'Event') {
                   return (
-                    <Row key={index}>
+                    <Row key={index} style={{ width: `${wbsWidth + calendarWidth}px`, zIndex: '2' }}>
                       <InputBox
                         value={entry.displayName}
                         onChange={(e) => updateField(index, 'displayName', e.target.value)}

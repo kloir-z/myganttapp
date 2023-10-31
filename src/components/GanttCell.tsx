@@ -3,7 +3,7 @@ import React from 'react';
 import { Cell, DisplayLabel } from '../styles/GanttStyles';
 
 interface MemoedCellProps {
-  type: string;
+  type?: string;
   isPlanned: boolean;
   isHovered?: boolean;
   isActual?: boolean;
@@ -12,6 +12,8 @@ interface MemoedCellProps {
   onDoubleClick?: () => void;
   onClick?: () => void;
   onMouseMove?: () => void;
+  wbsHeight?: number;
+  posX?: number;
 }
 
 const MemoedCell: React.FC<MemoedCellProps> = ({ 
@@ -23,7 +25,7 @@ const MemoedCell: React.FC<MemoedCellProps> = ({
   displayName,
   onDoubleClick, 
   onClick, 
-  onMouseMove 
+  onMouseMove
 }) => {
   return (
     <Cell

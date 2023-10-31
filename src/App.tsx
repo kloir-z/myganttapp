@@ -1,4 +1,5 @@
 // App.tsx
+import React, { useState } from 'react';
 import WBSInfo from './components/WBSInfo';
 import styled from 'styled-components';
 import { WBSDataProvider } from './context/WBSDataContext';
@@ -16,16 +17,17 @@ const GanttFixed = styled.div`
 `;
 
 function App() {
+  const [wbsWidth, setWbsWidth] = useState(650);
   const dateRange = {
     startDate: new Date('2023-09-01'),
-    endDate: new Date('2024-04-05')
+    endDate: new Date('2026-04-05')
   };
 
   return (
     <WBSDataProvider>
       <FlexContainer>
         <WBSFixed>
-          <WBSInfo dateRange={dateRange} />
+          <WBSInfo dateRange={dateRange} wbsWidth={wbsWidth} />
         </WBSFixed>
       </FlexContainer>
     </WBSDataProvider>
