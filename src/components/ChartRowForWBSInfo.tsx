@@ -14,10 +14,9 @@ interface ChartRowProps {
     endDate: Date;
   };
   rowWidth: number;
-  columnXPositions: number[];
 }
 
-const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, dateRange, rowWidth, columnXPositions }) => {
+const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, dateRange, rowWidth }) => {
   const [majorCategory, setMajorCategory] = useState(entry.majorCategory);
   const [middleCategory, setMiddleCategory] = useState(entry.middleCategory);
   const [subCategory, setSubCategory] = useState(entry.subCategory);
@@ -29,16 +28,8 @@ const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, 
   const [estimatedDaysRequired, setEstimatedDaysRequired] = useState(entry.estimatedDaysRequired);
   const [actualStartDate, setActualStartDate] = useState(entry.actualStartDate ? new Date(entry.actualStartDate) : null);
   const [actualEndDate, setActualEndDate] = useState(entry.actualEndDate ? new Date(entry.actualEndDate) : null);
-  const [startX, setStartX] = useState<number | null>(null);
-  const [endX, setEndX] = useState<number | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-
-  useEffect(() => {
-    if (plannedStartDate && plannedEndDate && plannedStartDate > plannedEndDate) {
-      setPlannedStartDate(plannedEndDate);
-      setPlannedEndDate(plannedStartDate);
-    }
-  }, [plannedStartDate, plannedEndDate]);
+  const [cursorPosition, setCursorPosition] = useState<number | null>(null);
 
   const calculateDateFromX = (x: number) => {
     const columnStartX = 650; 
@@ -47,32 +38,31 @@ const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, 
   };
   
   const handleDoubleClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    event.preventDefault();
     const rect = event.currentTarget.getBoundingClientRect();  
     const relativeX = event.clientX - rect.left;
-    setStartX(relativeX);
-    setEndX(null);
+    if (relativeX < 650) return;
     setIsEditing(true);
     setPlannedStartDate(calculateDateFromX(relativeX));
     setPlannedEndDate(calculateDateFromX(relativeX));
   };
   
   const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (!isEditing) return;
     const rect = event.currentTarget.getBoundingClientRect();  
-    const relativeX = event.clientX - rect.left;
-    const endDate = calculateDateFromX(relativeX);
-    setPlannedEndDate(endDate);
+    let relativeX = event.clientX - rect.left;
+    relativeX = Math.floor((relativeX - 650) / 21) * 21 + 650;
+    if (relativeX < 650) return;
+    setCursorPosition(relativeX); 
+    if (!isEditing) return;
+    const newDate = calculateDateFromX(relativeX);
+    if (plannedStartDate && newDate > plannedStartDate) {
+      setPlannedEndDate(newDate);
+    } else if (plannedEndDate) {
+      setPlannedStartDate(newDate);
+    }
   };
   
-  const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+  const handleClick = () => {
     if (!isEditing) return;
-    const rect = event.currentTarget.getBoundingClientRect();  
-    const relativeX = event.clientX - rect.left;
-    setEndX(relativeX);
-    
-    const endDate = calculateDateFromX(relativeX);
-    setPlannedEndDate(endDate);
     setIsEditing(false);
   };
 
@@ -83,6 +73,7 @@ const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, 
         onDoubleClick={handleDoubleClick}
         onClick={handleClick}
         onMouseMove={handleMouseMove}
+        onMouseLeave={() => setCursorPosition(null)}
       >
         <InputBox
           value={majorCategory}
@@ -137,33 +128,48 @@ const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, 
           }}
           isClearable={false}
         />
-        {plannedStartDate && plannedEndDate && columnXPositions.length > 0 ? (
+        {plannedStartDate && plannedEndDate ? (
           <>
-            {
-              dateArray.map((date, i) => {
-                if (date >= plannedStartDate && date <= plannedEndDate) {
-                  const dateOnly = (d: Date) => new Date(d.setHours(0,0,0,0));
+            {(() => {
+              const startIndex = dateArray.findIndex(date => date >= plannedStartDate);
+              const endIndex = dateArray.findIndex(date => date >= plannedEndDate);
 
-                  return (
-                    <div
-                      key={i}
-                      style={{
-                        position: 'absolute',
-                        left: `${650+columnXPositions[i]}px`,
-                      }}
-                    >
-                      <MemoizedCell
-                        charge={charge}
-                        isPlanned={true}
-                        displayName={dateOnly(date).getTime() === dateOnly(plannedStartDate).getTime() ? displayName : undefined}
-                      />
-                    </div>
-                  );
-                }
-                return null;
-              })
-            }
+              if (startIndex !== -1 && endIndex !== -1) {
+                const width = (endIndex - startIndex + 1) * 21;
+                const leftPosition = 650 + (startIndex * 21);
+
+                return (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: `${leftPosition}px`,
+                      width: `${width}px`
+                    }}
+                  >
+                    <MemoizedCell
+                      isPlanned={true}
+                      charge={charge}
+                      displayName={displayName}
+                      width={width}
+                    />
+                  </div>
+                );
+              }
+              return null;
+            })()}
           </>
+        ) : null}
+        {cursorPosition !== null ? (
+          <div
+            style={{
+              position: 'fixed',
+              top: '21px',
+              left: `${cursorPosition}px`,
+              width: '22px',
+              height: '100%',
+              backgroundColor: '#2f28ff19',
+            }}
+          ></div>
         ) : null}
       </Row>
     </div>

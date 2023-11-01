@@ -7,68 +7,33 @@ export const Row = styled.div`
   border-bottom: solid 1px #80808047;
   position: relative;
   user-select: none;
-`;
-
-const lightenDarkenColor = (col: string, amt: number) => {
-  let usePound = false;
-  
-  if (col[0] === "#") {
-    col = col.slice(1);
-    usePound = true;
+  &:hover {
+    border-bottom: solid 1px #001aff83;
   }
-
-  let num = parseInt(col, 16);
-
-  let r = (num >> 16) + amt;
-
-  if (r > 255) r = 255;
-  else if  (r < 0) r = 0;
-
-  let b = ((num >> 8) & 0x00FF) + amt;
-
-  if (b > 255) b = 255;
-  else if  (b < 0) b = 0;
-
-  let g = (num & 0x0000FF) + amt;
-
-  if (g > 255) g = 255;
-  else if  (g < 0) g = 0;
-
-  return (usePound ? "#" : "") + (g | (b << 8) | (r << 16)).toString(16);
-}
+`;
 
 interface CellProps {
   $type?: string;
   $isPlanned?: boolean;
-  $isHovered?: boolean;
   $isActual?: boolean;
   $charge?: string;
+  $width?: number;
 }
 
 export const Cell = styled.div<CellProps>`
+  font-size: 0.8rem;
+  text-align: center;
   position: relative;
-  flex-shrink: 0;
-  width: 21px;
+  width: ${props => (props.$width ? `${props.$width}px` : '21px')};
   height: 20px;
   border-left: 1px solid ${props => (props.$isPlanned ? 'transparent' : '#80808047')};
-  border-bottom: 1px solid ${props => (props.$isHovered ? 'red' : '#80808047')};
-  text-align: center;
-  font-size: 0.8rem;
-  overflow: visible;
   background-color: ${props => {
-    let baseColor = '#ffffff';
-
+    let baseColor = 'transparent';
     if (props.$type === 'saturday') return '#cddeff';
     if (props.$type === 'sundayOrHoliday') return '#ffcaca';
-
     if (props.$isPlanned) {
       baseColor = props.$charge === 'vendor' ? '#74ff7451' : '#b05cff4d';
     }
-
-    if (props.$isActual) {
-      return lightenDarkenColor(baseColor, -40);
-    }
-
     return baseColor;
   }};
 `;
@@ -81,9 +46,11 @@ export const DisplayLabel = styled.label<CellProps>`
   border: solid 1px transparent;
   overflow: visible;
   white-space: nowrap;
-  top: ${props => (props.$isHovered ? '-10px' : '0px')};
-  opacity: ${props => (props.$isHovered ? '0.5' : '1')};
-  user-select: ${props => (props.$isHovered ? 'none' : 'auto')};
+  top: 0px;
+  font-size: 0.8rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   &:focus {
     outline: none;
     border: solid 1px #007bff;
@@ -96,6 +63,9 @@ export const InputBox = styled.input<{ $inputSize?: number }>`
   border: solid 1px transparent;
   width: ${(props) => props.$inputSize ? props.$inputSize + "ch" : "20px"};
   min-width: ${(props) => props.$inputSize ? "80px" : "0"};
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   &:focus {
     outline: none;
     border: solid 1px #007bff;

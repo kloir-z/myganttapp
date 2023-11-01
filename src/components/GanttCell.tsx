@@ -4,42 +4,31 @@ import { Cell, DisplayLabel } from '../styles/GanttStyles';
 
 interface MemoedCellProps {
   type?: string;
-  isPlanned: boolean;
-  isHovered?: boolean;
+  isPlanned?: boolean;
   isActual?: boolean;
   charge?: string;
   displayName?: string;
-  onDoubleClick?: () => void;
-  onClick?: () => void;
-  onMouseMove?: () => void;
-  wbsHeight?: number;
-  posX?: number;
+  width?:number;
 }
 
 const MemoedCell: React.FC<MemoedCellProps> = ({ 
   type, 
   isPlanned, 
-  isHovered, 
   isActual, 
   charge, 
   displayName,
-  onDoubleClick, 
-  onClick, 
-  onMouseMove
+  width
 }) => {
   return (
     <Cell
       $type={type}
       $isPlanned={isPlanned}
-      $isHovered={isHovered}
       $isActual={isActual}
       $charge={charge}
-      onDoubleClick={onDoubleClick}
-      onClick={onClick}
-      onMouseMove={onMouseMove}
+      $width={width}
     >
       {displayName ? (
-        <DisplayLabel $isHovered={isHovered}>{displayName}</DisplayLabel>
+        <DisplayLabel>{displayName}</DisplayLabel>
       ) : null}
     </Cell>
   );

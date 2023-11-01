@@ -18,17 +18,16 @@ interface GanttGridProps {
 }
 
 const WBSInfo: React.FC<GanttGridProps> = ({ dateRange, wbsWidth }) => {
-  const [calendarWidth, setCalendarWidth] = useState(0);
   const [wbsHeight, setWbsHeight] = useState(0);
-  const [columnXPositions, setColumnXPositions] = useState<number[]>([]);
   const divRef = useRef<HTMLDivElement>(null);
   const { data } = useWBSData();
   const dateArray = generateDates(dateRange.startDate, dateRange.endDate);
+  const calendarWidth = dateArray.length * 21;
   const updateField = async (index: number, field: string, value: any) => {
     const newData = [...data];
     (newData[index] as any)[field] = value;
   };
-  
+
   useEffect(() => {
     const handleResize = () => {
       if (divRef.current) {
@@ -42,7 +41,6 @@ const WBSInfo: React.FC<GanttGridProps> = ({ dateRange, wbsWidth }) => {
     };
   }, []);
 
-
   return (
     <>
       <div ref={divRef} style={{display: 'flex', flexDirection: 'column'}}>
@@ -53,9 +51,7 @@ const WBSInfo: React.FC<GanttGridProps> = ({ dateRange, wbsWidth }) => {
           </div>
           <Calendar
             dateArray={dateArray}
-            setCalendarWidth={setCalendarWidth}
             wbsHeight={wbsHeight}
-            setColumnXPositions={setColumnXPositions}
           />
         </div>
         <div>
@@ -71,7 +67,6 @@ const WBSInfo: React.FC<GanttGridProps> = ({ dateRange, wbsWidth }) => {
                       dateArray={dateArray} 
                       dateRange={dateRange}
                       rowWidth={wbsWidth + calendarWidth}
-                      columnXPositions={columnXPositions}
                     />
                   );
                 } else if (entry.rowType === 'Separator') {
