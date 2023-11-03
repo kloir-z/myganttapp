@@ -42,6 +42,7 @@ const Calendar: React.FC<CalendarProps> = ({ dateArray, wbsHeight }) => {
             <Cell
               key={index}
               $type={type}
+              className="dayColumn"
               style={{
                 position: 'absolute',
                 left: `${left}px`,

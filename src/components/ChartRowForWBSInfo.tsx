@@ -1,8 +1,7 @@
-import React, { useState, useEffect, memo, useCallback } from 'react';
+import React, { useState, memo } from 'react';
 import { ChartRow } from '../types/DataTypes';
 import { Row, InputBox } from '../styles/GanttStyles';
 import DatePicker from "react-datepicker";
-import { getDayType } from '../utils/CalendarUtil';
 import { MemoizedCell } from './GanttCell';
 
 interface ChartRowProps {
@@ -14,9 +13,10 @@ interface ChartRowProps {
     endDate: Date;
   };
   rowWidth: number;
+  wbsHeight: number;
 }
 
-const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, dateRange, rowWidth }) => {
+const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, dateRange, rowWidth, wbsHeight }) => {
   const [majorCategory, setMajorCategory] = useState(entry.majorCategory);
   const [middleCategory, setMiddleCategory] = useState(entry.middleCategory);
   const [subCategory, setSubCategory] = useState(entry.subCategory);
@@ -29,10 +29,9 @@ const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, 
   const [actualStartDate, setActualStartDate] = useState(entry.actualStartDate ? new Date(entry.actualStartDate) : null);
   const [actualEndDate, setActualEndDate] = useState(entry.actualEndDate ? new Date(entry.actualEndDate) : null);
   const [isEditing, setIsEditing] = useState(false);
-  const [cursorPosition, setCursorPosition] = useState<number | null>(null);
 
   const calculateDateFromX = (x: number) => {
-    const columnStartX = 650; 
+    const columnStartX = 650;
     const dateIndex = Math.floor((x - columnStartX) / 21);
     return dateArray[dateIndex];
   };
@@ -51,7 +50,6 @@ const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, 
     let relativeX = event.clientX - rect.left;
     relativeX = Math.floor((relativeX - 650) / 21) * 21 + 650;
     if (relativeX < 650) return;
-    setCursorPosition(relativeX); 
     if (!isEditing) return;
     const newDate = calculateDateFromX(relativeX);
     if (plannedStartDate && newDate > plannedStartDate) {
@@ -73,33 +71,12 @@ const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, 
         onDoubleClick={handleDoubleClick}
         onClick={handleClick}
         onMouseMove={handleMouseMove}
-        onMouseLeave={() => setCursorPosition(null)}
       >
-        <InputBox
-          value={majorCategory}
-          onChange={(e) => setMajorCategory(e.target.value)}
-          $inputSize={majorCategory.length}
-        />
-        <InputBox
-          value={middleCategory}
-          onChange={(e) => setMiddleCategory(e.target.value)}
-          $inputSize={middleCategory.length}
-        />
-        <InputBox
-          value={subCategory}
-          onChange={(e) => setSubCategory(e.target.value)}
-          $inputSize={subCategory.length}
-        />
-        <InputBox
-          value={task}
-          onChange={(e) => setTask(e.target.value)}
-          $inputSize={task.length}
-        />
-        <InputBox
-          value={charge}
-          onChange={(e) => setCharge(e.target.value)}
-          $inputSize={charge.length}
-        />
+        <InputBox value={majorCategory} onChange={(e) => setMajorCategory(e.target.value)} $inputSize={majorCategory.length} />
+        <InputBox value={middleCategory} onChange={(e) => setMiddleCategory(e.target.value)} $inputSize={middleCategory.length} />
+        <InputBox value={subCategory} onChange={(e) => setSubCategory(e.target.value)} $inputSize={subCategory.length} />
+        <InputBox value={task} onChange={(e) => setTask(e.target.value)} $inputSize={task.length} />
+        <InputBox value={charge} onChange={(e) => setCharge(e.target.value)} $inputSize={charge.length} />
         <DatePicker
           wrapperClassName="datePicker"
           dateFormat="M/d"
@@ -112,10 +89,7 @@ const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, 
           }}
           isClearable={false}
         />
-        <InputBox
-          value={estimatedDaysRequired}
-          onChange={(e) => setEstimatedDaysRequired(Number(e.target.value))}
-        />
+        <InputBox value={estimatedDaysRequired} onChange={(e) => setEstimatedDaysRequired(Number(e.target.value))} />
         <DatePicker
           wrapperClassName="datePicker"
           dateFormat="M/d"
@@ -158,18 +132,6 @@ const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, 
               return null;
             })()}
           </>
-        ) : null}
-        {cursorPosition !== null ? (
-          <div
-            style={{
-              position: 'fixed',
-              top: '21px',
-              left: `${cursorPosition}px`,
-              width: '22px',
-              height: '100%',
-              backgroundColor: '#2f28ff19',
-            }}
-          ></div>
         ) : null}
       </Row>
     </div>

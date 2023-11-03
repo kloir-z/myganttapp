@@ -12,6 +12,28 @@ export const Row = styled.div`
   }
 `;
 
+type RGB = {
+  r: number;
+  g: number;
+  b: number;
+};
+
+const addOverlay = (baseColor: string, overlay: RGB): string => {
+  const base = {
+    r: parseInt(baseColor.slice(1, 3), 16),
+    g: parseInt(baseColor.slice(3, 5), 16),
+    b: parseInt(baseColor.slice(5, 7), 16),
+  };
+
+  const overlayAdded = {
+    r: Math.min(255, base.r + overlay.r),
+    g: Math.min(255, base.g + overlay.g),
+    b: Math.min(255, base.b + overlay.b),
+  };
+
+  return `#${overlayAdded.r.toString(16).padStart(2, '0')}${overlayAdded.g.toString(16).padStart(2, '0')}${overlayAdded.b.toString(16).padStart(2, '0')}`;
+};
+
 interface CellProps {
   $type?: string;
   $isPlanned?: boolean;
@@ -28,7 +50,7 @@ export const Cell = styled.div<CellProps>`
   height: 20px;
   border-left: 1px solid ${props => (props.$isPlanned ? 'transparent' : '#80808047')};
   background-color: ${props => {
-    let baseColor = 'transparent';
+    let baseColor = '#ffffff';
     if (props.$type === 'saturday') return '#cddeff';
     if (props.$type === 'sundayOrHoliday') return '#ffcaca';
     if (props.$isPlanned) {
@@ -36,6 +58,14 @@ export const Cell = styled.div<CellProps>`
     }
     return baseColor;
   }};
+  &.hover-effect {
+    background-color: ${props => addOverlay(
+      props.$type === 'saturday' ? '#cddeff' :
+      props.$type === 'sundayOrHoliday' ? '#ffcaca' : 
+      '#ffffff',
+      { r: -20, g: -20, b: -20 }
+    )};
+  }
 `;
 
 export const DisplayLabel = styled.label<CellProps>`
