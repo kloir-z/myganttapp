@@ -46,8 +46,9 @@ const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, 
   };
   
   const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect();  
-    let relativeX = event.clientX - rect.left;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const scrollX = window.scrollX;
+    let relativeX = event.clientX - rect.left + scrollX;
     relativeX = Math.floor((relativeX - 650) / 21) * 21 + 650;
     if (relativeX < 650) return;
     if (!isEditing) return;
@@ -65,76 +66,92 @@ const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, 
   };
 
   return (
-    <div style={{width: `${rowWidth}px`}}>
-      <Row
-        key={index}
-        onDoubleClick={handleDoubleClick}
-        onClick={handleClick}
-        onMouseMove={handleMouseMove}
-      >
-        <InputBox value={majorCategory} onChange={(e) => setMajorCategory(e.target.value)} $inputSize={majorCategory.length} />
-        <InputBox value={middleCategory} onChange={(e) => setMiddleCategory(e.target.value)} $inputSize={middleCategory.length} />
-        <InputBox value={subCategory} onChange={(e) => setSubCategory(e.target.value)} $inputSize={subCategory.length} />
-        <InputBox value={task} onChange={(e) => setTask(e.target.value)} $inputSize={task.length} />
-        <InputBox value={charge} onChange={(e) => setCharge(e.target.value)} $inputSize={charge.length} />
-        <DatePicker
-          wrapperClassName="datePicker"
-          dateFormat="M/d"
-          selectsRange={true}
-          startDate={plannedStartDate}
-          endDate={plannedEndDate}
-          onChange={(update: [Date | null, Date | null]) => {
-            setPlannedStartDate(update[0]);
-            setPlannedEndDate(update[1]);
+    <>
+      {isEditing && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            zIndex: 9999,
+            cursor: 'pointer'
           }}
-          isClearable={false}
+          onMouseMove={handleMouseMove}
+          onMouseUp={() => setIsEditing(false)}
         />
-        <InputBox value={estimatedDaysRequired} onChange={(e) => setEstimatedDaysRequired(Number(e.target.value))} />
-        <DatePicker
-          wrapperClassName="datePicker"
-          dateFormat="M/d"
-          selectsRange={true}
-          startDate={actualStartDate}
-          endDate={actualEndDate}
-          onChange={(update: [Date | null, Date | null]) => {
-            setActualStartDate(update[0]);
-            setActualEndDate(update[1]);
-          }}
-          isClearable={false}
-        />
-        {plannedStartDate && plannedEndDate ? (
-          <>
-            {(() => {
-              const startIndex = dateArray.findIndex(date => date >= plannedStartDate);
-              const endIndex = dateArray.findIndex(date => date >= plannedEndDate);
+      )}
+      <div style={{width: `${rowWidth}px`}}>
+        <Row
+          key={index}
+          onDoubleClick={handleDoubleClick}
+          onClick={handleClick}
+        >
+          <InputBox value={majorCategory} onChange={(e) => setMajorCategory(e.target.value)} $inputSize={majorCategory.length} />
+          <InputBox value={middleCategory} onChange={(e) => setMiddleCategory(e.target.value)} $inputSize={middleCategory.length} />
+          <InputBox value={subCategory} onChange={(e) => setSubCategory(e.target.value)} $inputSize={subCategory.length} />
+          <InputBox value={task} onChange={(e) => setTask(e.target.value)} $inputSize={task.length} />
+          <InputBox value={charge} onChange={(e) => setCharge(e.target.value)} $inputSize={charge.length} />
+          <DatePicker
+            wrapperClassName="datePicker"
+            dateFormat="M/d"
+            selectsRange={true}
+            startDate={plannedStartDate}
+            endDate={plannedEndDate}
+            onChange={(update: [Date | null, Date | null]) => {
+              setPlannedStartDate(update[0]);
+              setPlannedEndDate(update[1]);
+            }}
+            isClearable={false}
+          />
+          <InputBox value={estimatedDaysRequired} onChange={(e) => setEstimatedDaysRequired(Number(e.target.value))} />
+          <DatePicker
+            wrapperClassName="datePicker"
+            dateFormat="M/d"
+            selectsRange={true}
+            startDate={actualStartDate}
+            endDate={actualEndDate}
+            onChange={(update: [Date | null, Date | null]) => {
+              setActualStartDate(update[0]);
+              setActualEndDate(update[1]);
+            }}
+            isClearable={false}
+          />
+          {plannedStartDate && plannedEndDate ? (
+            <>
+              {(() => {
+                const startIndex = dateArray.findIndex(date => date >= plannedStartDate);
+                const endIndex = dateArray.findIndex(date => date >= plannedEndDate);
 
-              if (startIndex !== -1 && endIndex !== -1) {
-                const width = (endIndex - startIndex + 1) * 21;
-                const leftPosition = 650 + (startIndex * 21);
+                if (startIndex !== -1 && endIndex !== -1) {
+                  const width = (endIndex - startIndex + 1) * 21;
+                  const leftPosition = 650 + (startIndex * 21);
 
-                return (
-                  <div
-                    style={{
-                      position: 'absolute',
-                      left: `${leftPosition}px`,
-                      width: `${width}px`
-                    }}
-                  >
-                    <MemoizedCell
-                      isPlanned={true}
-                      charge={charge}
-                      displayName={displayName}
-                      width={width}
-                    />
-                  </div>
-                );
-              }
-              return null;
-            })()}
-          </>
-        ) : null}
-      </Row>
-    </div>
+                  return (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        left: `${leftPosition}px`,
+                        width: `${width}px`
+                      }}
+                    >
+                      <MemoizedCell
+                        isPlanned={true}
+                        charge={charge}
+                        displayName={displayName}
+                        width={width}
+                      />
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+            </>
+          ) : null}
+        </Row>
+      </div>
+    </>
   );
 };
 
