@@ -55,28 +55,39 @@ function App() {
   //ここはuseCallbackを使用すると劇的にパフォーマンスが改善する。
   //Calendarのdivが横軸のチャートのdivの背面にあり、hoverが到達しないため以下の方法をとった。
   const handleMouseMove = useCallback((event: MouseEvent) => {
+    // 既に適用されているhover-effectクラスを全て削除
     document.querySelectorAll('.dayColumn.hover-effect, .wbsRow.hover-effect').forEach((element) => {
       element.classList.remove('hover-effect');
     });
   
-    const elements = document.elementsFromPoint(event.clientX, event.clientY);
-    
-    const topMostDayColumn = elements.find((element) => 
-      element instanceof HTMLElement && element.matches('.dayColumn')
-    );
-    
-    const topMostWbsRow = elements.find((element) => 
-      element instanceof HTMLElement && element.matches('.wbsRow')
-    );
+    // 特定の座標で最上部の要素にhover-effectクラスを適用する関数
+    const applyHoverEffectToTopElement = (x: number, y: number) => {
+      const elements = document.elementsFromPoint(x, y);
+      const topMostDayColumn = elements.find((element) =>
+        element instanceof HTMLElement && element.matches('.dayColumn')
+      ) as HTMLElement | undefined;
   
-    if (topMostDayColumn) {
-      topMostDayColumn.classList.add('hover-effect');
-    }
+      const topMostWbsRow = elements.find((element) =>
+        element instanceof HTMLElement && element.matches('.wbsRow')
+      ) as HTMLElement | undefined;
   
-    if (topMostWbsRow) {
-      topMostWbsRow.classList.add('hover-effect');
-    }
+      if (topMostDayColumn) {
+        topMostDayColumn.classList.add('hover-effect');
+      }
+  
+      if (topMostWbsRow) {
+        topMostWbsRow.classList.add('hover-effect');
+      }
+    };
+  
+    // 現在のマウス位置の座標で最上部の要素にhover-effectクラスを適用
+    applyHoverEffectToTopElement(event.clientX, event.clientY);
+    // Y座標を30に固定した座標で最上部の要素にhover-effectクラスを適用
+    applyHoverEffectToTopElement(event.clientX, 30);
+    // X座標を30に固定した座標で最上部の要素にhover-effectクラスを適用
+    applyHoverEffectToTopElement(30, event.clientY);
   }, []);
+  
 
   useEffect(() => {
     document.addEventListener('mousemove', handleMouseMove);
