@@ -55,17 +55,26 @@ function App() {
   //ここはuseCallbackを使用すると劇的にパフォーマンスが改善する。
   //Calendarのdivが横軸のチャートのdivの背面にあり、hoverが到達しないため以下の方法をとった。
   const handleMouseMove = useCallback((event: MouseEvent) => {
-    document.querySelectorAll('.dayColumn.hover-effect').forEach((element) => {
+    document.querySelectorAll('.dayColumn.hover-effect, .wbsRow.hover-effect').forEach((element) => {
       element.classList.remove('hover-effect');
     });
   
     const elements = document.elementsFromPoint(event.clientX, event.clientY);
+    
     const topMostDayColumn = elements.find((element) => 
       element instanceof HTMLElement && element.matches('.dayColumn')
     );
     
+    const topMostWbsRow = elements.find((element) => 
+      element instanceof HTMLElement && element.matches('.wbsRow')
+    );
+  
     if (topMostDayColumn) {
       topMostDayColumn.classList.add('hover-effect');
+    }
+  
+    if (topMostWbsRow) {
+      topMostWbsRow.classList.add('hover-effect');
     }
   }, []);
 

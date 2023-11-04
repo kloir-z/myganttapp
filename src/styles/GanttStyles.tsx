@@ -7,7 +7,7 @@ export const Row = styled.div`
   border-bottom: solid 1px #80808047;
   position: relative;
   user-select: none;
-  &:hover {
+  &.hover-effect {
     border-bottom: solid 1px #001aff83;
   }
 `;

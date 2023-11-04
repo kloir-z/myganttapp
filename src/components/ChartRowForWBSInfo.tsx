@@ -59,11 +59,6 @@ const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, 
       setPlannedStartDate(newDate);
     }
   };
-  
-  const handleClick = () => {
-    if (!isEditing) return;
-    setIsEditing(false);
-  };
 
   return (
     <>
@@ -86,7 +81,7 @@ const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, 
         <Row
           key={index}
           onDoubleClick={handleDoubleClick}
-          onClick={handleClick}
+          className="wbsRow"
         >
           <InputBox value={majorCategory} onChange={(e) => setMajorCategory(e.target.value)} $inputSize={majorCategory.length} />
           <InputBox value={middleCategory} onChange={(e) => setMiddleCategory(e.target.value)} $inputSize={middleCategory.length} />
