@@ -1,6 +1,12 @@
 //GridStyles.ts
 import styled from 'styled-components';
 
+export const RowContainer = styled.div`
+  &.hover-effect {
+    border-bottom: solid 1px #001aff83;
+  }
+`;
+
 export const Row = styled.div`
   display: flex;
   height: 20px;

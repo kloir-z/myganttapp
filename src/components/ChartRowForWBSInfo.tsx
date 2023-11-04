@@ -12,11 +12,11 @@ interface ChartRowProps {
     startDate: Date;
     endDate: Date;
   };
-  rowWidth: number;
+  wbsWidth: number;
   wbsHeight: number;
 }
 
-const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, dateRange, rowWidth, wbsHeight }) => {
+const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, dateRange, wbsWidth, wbsHeight }) => {
   const [majorCategory, setMajorCategory] = useState(entry.majorCategory);
   const [middleCategory, setMiddleCategory] = useState(entry.middleCategory);
   const [subCategory, setSubCategory] = useState(entry.subCategory);
@@ -29,17 +29,16 @@ const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, 
   const [actualStartDate, setActualStartDate] = useState(entry.actualStartDate ? new Date(entry.actualStartDate) : null);
   const [actualEndDate, setActualEndDate] = useState(entry.actualEndDate ? new Date(entry.actualEndDate) : null);
   const [isEditing, setIsEditing] = useState(false);
+  const calendarWidth = dateArray.length * 21;
 
   const calculateDateFromX = (x: number) => {
-    const columnStartX = 650;
-    const dateIndex = Math.floor((x - columnStartX) / 21);
+    const dateIndex = Math.floor(x / 21);
     return dateArray[dateIndex];
   };
   
   const handleDoubleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();  
     const relativeX = event.clientX - rect.left;
-    if (relativeX < 650) return;
     setIsEditing(true);
     setPlannedStartDate(calculateDateFromX(relativeX));
     setPlannedEndDate(calculateDateFromX(relativeX));
@@ -49,8 +48,7 @@ const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, 
     const rect = event.currentTarget.getBoundingClientRect();
     const scrollX = window.scrollX;
     let relativeX = event.clientX - rect.left + scrollX;
-    relativeX = Math.floor((relativeX - 650) / 21) * 21 + 650;
-    if (relativeX < 650) return;
+    relativeX = Math.floor((relativeX - wbsWidth) / 21) * 21;
     if (!isEditing) return;
     const newDate = calculateDateFromX(relativeX);
     if (plannedStartDate && newDate > plannedStartDate) {
@@ -61,7 +59,7 @@ const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, 
   };
 
   return (
-    <>
+    <div style={{width: `${wbsWidth + calendarWidth}px`, display: 'flex', flexDirection: 'row'}}>
       {isEditing && (
         <div
           style={{
@@ -77,10 +75,9 @@ const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, 
           onMouseUp={() => setIsEditing(false)}
         />
       )}
-      <div style={{width: `${rowWidth}px`}}>
+      <div style={{width: `${wbsWidth}px`}}>
         <Row
           key={index}
-          onDoubleClick={handleDoubleClick}
           className="wbsRow"
         >
           <InputBox value={majorCategory} onChange={(e) => setMajorCategory(e.target.value)} $inputSize={majorCategory.length} />
@@ -113,40 +110,44 @@ const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, 
             }}
             isClearable={false}
           />
-          {plannedStartDate && plannedEndDate ? (
-            <>
-              {(() => {
-                const startIndex = dateArray.findIndex(date => date >= plannedStartDate);
-                const endIndex = dateArray.findIndex(date => date >= plannedEndDate);
-
-                if (startIndex !== -1 && endIndex !== -1) {
-                  const width = (endIndex - startIndex + 1) * 21;
-                  const leftPosition = 650 + (startIndex * 21);
-
-                  return (
-                    <div
-                      style={{
-                        position: 'absolute',
-                        left: `${leftPosition}px`,
-                        width: `${width}px`
-                      }}
-                    >
-                      <MemoizedCell
-                        isPlanned={true}
-                        charge={charge}
-                        displayName={displayName}
-                        width={width}
-                      />
-                    </div>
-                  );
-                }
-                return null;
-              })()}
-            </>
-          ) : null}
         </Row>
       </div>
-    </>
+      <div style={{width: `${calendarWidth}px`}}>
+        <Row
+          key={index}
+          onDoubleClick={handleDoubleClick}
+          className="wbsRow"
+        >
+          {plannedStartDate && plannedEndDate ? (() => {
+            const startIndex = dateArray.findIndex(date => date >= plannedStartDate);
+            const endIndex = dateArray.findIndex(date => date >= plannedEndDate);
+
+            if (startIndex !== -1 && endIndex !== -1) {
+              const width = (endIndex - startIndex + 1) * 21;
+              const leftPosition = (startIndex * 21);
+
+              return (
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: `${leftPosition}px`,
+                    width: `${width}px`
+                  }}
+                >
+                  <MemoizedCell
+                    isPlanned={true}
+                    charge={charge}
+                    displayName={displayName}
+                    width={width}
+                  />
+                </div>
+              );
+            }
+            return null;
+          })() : null}
+        </Row>
+      </div>
+    </div>
   );
 };
 

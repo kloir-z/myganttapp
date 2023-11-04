@@ -113,7 +113,7 @@ function App() {
                           index={index}
                           dateArray={dateArray} 
                           dateRange={dateRange}
-                          rowWidth={wbsWidth + calendarWidth}
+                          wbsWidth={wbsWidth}
                           wbsHeight={wbsHeight}
                         />
                       );
