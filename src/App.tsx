@@ -89,6 +89,7 @@ function App() {
     applyHoverEffectToTopElement(event.clientX, 30);
     applyHoverEffectToTopElement(30, event.clientY);
   }, []);
+  
 
   useEffect(() => {
     document.addEventListener('mousemove', handleMouseMove);

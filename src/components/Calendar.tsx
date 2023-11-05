@@ -60,6 +60,8 @@ const Calendar: React.FC<CalendarProps> = ({ dateArray, wbsHeight }) => {
       <Row style={{ position: 'relative' }}>
         {dateArray.map((date, index) => {
           let type = 'weekday';
+
+          
           if (date.getDay() === 6) type = 'saturday';
           if (date.getDay() === 0 || isHoliday(date)) type = 'sundayOrHoliday';
           const left = 21 * index;
