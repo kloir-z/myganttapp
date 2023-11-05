@@ -9,18 +9,7 @@ import './css/DatePicker.css'
 import ChartRowForWBSInfo from './components/ChartRowForWBSInfo';
 import { useWBSData } from './context/WBSDataContext';
 import { generateDates } from './utils/CalendarUtil';
-
-const FlexContainer = styled.div`
-  display: flex;
-`;
-
-const WBSFixed = styled.div`
-  /* WBS固定部分のスタイリング */
-`;
-
-const GanttFixed = styled.div`
-  /* カレンダー固定部分のスタイリング */
-`;
+import GridVertical from './components/GridVertical';
 
 function App() {
   const [wbsWidth, setWbsWidth] = useState(650);
@@ -60,7 +49,6 @@ function App() {
       element.classList.remove('hover-effect');
     });
   
-    // 特定の座標で最上部の要素にhover-effectクラスを適用する関数
     const applyHoverEffectToTopElement = (x: number, y: number) => {
       const elements = document.elementsFromPoint(x, y);
       const topMostDayColumn = elements.find((element) =>
@@ -101,65 +89,58 @@ function App() {
 
   return (
     <>
-      <FlexContainer>
-        <WBSFixed>
-          <div ref={divRef} style={{display: 'flex', flexDirection: 'column'}}>
-            <div style={{display: 'flex', flexDirection: 'row'}}>
-              <div style={{display: 'flex', width: `${wbsWidth}px`}}>
-                <Row style={{borderTop: '1px solid gray', borderBottom: '1px solid transparent'}}></Row>
-                <Row></Row>
-              </div>
-              <Calendar
-                dateArray={dateArray}
-                wbsHeight={wbsHeight}
-              />
-            </div>
-            <div>
-              <div style={{display: 'flex'}}>
-                <div style={{display: 'flex', flexDirection: 'column'}}>
-                  {data.map((entry, index) => {
-                    if (entry.rowType === 'Chart') {
-                      return (
-                        <ChartRowForWBSInfo
-                          key={index}
-                          entry={entry as ChartRow}
-                          index={index}
-                          dateArray={dateArray} 
-                          dateRange={dateRange}
-                          wbsWidth={wbsWidth}
-                          wbsHeight={wbsHeight}
-                        />
-                      );
-                    } else if (entry.rowType === 'Separator') {
-                      return (
-                        <Row key={index} style={{ backgroundColor: '#ddedff', width: `${wbsWidth + calendarWidth}px`, zIndex: '2' }}>
-                          <InputBox
-                            style={{background: 'transparent'}}
-                            value={entry.displayName}
-                            onChange={(e) => updateField(index, 'displayName', e.target.value)}
-                            $inputSize={entry.displayName.length}
-                          />
-                        </Row>
-                      );
-                    } else if (entry.rowType === 'Event') {
-                      return (
-                        <Row key={index} style={{ width: `${wbsWidth + calendarWidth}px`, zIndex: '2' }}>
-                          <InputBox
-                            value={entry.displayName}
-                            onChange={(e) => updateField(index, 'displayName', e.target.value)}
-                            $inputSize={entry.displayName.length}
-                          />
-                        </Row>
-                      );
-                    }
-                    return null;
-                  })}
-                </div>
-              </div>
-            </div>
+      <div ref={divRef}>
+        <div style={{display: 'flex'}}>
+          <div style={{minWidth: `${wbsWidth}px`}}>
+
+            <Row style={{borderTop: '1px solid gray', borderBottom: '1px solid transparent'}} />
+            <Row />
           </div>
-        </WBSFixed>
-      </FlexContainer>
+          <div style={{width: `${calendarWidth}px`}}>
+            <Calendar dateArray={dateArray} />
+            <GridVertical dateArray={dateArray} wbsHeight={wbsHeight} />
+          </div>
+        </div>
+        <div>
+          {data.map((entry, index) => {
+            if (entry.rowType === 'Chart') {
+              return (
+                <ChartRowForWBSInfo
+                  key={index}
+                  entry={entry as ChartRow}
+                  index={index}
+                  dateArray={dateArray} 
+                  dateRange={dateRange}
+                  wbsWidth={wbsWidth}
+                  wbsHeight={wbsHeight}
+                />
+              );
+            } else if (entry.rowType === 'Separator') {
+              return (
+                <Row key={index} style={{ backgroundColor: '#ddedff', width: `${wbsWidth + calendarWidth}px`, zIndex: '2' }}>
+                  <InputBox
+                    style={{background: 'transparent'}}
+                    value={entry.displayName}
+                    onChange={(e) => updateField(index, 'displayName', e.target.value)}
+                    $inputSize={entry.displayName.length}
+                  />
+                </Row>
+              );
+            } else if (entry.rowType === 'Event') {
+              return (
+                <Row key={index} style={{ width: `${wbsWidth + calendarWidth}px`, zIndex: '2' }}>
+                  <InputBox
+                    value={entry.displayName}
+                    onChange={(e) => updateField(index, 'displayName', e.target.value)}
+                    $inputSize={entry.displayName.length}
+                  />
+                </Row>
+              );
+            }
+            return null;
+          })}
+        </div>
+      </div>
     </>
   );
 }
