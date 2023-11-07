@@ -18,11 +18,11 @@ function App() {
   const [wbsHeight, setWbsHeight] = useState(data.length * 21);
 
   const divRef = useRef<HTMLDivElement>(null);
-  const dateRange = {
+  const [dateRange, setDateRange] = useState({
     startDate: new Date('2023-09-01'),
-    endDate: new Date('2026-04-05')
-  };
-  const dateArray = generateDates(dateRange.startDate, dateRange.endDate);
+    endDate: new Date('2024-11-05'),
+  });
+  const [dateArray, setDateArray] = useState(generateDates(dateRange.startDate, dateRange.endDate));
   const calendarWidth = dateArray.length * 21;
   const updateField = async (index: number, field: string, value: any) => {
     const newData = [...data];
@@ -86,6 +86,39 @@ function App() {
     };
   }, [handleMouseMove]);
   
+  const handleKeyPress = useCallback((event: KeyboardEvent) => {
+    if (event.key === 'j' || event.key === 'k') {
+      // 1か月をミリ秒で
+      const oneMonth = 1000 * 60 * 60 * 24 * 3;
+      setDateRange(prevRange => {
+        const newStartDate = new Date(
+          event.key === 'j'
+            ? prevRange.startDate.getTime() - oneMonth
+            : prevRange.startDate.getTime() + oneMonth
+        );
+        const newEndDate = new Date(
+          event.key === 'k'
+            ? prevRange.endDate.getTime() + oneMonth
+            : prevRange.endDate.getTime() - oneMonth
+        );
+        return {
+          startDate: newStartDate,
+          endDate: newEndDate,
+        };
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    setDateArray(generateDates(dateRange.startDate, dateRange.endDate));
+  }, [dateRange]);
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyPress);
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [handleKeyPress]);
 
   return (
     <div style={{position: 'relative'}}>
@@ -95,7 +128,7 @@ function App() {
             <Row style={{borderBottom: '1px solid transparent'}} />
             <Row />
           </div>
-          <div style={{width: `${calendarWidth}px`}}>
+          <div style={{width: `${calendarWidth}px`, position: 'relative'}}>
             <Calendar dateArray={dateArray} />
             <GridVertical dateArray={dateArray} wbsHeight={wbsHeight} />
           </div>

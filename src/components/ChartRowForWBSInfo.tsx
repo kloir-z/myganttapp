@@ -116,12 +116,20 @@ const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, 
           className="wbsRow"
         >
           {plannedStartDate && plannedEndDate ? (() => {
-            const startIndex = dateArray.findIndex(date => date >= plannedStartDate);
-            const endIndex = dateArray.findIndex(date => date >= plannedEndDate);
-
-            if (startIndex !== -1 && endIndex !== -1) {
-              const width = (endIndex - startIndex + 1) * 21;
-              const leftPosition = (startIndex * 21);
+              const startIndex = dateArray.findIndex(date => date >= plannedStartDate);
+              const endIndex = dateArray.findIndex(date => date >= plannedEndDate);
+              const dateArrayStart = dateArray[0];
+              const dateArrayEnd = dateArray[dateArray.length - 1];
+        
+              // StartDateまたはEndDateがdateArray範囲外である場合はnullを返す
+              if (plannedStartDate > dateArrayEnd || plannedEndDate < dateArrayStart) {
+                return null;
+              }
+        
+              // startIndex と endIndex が有効範囲内にあるかチェックする
+              if (startIndex !== -1 && endIndex !== -1) {
+                const width = (endIndex - startIndex + 1) * 21;
+                const leftPosition = startIndex * 21;
 
               return (
                 <div

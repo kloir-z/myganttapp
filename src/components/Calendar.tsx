@@ -8,12 +8,16 @@ interface CalendarProps {
 };
 
 const Calendar: React.FC<CalendarProps> = ({ dateArray }) => {
+  let previousMonth = dateArray[0].getMonth();
+  const calendarWidth = dateArray.length * 21;
 
   return (
-    <div style={{display: 'flex', flexDirection: 'column'}}>
-      <Row style={{ position: 'relative', borderBottom: 'none' }}>
+    <div style={{display: 'flex', flexDirection: 'column', position: 'fixed', zIndex: 2000, left: '650px'}}>
+      <Row style={{ position: 'relative', borderBottom: 'none', zIndex: 2000, backgroundColor: 'white', width: `${calendarWidth}px`}}>
         {dateArray.map((date, index) => {
-          if (date.getDate() === 1) {
+          const month = date.getMonth();
+          if (month !== previousMonth || index === 0) { // 最初の要素、または新しい月の始まりの場合
+            previousMonth = month; // 現在の月を更新
             const left = 21 * index;
             return (
               <Cell 
@@ -23,7 +27,7 @@ const Calendar: React.FC<CalendarProps> = ({ dateArray }) => {
                   left: `${left}px`
                 }}
               >
-                {date.getFullYear()}/{String(date.getMonth() + 1).padStart(2, '0')}
+                {date.getFullYear()}/{String(month + 1).padStart(2, '0')}
               </Cell>
             );
           }
@@ -45,8 +49,9 @@ const Calendar: React.FC<CalendarProps> = ({ dateArray }) => {
               style={{
                 position: 'absolute',
                 left: `${left}px`,
-                height: '23px',
-                borderTop: '1px solid #80808047'
+                height: '20px',
+                borderTop: '1px solid #80808047',
+                borderBottom: '1px solid #80808047'
               }}
             >
               {date.getDate()}
