@@ -10,13 +10,14 @@ import ChartRowForWBSInfo from './components/ChartRowForWBSInfo';
 import { useWBSData } from './context/WBSDataContext';
 import { generateDates } from './utils/CalendarUtil';
 import GridVertical from './components/GridVertical';
+import { relative } from 'path';
 
 function App() {
+  const { data } = useWBSData();
   const [wbsWidth, setWbsWidth] = useState(650);
-  const [wbsHeight, setWbsHeight] = useState(0);
+  const [wbsHeight, setWbsHeight] = useState(data.length * 21);
 
   const divRef = useRef<HTMLDivElement>(null);
-  const { data } = useWBSData();
   const dateRange = {
     startDate: new Date('2023-09-01'),
     endDate: new Date('2026-04-05')
@@ -31,15 +32,14 @@ function App() {
   useEffect(() => {
     const handleResize = () => {
       if (divRef.current) {
-        setWbsHeight(divRef.current.offsetHeight);
+        setWbsHeight(data.length * 21);
       }
     };
-    handleResize();
     window.addEventListener('resize', handleResize);
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, []);
+  }, [data]);
 
   //ここはuseCallbackを使用すると劇的にパフォーマンスが改善する。
   //Calendarのdivが横軸のチャートのdivの背面にあり、hoverが到達しないため以下の方法をとった。
@@ -88,12 +88,11 @@ function App() {
   
 
   return (
-    <>
+    <div style={{position: 'relative'}}>
       <div ref={divRef}>
         <div style={{display: 'flex'}}>
           <div style={{minWidth: `${wbsWidth}px`}}>
-
-            <Row style={{borderTop: '1px solid gray', borderBottom: '1px solid transparent'}} />
+            <Row style={{borderBottom: '1px solid transparent'}} />
             <Row />
           </div>
           <div style={{width: `${calendarWidth}px`}}>
@@ -101,7 +100,7 @@ function App() {
             <GridVertical dateArray={dateArray} wbsHeight={wbsHeight} />
           </div>
         </div>
-        <div>
+        <div style={{position: 'absolute', top: '41px'}}>
           {data.map((entry, index) => {
             if (entry.rowType === 'Chart') {
               return (
@@ -110,9 +109,7 @@ function App() {
                   entry={entry as ChartRow}
                   index={index}
                   dateArray={dateArray} 
-                  dateRange={dateRange}
                   wbsWidth={wbsWidth}
-                  wbsHeight={wbsHeight}
                 />
               );
             } else if (entry.rowType === 'Separator') {
@@ -141,7 +138,7 @@ function App() {
           })}
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

@@ -4,25 +4,48 @@ import { Row, InputBox } from '../styles/GanttStyles';
 import DatePicker from "react-datepicker";
 import { MemoizedCell } from './GanttCell';
 
-interface ChartRowProps {
-  entry: ChartRow;
-  index: number;
-  dateArray: Date[];
-  wbsWidth: number;
-}
-
-const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, wbsWidth }) => {
+interface WBSInfoProps {
+    entry: ChartRow;
+    index: number;
+    dateArray: Date[];
+    wbsWidth: number;
+    charge: string;
+    setCharge: (charge: string) => void; 
+    displayName: string;
+    setDisplayName: (charge: string) => void; 
+    plannedStartDate: Date | null;
+    setPlannedStartDate: (date: Date | null) => void;
+    plannedEndDate: Date | null;
+    setPlannedEndDate: (date: Date | null) => void;
+    actualStartDate: Date | null;
+    setActualStartDate: (date: Date | null) => void;
+    actualEndDate: Date | null;
+    setActualEndDate: (date: Date | null) => void;
+  }
+  
+  const WBSInfo: React.FC<WBSInfoProps> = ({
+    entry,
+    index,
+    dateArray,
+    wbsWidth,
+    charge,
+    setCharge,
+    displayName,
+    setDisplayName,
+    plannedStartDate,
+    setPlannedStartDate,
+    plannedEndDate,
+    setPlannedEndDate,
+    actualStartDate,
+    setActualStartDate,
+    actualEndDate,
+    setActualEndDate
+  }) => {
   const [majorCategory, setMajorCategory] = useState(entry.majorCategory);
   const [middleCategory, setMiddleCategory] = useState(entry.middleCategory);
   const [subCategory, setSubCategory] = useState(entry.subCategory);
   const [task, setTask] = useState(entry.task);
-  const [charge, setCharge] = useState(entry.charge);
-  const [displayName, setDisplayName] = useState(entry.displayName);
-  const [plannedStartDate, setPlannedStartDate] = useState(entry.plannedStartDate ? new Date(entry.plannedStartDate) : null);
-  const [plannedEndDate, setPlannedEndDate] = useState(entry.plannedEndDate ? new Date(entry.plannedEndDate) : null);
   const [estimatedDaysRequired, setEstimatedDaysRequired] = useState(entry.estimatedDaysRequired);
-  const [actualStartDate, setActualStartDate] = useState(entry.actualStartDate ? new Date(entry.actualStartDate) : null);
-  const [actualEndDate, setActualEndDate] = useState(entry.actualEndDate ? new Date(entry.actualEndDate) : null);
   const [isEditing, setIsEditing] = useState(false);
   const calendarWidth = dateArray.length * 21;
 
@@ -148,4 +171,4 @@ const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, 
   );
 };
 
-export default memo(ChartRowForWBSInfo);
+export default memo(WBSInfo);
