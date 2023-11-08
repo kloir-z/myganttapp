@@ -107,7 +107,6 @@ function App() {
       }
     };
   
-    applyHoverEffectToTopElement(event.clientX, 60);
     if (event.clientX < wbsWidth) {
       applyHoverEffectToTopElement((wbsWidth + 10), event.clientY);
     } else {
