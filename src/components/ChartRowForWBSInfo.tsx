@@ -1,4 +1,4 @@
-import React, { useState, memo } from 'react';
+import React, { useState, memo, useEffect } from 'react';
 import { ChartRow } from '../types/DataTypes';
 import { Row, InputBox } from '../styles/GanttStyles';
 import DatePicker from "react-datepicker";
@@ -24,7 +24,21 @@ const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, 
   const [actualStartDate, setActualStartDate] = useState(entry.actualStartDate ? new Date(entry.actualStartDate) : null);
   const [actualEndDate, setActualEndDate] = useState(entry.actualEndDate ? new Date(entry.actualEndDate) : null);
   const [isEditing, setIsEditing] = useState(false);
-  const calendarWidth = dateArray.length * 21;
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  const calendarWidth = windowWidth - 650;
 
   const calculateDateFromX = (x: number) => {
     const dateIndex = Math.floor(x / 21);
@@ -117,7 +131,8 @@ const ChartRowForWBSInfo: React.FC<ChartRowProps> = ({ entry, index, dateArray, 
         >
           {plannedStartDate && plannedEndDate ? (() => {
               const startIndex = dateArray.findIndex(date => date >= plannedStartDate);
-              const endIndex = dateArray.findIndex(date => date >= plannedEndDate);
+              let endIndex = dateArray.findIndex(date => date >= plannedEndDate);
+              endIndex = endIndex !== -1 ? endIndex : dateArray.length - 1; 
               const dateArrayStart = dateArray[0];
               const dateArrayEnd = dateArray[dateArray.length - 1];
         

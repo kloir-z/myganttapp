@@ -1,5 +1,5 @@
 // Calendar.tsx
-import React from 'react';
+import React, {useState,useEffect} from 'react';
 import { isHoliday } from '../utils/CalendarUtil';
 import { Row, Cell } from '../styles/GanttStyles';
 
@@ -9,15 +9,31 @@ interface CalendarProps {
 
 const Calendar: React.FC<CalendarProps> = ({ dateArray }) => {
   let previousMonth = dateArray[0].getMonth();
-  const calendarWidth = dateArray.length * 21;
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  const displayableWidth = windowWidth - 650;
+  const displayableDays = Math.floor(displayableWidth / 21);
+  const visibleDates = dateArray.slice(0, displayableDays);
 
   return (
-    <div style={{display: 'flex', flexDirection: 'column', position: 'fixed', zIndex: 2000, left: '650px'}}>
-      <Row style={{ position: 'relative', borderBottom: 'none', zIndex: 2000, backgroundColor: 'white', width: `${calendarWidth}px`}}>
-        {dateArray.map((date, index) => {
+    <div style={{ display: 'flex', flexDirection: 'column', position: 'fixed', zIndex: 2000, left: '650px' }}>
+      <Row style={{ position: 'relative', borderBottom: 'none', zIndex: 2000, backgroundColor: 'white', width: `${displayableWidth}px` }}>
+        {visibleDates.map((date, index) => {
           const month = date.getMonth();
-          if (month !== previousMonth || index === 0) { // 最初の要素、または新しい月の始まりの場合
-            previousMonth = month; // 現在の月を更新
+          if (month !== previousMonth || index === 0) {
+            previousMonth = month;
             const left = 21 * index;
             return (
               <Cell 
@@ -35,7 +51,7 @@ const Calendar: React.FC<CalendarProps> = ({ dateArray }) => {
         })}
       </Row>
       <Row style={{ position: 'relative' }}>
-        {dateArray.map((date, index) => {
+        {visibleDates.map((date, index) => {
           let type = 'weekday';
           if (date.getDay() === 6) type = 'saturday';
           if (date.getDay() === 0 || isHoliday(date)) type = 'sundayOrHoliday';

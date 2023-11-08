@@ -28,7 +28,7 @@ const GridVertical: React.FC<CalendarProps> = ({ dateArray, wbsHeight }) => {
               position: 'absolute',
               top: '41px',
               left: `${left}px`,
-              height: `${wbsHeight}px`,
+              height: '96svh',
               borderTop: '1px solid #80808047'
             }}
           />
