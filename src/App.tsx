@@ -161,7 +161,7 @@ function App() {
     setInitialStartDate(dateRange.startDate);
   }, [setIsDragging, setDragStartX, dateRange.startDate]);
 
-  const handleMouseMove2 = useCallback((event: React.MouseEvent) => {
+  const handleMouseDrag = useCallback((event: React.MouseEvent) => {
     if (!isDragging) return;
     const currentX = event.clientX;
     const deltaX = currentX - dragStartX;
@@ -202,7 +202,7 @@ function App() {
         <div ref={scrollRef}
              style={{position: 'absolute', top: '41px', overflowY: 'auto', overflowX: 'hidden', height: '96svh', width: '100svw'}}
              onMouseDown={handleMouseDown}
-             onMouseMove={handleMouseMove2}
+             onMouseMove={handleMouseDrag}
              onMouseUp={handleMouseUp}
              onMouseLeave={handleMouseUp}
         >
