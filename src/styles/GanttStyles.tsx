@@ -96,8 +96,9 @@ export const DisplayLabel = styled.label<CellProps>`
 
 export const InputBox = styled.input<{ $inputSize?: number }>`
   font-size: 0.8em;
-  line-height: 16px;
-  border: solid 1px transparent;
+  height: 18px;
+  padding: 0px;
+  border: none;
   width: ${(props) => props.$inputSize ? props.$inputSize + "ch" : "20px"};
   min-width: ${(props) => props.$inputSize ? "80px" : "0"};
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;

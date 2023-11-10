@@ -22,15 +22,12 @@ const Calendar: React.FC<CalendarProps> = ({ dateArray }) => {
       window.removeEventListener('resize', handleResize);
     };
   }, []);
-
-  const displayableWidth = windowWidth - 650;
-  const displayableDays = Math.floor(displayableWidth / 21);
-  const visibleDates = dateArray.slice(0, displayableDays);
+  const calendarWidth = dateArray.length * 21;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', position: 'fixed', zIndex: 2000, left: '650px' }}>
-      <Row style={{ position: 'relative', borderBottom: 'none', zIndex: 2000, backgroundColor: 'white', width: `${displayableWidth}px` }}>
-        {visibleDates.map((date, index) => {
+    <div style={{ display: 'flex', flexDirection: 'column', width: `${calendarWidth}px` }}>
+      <Row style={{ borderBottom: 'none', backgroundColor: 'white'}}>
+        {dateArray.map((date, index) => {
           const month = date.getMonth();
           if (month !== previousMonth || index === 0) {
             previousMonth = month;
@@ -50,8 +47,8 @@ const Calendar: React.FC<CalendarProps> = ({ dateArray }) => {
           return null;
         })}
       </Row>
-      <Row style={{ position: 'relative' }}>
-        {visibleDates.map((date, index) => {
+      <Row>
+        {dateArray.map((date, index) => {
           let type = 'weekday';
           if (date.getDay() === 6) type = 'saturday';
           if (date.getDay() === 0 || isHoliday(date)) type = 'sundayOrHoliday';
@@ -66,8 +63,7 @@ const Calendar: React.FC<CalendarProps> = ({ dateArray }) => {
                 position: 'absolute',
                 left: `${left}px`,
                 height: '20px',
-                borderTop: '1px solid #80808047',
-                borderBottom: '1px solid #80808047'
+                borderTop: '1px solid #80808047'
               }}
             >
               {date.getDate()}

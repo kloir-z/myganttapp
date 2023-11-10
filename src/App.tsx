@@ -5,85 +5,50 @@ import { ChartRow  } from './types/DataTypes';
 import { Row, InputBox } from './styles/GanttStyles';
 import "react-datepicker/dist/react-datepicker.css"; 
 import './css/DatePicker.css'
-import ChartRowForWBSInfo from './components/ChartRowForWBSInfo';
-import { useWBSData } from './context/WBSDataContext';
+import WBSInfo from './components/WBSInfo';
+import GridHorizontal from './components/GridHorizontal';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, AppDispatch, setData } from './reduxComponents/store';
 import { generateDates } from './utils/CalendarUtil';
 import GridVertical from './components/GridVertical';
 
 function App() {
-  const { data } = useWBSData();
+  const data = useSelector((state: RootState) => state.wbsData);
+  const dispatch = useDispatch<AppDispatch>();
   const [wbsWidth, setWbsWidth] = useState(650);
-  const [wbsHeight, setWbsHeight] = useState(data.length * 21);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStartX, setDragStartX] = useState(0);
-  const [dragStartY, setDragStartY] = useState(0);
-
-  const divRef = useRef<HTMLDivElement>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
-
   const [dateRange, setDateRange] = useState({
     startDate: new Date('2023-09-01'),
-    endDate: new Date('2024-11-05'),
+    endDate: new Date('2024-10-05'),
   });
   const [dateArray, setDateArray] = useState(generateDates(dateRange.startDate, dateRange.endDate));
-  const [initialStartDate, setInitialStartDate] = useState(dateRange.startDate);
-
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  const oneDayInMs = 24 * 60 * 60 * 1000;
-
-  useEffect(() => {
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-  
-  const calendarWidth = windowWidth - 650;
-
-  const calculateEndDate = (startDate: Date, calendarWidth: number) => {
-    const dayWidth = 21;
-    const displayableDays = Math.floor(calendarWidth / dayWidth);
-    return new Date(startDate.getTime() + displayableDays * (1000 * 60 * 60 * 24));
-  };
-  
-  useEffect(() => {
-    const newEndDate = calculateEndDate(dateRange.startDate, calendarWidth);
-    setDateRange((prevRange) => ({
-      ...prevRange,
-      endDate: newEndDate,
-    }));
-  }, [windowWidth, dateRange.startDate]);
+  const calendarWidth = dateArray.length * 21;
   
   useEffect(() => {
     setDateArray(generateDates(dateRange.startDate, dateRange.endDate));
   }, [dateRange]);
 
-  const updateField = async (index: number, field: string, value: any) => {
-    const newData = [...data];
-    (newData[index] as any)[field] = value;
+  const updateField = async (id: string, field: keyof ChartRow, value: any) => {
+    const newData = { ...data };
+    if (newData[id] && newData[id].rowType === 'Chart') {
+      newData[id] = { ...newData[id], [field]: value };
+      dispatch(setData(newData));
+    }
   };
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (divRef.current) {
-        setWbsHeight(data.length * 21);
-      }
-    };
-    window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, [data]);
 
   //ここはuseCallbackを使用すると劇的にパフォーマンスが改善する。
   //Calendarのdivが横軸のチャートのdivの背面にあり、hoverが到達しないため以下の方法をとった。
+  const lastMousePosition = useRef({ x: 0, y: 0 });
+
   const handleMouseMove = useCallback((event: MouseEvent) => {
-    // 既に適用されているhover-effectクラスを全て削除
+    const { clientX, clientY } = event;
+    const newX = Math.floor(clientX - 1 / 21);
+    const newY = Math.floor(clientY - 1 / 21);
+
+    if (newX === lastMousePosition.current.x && newY === lastMousePosition.current.y) {
+      return;
+    }
+    lastMousePosition.current = { x: newX, y: newY };
+    
     document.querySelectorAll('.dayColumn.hover-effect, .wbsRow.hover-effect').forEach((element) => {
       element.classList.remove('hover-effect');
     });
@@ -107,13 +72,13 @@ function App() {
       }
     };
   
-    if (event.clientX < wbsWidth) {
-      applyHoverEffectToTopElement((wbsWidth + 10), event.clientY);
+    if (clientX < wbsWidth) {
+      applyHoverEffectToTopElement((wbsWidth + 10), clientY);
     } else {
-      applyHoverEffectToTopElement(event.clientX, event.clientY);
+      applyHoverEffectToTopElement(clientX, clientY);
     }
-    applyHoverEffectToTopElement(event.clientX, 30);
-    applyHoverEffectToTopElement(30, event.clientY);
+    applyHoverEffectToTopElement(clientX, 30);
+    applyHoverEffectToTopElement(30, clientY);
   }, []);
 
   useEffect(() => {
@@ -152,96 +117,177 @@ function App() {
     };
   }, [handleKeyPress]);
 
-  const handleMouseDown = useCallback((event: React.MouseEvent) => {
-    setIsDragging(true);
-    setDragStartX(event.clientX);
-    if (scrollRef.current) {
-      (scrollRef.current as any).startY = event.clientY;
+  const wbsRef = useRef<HTMLDivElement>(null);
+  const calendarRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleVerticalScroll = (sourceRef: React.RefObject<HTMLDivElement>, targetRef: React.RefObject<HTMLDivElement>) => {
+      if (sourceRef.current && targetRef.current) {
+        targetRef.current.scrollTop = sourceRef.current.scrollTop;
+      }
+    };
+  
+    const handleHorizontalScroll = (sourceRef: React.RefObject<HTMLDivElement>, targetRef: React.RefObject<HTMLDivElement>) => {
+      if (sourceRef.current && targetRef.current) {
+        targetRef.current.scrollLeft = sourceRef.current.scrollLeft;
+      }
+    };
+  
+    const wbsElement = wbsRef.current;
+    const calendarElement = calendarRef.current;
+    const gridElement = gridRef.current;
+  
+    // WBSとグリッドのY軸スクロール同期
+    if (wbsElement && gridElement) {
+      wbsElement.addEventListener('scroll', () => handleVerticalScroll(wbsRef, gridRef));
+      gridElement.addEventListener('scroll', () => handleVerticalScroll(gridRef, wbsRef));
     }
-    setInitialStartDate(dateRange.startDate);
-  }, [setIsDragging, setDragStartX, dateRange.startDate]);
-
-  const handleMouseDrag = useCallback((event: React.MouseEvent) => {
-    if (!isDragging) return;
-    const currentX = event.clientX;
-    const deltaX = currentX - dragStartX;
-    const daysToAdjust = Math.round(deltaX / 21);
-    const newStartDate = new Date(initialStartDate.getTime() - daysToAdjust * oneDayInMs);
-    if (newStartDate.getTime() !== dateRange.startDate.getTime()) {
-      setDateRange({ ...dateRange, startDate: newStartDate });
+  
+    // カレンダーとグリッドのX軸スクロール同期
+    if (calendarElement && gridElement) {
+      calendarElement.addEventListener('scroll', () => handleHorizontalScroll(calendarRef, gridRef));
+      gridElement.addEventListener('scroll', () => handleHorizontalScroll(gridRef, calendarRef));
     }
-
-    if (!scrollRef.current) return;
-    const currentY = event.clientY;
-    const deltaY = currentY - (scrollRef.current as any).startY;
-    if (deltaY !== 0) {
-      scrollRef.current.scrollTop -= deltaY;
-      (scrollRef.current as any).startY = currentY;
-    }
-
-  }, [isDragging, dragStartX, initialStartDate, dateRange, setDateRange]);
-
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false);
-  }, [setIsDragging]);
-
-
+  
+    return () => {
+      if (wbsElement && gridElement) {
+        wbsElement.removeEventListener('scroll', () => handleVerticalScroll(wbsRef, gridRef));
+        gridElement.removeEventListener('scroll', () => handleVerticalScroll(gridRef, wbsRef));
+      }
+      if (calendarElement && gridElement) {
+        calendarElement.removeEventListener('scroll', () => handleHorizontalScroll(calendarRef, gridRef));
+        gridElement.removeEventListener('scroll', () => handleHorizontalScroll(gridRef, calendarRef));
+      }
+    };
+  }, []);
+  
   return (
     <div style={{position: 'relative'}}>
-      <div ref={divRef}>
-        <div style={{display: 'flex'}}>
-          <div style={{minWidth: `${wbsWidth}px`}}>
-            <Row style={{borderBottom: '1px solid transparent'}} />
-            <Row />
-          </div>
-          <div style={{width: `${calendarWidth}px`, position: 'relative'}} >
-            <Calendar dateArray={dateArray} />
-            <GridVertical dateArray={dateArray} wbsHeight={wbsHeight} />
-          </div>
-        </div>
-        <div ref={scrollRef}
-             style={{position: 'absolute', top: '41px', overflowY: 'auto', overflowX: 'hidden', height: '96svh', width: '100svw'}}
-             onMouseDown={handleMouseDown}
-             onMouseMove={handleMouseDrag}
-             onMouseUp={handleMouseUp}
-             onMouseLeave={handleMouseUp}
-        >
-          {data.map((entry, index) => {
-            if (entry.rowType === 'Chart') {
-              return (
-                <ChartRowForWBSInfo
-                  key={index}
+      <div style={{position: 'absolute', left: `${wbsWidth}px`, width: `calc(100vw - ${wbsWidth}px)`, height: '100vh', overflow: 'hidden'}} ref={calendarRef}>
+        <Calendar dateArray={dateArray} />
+        <GridVertical dateArray={dateArray} />
+      </div>
+      <div style={{position: 'absolute', top: '41px', width: `${wbsWidth}px`, height: `calc(100vh - 41px)`, overflow: 'hidden'}} ref={wbsRef}>
+        {Object.entries(data).map(([id, entry], index) => {
+          const topPosition = index * 21;
+          if (entry.rowType === 'Chart') {
+            return (
+              <div
+                key={id}
+                style={{
+                  display: 'flex',
+                  position: 'absolute',
+                  top: `${topPosition}px`,
+                }}
+              >
+                <WBSInfo
                   entry={entry as ChartRow}
                   index={index}
-                  dateArray={dateArray} 
                   wbsWidth={wbsWidth}
                 />
-              );
-            } else if (entry.rowType === 'Separator') {
-              return (
-                <Row key={index} style={{ backgroundColor: '#ddedff', width: `${wbsWidth + calendarWidth}px`, zIndex: '2' }}>
+              </div>
+            );
+          } else if (entry.rowType === 'Separator') {
+            return (
+              <div
+                key={id}
+                style={{
+                  backgroundColor: '#ddedff',
+                  width: `${calendarWidth}px`,
+                  position: 'absolute',
+                  top: `${topPosition}px`, // ここで縦位置を設定
+                }}
+              >
+                <Row key={id} style={{ backgroundColor: '#ddedff', width: `${calendarWidth}px`}}>
                   <InputBox
                     style={{background: 'transparent'}}
                     value={entry.displayName}
-                    onChange={(e) => updateField(index, 'displayName', e.target.value)}
+                    onChange={(e) => updateField(id, 'displayName', e.target.value)}
                     $inputSize={entry.displayName.length}
                   />
                 </Row>
-              );
-            } else if (entry.rowType === 'Event') {
-              return (
-                <Row key={index} style={{ width: `${wbsWidth + calendarWidth}px`, zIndex: '2' }}>
+              </div>
+            );
+          } else if (entry.rowType === 'Event') {
+            return (
+              <div
+                key={id}
+                style={{
+                  width: `${calendarWidth}px`,
+                  position: 'absolute',
+                  top: `${topPosition}px`, // ここで縦位置を設定
+                }}
+              >
+                <Row key={index} style={{ width: `${calendarWidth}px`}}>
                   <InputBox
                     value={entry.displayName}
-                    onChange={(e) => updateField(index, 'displayName', e.target.value)}
+                    onChange={(e) => updateField(id, 'displayName', e.target.value)}
                     $inputSize={entry.displayName.length}
                   />
                 </Row>
-              );
-            }
-            return null;
-          })}
-        </div>
+              </div>
+            );
+          }
+          return null;
+        })}
+      </div>
+      <div style={{position: 'absolute',top: '41px', left: `${wbsWidth}px`, width: `calc(100vw - ${wbsWidth}px)`, height: `calc(100vh - 41px)`, overflow: 'scroll'}} ref={gridRef}>
+      {Object.entries(data).map(([id, entry], index) => {
+        const topPosition = index * 21;
+        if (entry.rowType === 'Chart') {
+          return (
+            <div
+              key={id}
+              style={{
+                display: 'flex',
+                position: 'absolute',
+                top: `${topPosition}px`
+              }}
+            >
+              <GridHorizontal
+                entry={entry as ChartRow}
+                index={index}
+                dateArray={dateArray}
+                wbsWidth={wbsWidth}
+                gridRef={gridRef}
+              />
+            </div>
+          );
+        } else if (entry.rowType === 'Separator') {
+          return (
+            <div
+              key={id}
+              style={{
+                backgroundColor: '#ddedff',
+                position: 'absolute',
+                top: `${topPosition}px`, // ここで縦位置を設定
+              }}
+            >
+              <Row key={id} style={{ backgroundColor: '#ddedff', width: `${calendarWidth}px`}}/>
+            </div>
+          );
+        } else if (entry.rowType === 'Event') {
+          return (
+            <div
+              key={id}
+              style={{
+                position: 'absolute',
+                top: `${topPosition}px`, // ここで縦位置を設定
+              }}
+            >
+              <Row key={index} style={{ width: `${calendarWidth}px`}}>
+                <InputBox
+                  value={entry.displayName}
+                  onChange={(e) => updateField(id, 'displayName', e.target.value)}
+                  $inputSize={entry.displayName.length}
+                />
+              </Row>
+            </div>
+          );
+        }
+        return null;
+      })}
       </div>
     </div>
   );

@@ -1,17 +1,16 @@
-// Calendar.tsx
+// GridVertial.tsx
 import React from 'react';
 import { isHoliday } from '../utils/CalendarUtil';
 import { Row, Cell } from '../styles/GanttStyles';
 
 interface CalendarProps {
   dateArray: Date[];
-  wbsHeight: number;
 };
 
-const GridVertical: React.FC<CalendarProps> = ({ dateArray, wbsHeight }) => {
+const GridVertical: React.FC<CalendarProps> = ({ dateArray }) => {
 
   return (
-    <Row style={{ position: 'relative', height: '0px' }}>
+    <Row>
       {dateArray.map((date, index) => {
         let type = 'weekday';
 
@@ -26,9 +25,9 @@ const GridVertical: React.FC<CalendarProps> = ({ dateArray, wbsHeight }) => {
             className="dayColumn"
             style={{
               position: 'absolute',
-              top: '41px',
+              top: '0px',
               left: `${left}px`,
-              height: '96svh',
+              height: `calc(100vh - 41px)`,
               borderTop: '1px solid #80808047'
             }}
           />

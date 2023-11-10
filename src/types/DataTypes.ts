@@ -2,6 +2,7 @@
 export type RowType = "Chart" | "Separator" | "Event";
 
 export interface BaseRow {
+  id: string;
   rowType: RowType;
   displayName: string;
   isChanged?: boolean;
