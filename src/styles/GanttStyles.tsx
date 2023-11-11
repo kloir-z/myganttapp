@@ -12,7 +12,7 @@ export const Row = styled.div`
   display: flex;
   height: 21px;
   background: none;
-  border-bottom: solid 1px #80808047;
+  border-bottom: solid 1px #00000016;
   position: relative;
   user-select: none;
   align-items: center;
@@ -54,16 +54,19 @@ interface CellProps {
 export const Cell = styled.div<CellProps>`
   font-size: 0.8rem;
   text-align: center;
-  position: relative;
   width: ${props => (props.$width ? `${props.$width}px` : '21px')};
   height: 21px;
-  border-left: 1px solid ${props => (props.$isPlanned ? 'transparent' : '#80808047')};
+  height: ${props => (props.$isActual ? '4px' : '21px')};
+  border-left: 1px solid ${props => (props.$isPlanned ? 'transparent' : '#00000016')};
   background-color: ${props => {
     let baseColor = '#ffffff';
     if (props.$type === 'saturday') return '#cddeff';
     if (props.$type === 'sundayOrHoliday') return '#ffcaca';
     if (props.$isPlanned) {
       baseColor = props.$charge === 'vendor' ? '#74ff7451' : '#b05cff4d';
+    }
+    if (props.$isActual) {
+      baseColor = '#006eff49';
     }
     return baseColor;
   }};
@@ -101,7 +104,7 @@ export const InputBox = styled.input<{ $inputSize?: number }>`
   line-height: 16px;
   padding: 0px;
   background: none;
-  border: solid 1px transparent;
+  border: solid 1px #80808047;
   width: ${(props) => props.$inputSize ? props.$inputSize + "ch" : "20px"};
   min-width: ${(props) => props.$inputSize ? "80px" : "0"};
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;

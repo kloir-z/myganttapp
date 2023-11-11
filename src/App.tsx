@@ -84,7 +84,7 @@ function App() {
     applyHoverEffectToTopElement(30, (clientY + yDirection));
 
     lastMousePosition.current = { x: newX, y: newY };
-  }, 30), []);
+  }, 50), []);
 
   useEffect(() => {
     document.addEventListener('mousemove', handleMouseMove);
