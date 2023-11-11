@@ -12,6 +12,7 @@
     "@types/react": "^18.2.31",
     "@types/react-dom": "^18.2.14",
     "immer": "^10.0.3",
+    "lodash": "^4.17.21",
     "react": "^18.2.0",
     "react-datepicker": "^4.21.0",
     "react-dom": "^18.2.0",
@@ -47,6 +48,7 @@
     ]
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.201",
     "@types/react-datepicker": "^4.19.1",
     "@types/react-redux": "^7.1.30",
     "@types/uuid": "^9.0.7"

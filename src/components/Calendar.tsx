@@ -62,7 +62,7 @@ const Calendar: React.FC<CalendarProps> = ({ dateArray }) => {
               style={{
                 position: 'absolute',
                 left: `${left}px`,
-                height: '20px',
+                height: '21px',
                 borderTop: '1px solid #80808047'
               }}
             >

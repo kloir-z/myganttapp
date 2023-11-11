@@ -11,6 +11,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch, setData } from './reduxComponents/store';
 import { generateDates } from './utils/CalendarUtil';
 import GridVertical from './components/GridVertical';
+import throttle from 'lodash/throttle';
 
 function App() {
   const data = useSelector((state: RootState) => state.wbsData);
@@ -21,6 +22,10 @@ function App() {
     endDate: new Date('2024-10-05'),
   });
   const [dateArray, setDateArray] = useState(generateDates(dateRange.startDate, dateRange.endDate));
+
+  const wbsRef = useRef<HTMLDivElement>(null);
+  const calendarRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
   const calendarWidth = dateArray.length * 21;
   
   useEffect(() => {
@@ -39,22 +44,17 @@ function App() {
   //Calendarのdivが横軸のチャートのdivの背面にあり、hoverが到達しないため以下の方法をとった。
   const lastMousePosition = useRef({ x: 0, y: 0 });
 
-  const handleMouseMove = useCallback((event: MouseEvent) => {
+  const handleMouseMove = useCallback(throttle((event: MouseEvent) => {
     const { clientX, clientY } = event;
-    const newX = Math.floor(clientX - 1 / 21);
-    const newY = Math.floor(clientY - 1 / 21);
+    const newX = Math.floor(clientX / 21);
+    const newY = Math.floor(clientY / 21);
 
-    if (newX === lastMousePosition.current.x && newY === lastMousePosition.current.y) {
-      return;
-    }
-    lastMousePosition.current = { x: newX, y: newY };
-    
     document.querySelectorAll('.dayColumn.hover-effect, .wbsRow.hover-effect').forEach((element) => {
       element.classList.remove('hover-effect');
     });
   
     const applyHoverEffectToTopElement = (x: number, y: number) => {
-      const elements = document.elementsFromPoint(x, y);
+      const elements = document.elementsFromPoint(x, y);  
       const topMostDayColumn = elements.find((element) =>
         element instanceof HTMLElement && element.matches('.dayColumn')
       ) as HTMLElement | undefined;
@@ -71,15 +71,20 @@ function App() {
         topMostWbsRow.classList.add('hover-effect');
       }
     };
+
+    const xDirection = newX > lastMousePosition.current.x ? 4 : (newX < lastMousePosition.current.x ? -4 : 0);
+    const yDirection = newY > lastMousePosition.current.y ? 4 : (newY < lastMousePosition.current.y ? -4 : 0);
   
-    if (clientX < wbsWidth) {
-      applyHoverEffectToTopElement((wbsWidth + 10), clientY);
+    if ((clientX + xDirection) < wbsWidth) {
+      applyHoverEffectToTopElement((wbsWidth + 10), (clientY + yDirection));
     } else {
-      applyHoverEffectToTopElement(clientX, clientY);
+      applyHoverEffectToTopElement((clientX + xDirection), (clientY + yDirection));
     }
-    applyHoverEffectToTopElement(clientX, 30);
-    applyHoverEffectToTopElement(30, clientY);
-  }, []);
+    applyHoverEffectToTopElement((clientX + xDirection), 30);
+    applyHoverEffectToTopElement(30, (clientY + yDirection));
+
+    lastMousePosition.current = { x: newX, y: newY };
+  }, 30), []);
 
   useEffect(() => {
     document.addEventListener('mousemove', handleMouseMove);
@@ -116,10 +121,6 @@ function App() {
       window.removeEventListener('keydown', handleKeyPress);
     };
   }, [handleKeyPress]);
-
-  const wbsRef = useRef<HTMLDivElement>(null);
-  const calendarRef = useRef<HTMLDivElement>(null);
-  const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleVerticalScroll = (sourceRef: React.RefObject<HTMLDivElement>, targetRef: React.RefObject<HTMLDivElement>) => {

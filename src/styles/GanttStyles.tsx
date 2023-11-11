@@ -2,6 +2,7 @@
 import styled from 'styled-components';
 
 export const RowContainer = styled.div`
+  background: none;
   &.hover-effect {
     border-bottom: solid 1px #001aff83;
   }
@@ -9,7 +10,8 @@ export const RowContainer = styled.div`
 
 export const Row = styled.div`
   display: flex;
-  height: 20px;
+  height: 21px;
+  background: none;
   border-bottom: solid 1px #80808047;
   position: relative;
   user-select: none;
@@ -54,7 +56,7 @@ export const Cell = styled.div<CellProps>`
   text-align: center;
   position: relative;
   width: ${props => (props.$width ? `${props.$width}px` : '21px')};
-  height: 20px;
+  height: 21px;
   border-left: 1px solid ${props => (props.$isPlanned ? 'transparent' : '#80808047')};
   background-color: ${props => {
     let baseColor = '#ffffff';
@@ -95,10 +97,11 @@ export const DisplayLabel = styled.label<CellProps>`
 `;
 
 export const InputBox = styled.input<{ $inputSize?: number }>`
-  font-size: 0.8em;
-  height: 18px;
+  font-size: 0.8rem;
+  line-height: 16px;
   padding: 0px;
-  border: none;
+  background: none;
+  border: solid 1px transparent;
   width: ${(props) => props.$inputSize ? props.$inputSize + "ch" : "20px"};
   min-width: ${(props) => props.$inputSize ? "80px" : "0"};
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;

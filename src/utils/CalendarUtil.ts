@@ -4,13 +4,6 @@ export const isHoliday = (date: Date) => {
   return holidays.includes(dateString);
 };
 
-export const getDayType = (date: Date) => {
-  let type = 'weekday';
-  if (date.getDay() === 6) type = 'saturday';
-  if (date.getDay() === 0 || isHoliday(date)) type = 'sundayOrHoliday';
-  return type;
-};
-
 export const generateDates = (start: Date, end: Date) => {
   const dateArray: Date[] = [];
   let currentDate = new Date(start);
