@@ -116,6 +116,7 @@ const WBSInfo: React.FC<ChartRowProps> = ({ entry, index, wbsWidth }) => {
     <>
       <Row
         key={index}
+        data-index={index}
         className="wbsRow"
         style={{width: `${wbsWidth}px`}}
       >

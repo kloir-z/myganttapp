@@ -21,6 +21,7 @@ const GridVertical: React.FC<CalendarProps> = ({ dateArray }) => {
         return (
           <Cell
             key={index}
+            data-index={index}
             $type={type}
             className="dayColumn"
             style={{

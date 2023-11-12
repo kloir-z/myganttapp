@@ -35,6 +35,7 @@ const Calendar: React.FC<CalendarProps> = ({ dateArray }) => {
             return (
               <Cell 
                 key={index} 
+                data-index={index}
                 style={{
                   position: 'absolute',
                   left: `${left}px`
@@ -57,6 +58,7 @@ const Calendar: React.FC<CalendarProps> = ({ dateArray }) => {
           return (
             <Cell
               key={index}
+              data-index={index}
               $type={type}
               className="dayColumn"
               style={{
