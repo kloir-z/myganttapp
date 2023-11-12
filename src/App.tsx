@@ -16,7 +16,7 @@ import throttle from 'lodash/throttle';
 function App() {
   const data = useSelector((state: RootState) => state.wbsData);
   const dispatch = useDispatch<AppDispatch>();
-  const [wbsWidth, setWbsWidth] = useState(650);
+  const [wbsWidth, setWbsWidth] = useState(350);
   const [dateRange, setDateRange] = useState({
     startDate: new Date('2023-09-01'),
     endDate: new Date('2024-10-05'),
@@ -139,13 +139,11 @@ function App() {
     const calendarElement = calendarRef.current;
     const gridElement = gridRef.current;
   
-    // WBSとグリッドのY軸スクロール同期
     if (wbsElement && gridElement) {
       wbsElement.addEventListener('scroll', () => handleVerticalScroll(wbsRef, gridRef));
       gridElement.addEventListener('scroll', () => handleVerticalScroll(gridRef, wbsRef));
     }
   
-    // カレンダーとグリッドのX軸スクロール同期
     if (calendarElement && gridElement) {
       calendarElement.addEventListener('scroll', () => handleHorizontalScroll(calendarRef, gridRef));
       gridElement.addEventListener('scroll', () => handleHorizontalScroll(gridRef, calendarRef));
@@ -162,14 +160,14 @@ function App() {
       }
     };
   }, []);
-  
+
   return (
     <div style={{position: 'relative'}}>
       <div style={{position: 'absolute', left: `${wbsWidth}px`, width: `calc(100vw - ${wbsWidth}px)`, height: '100vh', overflow: 'hidden'}} ref={calendarRef}>
         <Calendar dateArray={dateArray} />
         <GridVertical dateArray={dateArray} />
       </div>
-      <div style={{position: 'absolute', top: '41px', width: `${wbsWidth}px`, height: `calc(100vh - 41px)`, overflow: 'hidden'}} ref={wbsRef}>
+      <div style={{position: 'absolute', top: '42px', width: `${wbsWidth}px`, height: `calc(100vh - 41px)`, overflow: 'hidden'}} ref={wbsRef}>
         {Object.entries(data).map(([id, entry], index) => {
           const topPosition = index * 21;
           if (entry.rowType === 'Chart') {
@@ -177,7 +175,6 @@ function App() {
               <div
                 key={id}
                 style={{
-                  display: 'flex',
                   position: 'absolute',
                   top: `${topPosition}px`,
                 }}
@@ -197,7 +194,7 @@ function App() {
                   backgroundColor: '#ddedff',
                   width: `${calendarWidth}px`,
                   position: 'absolute',
-                  top: `${topPosition}px`, // ここで縦位置を設定
+                  top: `${topPosition}px`,
                 }}
               >
                 <Row key={id} style={{ backgroundColor: '#ddedff', width: `${calendarWidth}px`}}>
@@ -217,7 +214,7 @@ function App() {
                 style={{
                   width: `${calendarWidth}px`,
                   position: 'absolute',
-                  top: `${topPosition}px`, // ここで縦位置を設定
+                  top: `${topPosition}px`,
                 }}
               >
                 <Row key={index} style={{ width: `${calendarWidth}px`}}>
@@ -233,62 +230,61 @@ function App() {
           return null;
         })}
       </div>
-      <div style={{position: 'absolute',top: '41px', left: `${wbsWidth}px`, width: `calc(100vw - ${wbsWidth}px)`, height: `calc(100vh - 41px)`, overflow: 'scroll'}} ref={gridRef}>
-      {Object.entries(data).map(([id, entry], index) => {
-        const topPosition = index * 21;
-        if (entry.rowType === 'Chart') {
-          return (
-            <div
-              key={id}
-              style={{
-                display: 'flex',
-                position: 'absolute',
-                top: `${topPosition}px`
-              }}
-            >
-              <GridHorizontal
-                entry={entry as ChartRow}
-                index={index}
-                dateArray={dateArray}
-                wbsWidth={wbsWidth}
-                gridRef={gridRef}
-              />
-            </div>
-          );
-        } else if (entry.rowType === 'Separator') {
-          return (
-            <div
-              key={id}
-              style={{
-                backgroundColor: '#ddedff',
-                position: 'absolute',
-                top: `${topPosition}px`, // ここで縦位置を設定
-              }}
-            >
-              <Row key={id} style={{ backgroundColor: '#ddedff', width: `${calendarWidth}px`}}/>
-            </div>
-          );
-        } else if (entry.rowType === 'Event') {
-          return (
-            <div
-              key={id}
-              style={{
-                position: 'absolute',
-                top: `${topPosition}px`, // ここで縦位置を設定
-              }}
-            >
-              <Row key={index} style={{ width: `${calendarWidth}px`}}>
-                <InputBox
-                  value={entry.displayName}
-                  onChange={(e) => updateField(id, 'displayName', e.target.value)}
-                  $inputSize={entry.displayName.length}
+      <div style={{position: 'absolute',top: '42px', left: `${wbsWidth}px`, width: `calc(100vw - ${wbsWidth}px)`, height: `calc(100vh - 41px)`, overflow: 'scroll'}} ref={gridRef}>
+        {Object.entries(data).map(([id, entry], index) => {
+          const topPosition = index * 21;
+          if (entry.rowType === 'Chart') {
+            return (
+              <div
+                key={id}
+                style={{
+                  position: 'absolute',
+                  top: `${topPosition}px`
+                }}
+              >
+                <GridHorizontal
+                  entry={entry as ChartRow}
+                  index={index}
+                  dateArray={dateArray}
+                  wbsWidth={wbsWidth}
+                  gridRef={gridRef}
                 />
-              </Row>
-            </div>
-          );
-        }
-        return null;
-      })}
+              </div>
+            );
+          } else if (entry.rowType === 'Separator') {
+            return (
+              <div
+                key={id}
+                style={{
+                  backgroundColor: '#ddedff',
+                  position: 'absolute',
+                  top: `${topPosition}px`,
+                }}
+              >
+                <Row key={id} style={{ backgroundColor: '#ddedff', width: `${calendarWidth}px`}}/>
+              </div>
+            );
+          } else if (entry.rowType === 'Event') {
+            return (
+              <div
+                key={id}
+                style={{
+                  position: 'absolute',
+                  top: `${topPosition}px`,
+                }}
+              >
+                <Row key={index} style={{ width: `${calendarWidth}px`}}>
+                  <InputBox
+                    value={entry.displayName}
+                    onChange={(e) => updateField(id, 'displayName', e.target.value)}
+                    $inputSize={entry.displayName.length}
+                  />
+                </Row>
+              </div>
+            );
+          }
+          return null;
+        })}
       </div>
     </div>
   );

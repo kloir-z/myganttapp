@@ -3,11 +3,6 @@ import { WBSData, ChartRow, SeparatorRow, EventRow } from '../types/DataTypes';
 
 export const testData: WBSData[] = [
   {
-    rowType: "Separator",
-    comment: "Start of ProjectA",
-    displayName: "Start of ProjectA"
-  } as SeparatorRow,
-  {
     rowType: "Chart",
     majorCategory: "ProjectA",
     middleCategory: "Phase1",

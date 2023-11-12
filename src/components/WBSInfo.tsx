@@ -117,7 +117,7 @@ const WBSInfo: React.FC<ChartRowProps> = ({ entry, index, wbsWidth }) => {
       <Row
         key={index}
         className="wbsRow"
-        style={{height: '20px', width: `${wbsWidth}px`}}
+        style={{width: `${wbsWidth}px`}}
       >
         <InputBox value={majorCategory} onChange={(e) => setMajorCategory(e.target.value)} $inputSize={majorCategory.length} />
         <InputBox value={middleCategory} onChange={(e) => setMiddleCategory(e.target.value)} $inputSize={middleCategory.length} />

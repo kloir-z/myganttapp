@@ -9,6 +9,7 @@ export const RowContainer = styled.div`
 `;
 
 export const Row = styled.div`
+  box-sizing: border-box;
   display: flex;
   height: 21px;
   background: none;
@@ -52,21 +53,21 @@ interface CellProps {
 }
 
 export const Cell = styled.div<CellProps>`
+  box-sizing: border-box;
   font-size: 0.8rem;
   text-align: center;
-  width: ${props => (props.$width ? `${props.$width}px` : '21px')};
-  height: 21px;
-  height: ${props => (props.$isActual ? '4px' : '21px')};
-  border-left: 1px solid ${props => (props.$isPlanned ? 'transparent' : '#00000016')};
+  width: ${props => (props.$width ? `${props.$width}px` : '21.1px')};
+  height: ${props => (props.$isActual ? '21px' : '21px')};
+  border-left: ${props => ((props.$isPlanned || props.$isActual) ? 'none' : '1px solid #00000016')};
   background-color: ${props => {
-    let baseColor = '#ffffff';
+    let baseColor = '#ffffff00';
     if (props.$type === 'saturday') return '#cddeff';
     if (props.$type === 'sundayOrHoliday') return '#ffcaca';
     if (props.$isPlanned) {
       baseColor = props.$charge === 'vendor' ? '#74ff7451' : '#b05cff4d';
     }
     if (props.$isActual) {
-      baseColor = '#006eff49';
+      baseColor = '#00000024';
     }
     return baseColor;
   }};
@@ -81,11 +82,12 @@ export const Cell = styled.div<CellProps>`
 `;
 
 export const DisplayLabel = styled.label<CellProps>`
+  box-sizing: border-box;
   position: absolute;
   z-index: 1;
   left: 0px;
   background: none;
-  border: solid 1px transparent;
+  border: solid 1px #007bff49;
   overflow: visible;
   white-space: nowrap;
   top: 0px;
@@ -100,11 +102,12 @@ export const DisplayLabel = styled.label<CellProps>`
 `;
 
 export const InputBox = styled.input<{ $inputSize?: number }>`
+  box-sizing: border-box;
   font-size: 0.8rem;
   line-height: 16px;
   padding: 0px;
   background: none;
-  border: solid 1px #80808047;
+  border: solid 1px #007bff49;
   width: ${(props) => props.$inputSize ? props.$inputSize + "ch" : "20px"};
   min-width: ${(props) => props.$inputSize ? "80px" : "0"};
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;

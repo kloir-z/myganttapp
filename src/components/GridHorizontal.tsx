@@ -150,7 +150,7 @@ const GridHorizontal: React.FC<ChartRowProps> = ({ entry, index, dateArray, wbsW
           key={index}
           onDoubleClick={handleDoubleClick}
           className="wbsRow"
-          style={{height: '20px', width: `${calendarWidth}px`}}
+          style={{width: `${calendarWidth}px`}}
         >
           {plannedStartDate && plannedEndDate ? (() => {
               const startIndex = dateArray.findIndex(date => date >= plannedStartDate);
@@ -163,7 +163,7 @@ const GridHorizontal: React.FC<ChartRowProps> = ({ entry, index, dateArray, wbsW
                 return null;
               }
               if (startIndex !== -1 && endIndex !== -1) {
-                const width = (endIndex - startIndex + 1) * 21;
+                const width = ((endIndex - startIndex + 1) * 21)+0.3;
                 const leftPosition = startIndex * 21;
 
               return (
@@ -199,7 +199,7 @@ const GridHorizontal: React.FC<ChartRowProps> = ({ entry, index, dateArray, wbsW
 
             // startIndex と endIndex が有効範囲内にあるかチェックする
             if (startIndex !== -1 && endIndex !== -1) {
-              const width = (endIndex - startIndex + 1) * 21;
+              const width = ((endIndex - startIndex + 1) * 21)+0.3;
               const leftPosition = startIndex * 21;
 
               return (

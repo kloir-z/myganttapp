@@ -26,7 +26,7 @@ const Calendar: React.FC<CalendarProps> = ({ dateArray }) => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: `${calendarWidth}px` }}>
-      <Row style={{ borderBottom: 'none', backgroundColor: 'white'}}>
+      <Row style={{ borderBottom: 'none', background: 'none'}}>
         {dateArray.map((date, index) => {
           const month = date.getMonth();
           if (month !== previousMonth || index === 0) {
@@ -47,7 +47,7 @@ const Calendar: React.FC<CalendarProps> = ({ dateArray }) => {
           return null;
         })}
       </Row>
-      <Row>
+      <Row style={{ borderBottom: 'none', background: 'none'}}>
         {dateArray.map((date, index) => {
           let type = 'weekday';
           if (date.getDay() === 6) type = 'saturday';
@@ -63,7 +63,8 @@ const Calendar: React.FC<CalendarProps> = ({ dateArray }) => {
                 position: 'absolute',
                 left: `${left}px`,
                 height: '21px',
-                borderTop: '1px solid #80808047'
+                borderTop: '1px solid #00000016',
+                borderBottom: '1px solid #00000016',
               }}
             >
               {date.getDate()}

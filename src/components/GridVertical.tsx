@@ -10,7 +10,7 @@ interface CalendarProps {
 const GridVertical: React.FC<CalendarProps> = ({ dateArray }) => {
 
   return (
-    <Row>
+    <Row style={{height: '0px', borderBottom: 'none'}}>
       {dateArray.map((date, index) => {
         let type = 'weekday';
 
@@ -28,7 +28,6 @@ const GridVertical: React.FC<CalendarProps> = ({ dateArray }) => {
               top: '0px',
               left: `${left}px`,
               height: `calc(100vh - 41px)`,
-              borderTop: '1px solid #80808047'
             }}
           />
         );
