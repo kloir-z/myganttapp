@@ -12,7 +12,6 @@ interface ChartRowProps {
 }   
 
 const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, index, dateArray }) => {
-  const dispatch = useDispatch();
   const calendarWidth = dateArray.length * 21;
   const row = useSelector((state: RootState) => state.wbsData[entry.id]);
   const charge = (row && 'charge' in row) ? row.charge : '';
