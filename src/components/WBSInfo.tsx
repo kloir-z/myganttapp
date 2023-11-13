@@ -1,4 +1,4 @@
-import React, { useState, memo, useEffect } from 'react';
+import React, { useState, memo, useEffect, useCallback } from 'react';
 import { ChartRow } from '../types/DataTypes';
 import { Row, InputBox } from '../styles/GanttStyles';
 import DatePicker from "react-datepicker";
@@ -11,7 +11,7 @@ interface ChartRowProps {
   wbsWidth: number;
 }
 
-const WBSInfo: React.FC<ChartRowProps> = ({ entry, index, wbsWidth }) => {
+const WBSInfo: React.FC<ChartRowProps> = memo(({ entry, index, wbsWidth }) => {
   const dispatch = useDispatch();
   const [majorCategory, setMajorCategory] = useState(entry.majorCategory);
   const [middleCategory, setMiddleCategory] = useState(entry.middleCategory);
@@ -64,11 +64,11 @@ const WBSInfo: React.FC<ChartRowProps> = ({ entry, index, wbsWidth }) => {
   const actualStartDate = actualStartDateString ? new Date(actualStartDateString) : null;
   const actualEndDate = actualEndDateString ? new Date(actualEndDateString) : null;
   
-  const handleChargeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChargeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     dispatch(setCharge({ id: entry.id, charge: e.target.value }));
-  };
+  }, []);
 
-  const handlePlannedDateChange = (dates: [Date | null, Date | null]) => {
+  const handlePlannedDateChange = useCallback((dates: [Date | null, Date | null]) => {
     const [start, end] = dates;
   
     // タイムゾーンのオフセットを取得（ミリ秒単位）
@@ -88,9 +88,9 @@ const WBSInfo: React.FC<ChartRowProps> = ({ entry, index, wbsWidth }) => {
     if (end) {
       dispatch(setPlannedEndDate({ id: entry.id, endDate: endIsoString }));
     }
-  };
+  }, []);
 
-  const handleActualDateChange = (dates: [Date | null, Date | null]) => {
+  const handleActualDateChange = useCallback((dates: [Date | null, Date | null]) => {
     const [start, end] = dates;
   
     // タイムゾーンのオフセットを取得（ミリ秒単位）
@@ -110,14 +110,13 @@ const WBSInfo: React.FC<ChartRowProps> = ({ entry, index, wbsWidth }) => {
     if (end) {
       dispatch(setActualEndDate({ id: entry.id, endDate: endIsoString }));
     }
-  };
+  }, []);
 
   return (
     <>
       <Row
         key={index}
         data-index={index}
-        className="wbsRow"
         style={{width: `${wbsWidth}px`}}
       >
         <InputBox value={majorCategory} onChange={(e) => setMajorCategory(e.target.value)} $inputSize={majorCategory.length} />
@@ -147,6 +146,6 @@ const WBSInfo: React.FC<ChartRowProps> = ({ entry, index, wbsWidth }) => {
       </Row>
     </>
   );
-};
+});
 
 export default memo(WBSInfo);

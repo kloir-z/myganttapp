@@ -19,7 +19,7 @@ export const Row = styled.div`
   align-items: center;
   &.hover-effect {
     border-bottom: solid 1px #001aff83;
-  }
+  };
 `;
 
 type RGB = {

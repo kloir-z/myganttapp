@@ -3,26 +3,21 @@ import { ChartRow } from '../types/DataTypes';
 import { Row } from '../styles/GanttStyles';
 import { MemoizedCell } from './GanttCell';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState, setPlannedStartDate, setPlannedEndDate, setActualStartDate, setActualEndDate, setCharge, setDisplayName} from '../reduxComponents/store';
-import { scheduleEditSlice, startEditingActualDate, startEditingPlannedDate, stopEditingPlannedDate, stopEditingActualDate } from '../reduxComponents/scheduleEditSlice';
+import { RootState} from '../reduxComponents/store';
 
 interface ChartRowProps {
   entry: ChartRow;
   index: number;
   dateArray: Date[];
-  wbsWidth: number;
-  gridRef: React.RefObject<HTMLDivElement>;
 }   
 
-const GridHorizontal: React.FC<ChartRowProps> = ({ entry, index, dateArray, wbsWidth, gridRef }) => {
+const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, index, dateArray }) => {
   const dispatch = useDispatch();
-  // const [isEditing, setIsEditing] = useState(false);
-  // const [isEditActual, setIsEditActual] = useState(false);
   const calendarWidth = dateArray.length * 21;
   const row = useSelector((state: RootState) => state.wbsData[entry.id]);
   const charge = (row && 'charge' in row) ? row.charge : '';
   const displayName = row?.displayName ?? '';
-  
+
   const plannedStartDateString = useSelector((state: RootState) => {
     const row = state.wbsData[entry.id];
     if (row.rowType === 'Chart' || row.rowType === 'Event') {
@@ -63,37 +58,12 @@ const GridHorizontal: React.FC<ChartRowProps> = ({ entry, index, dateArray, wbsW
   const plannedEndDate = plannedEndDateString ? new Date(plannedEndDateString) : null;
   const actualStartDate = actualStartDateString ? new Date(actualStartDateString) : null;
   const actualEndDate = actualEndDateString ? new Date(actualEndDateString) : null;
-
-  const calculateDateFromX = (x: number) => {
-    const dateIndex = Math.floor(x / 21);
-    return dateArray[dateIndex];
-  };
-  
-  const handleDoubleClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    const relativeX = event.clientX - rect.left;
-    const newDate = calculateDateFromX(relativeX).toISOString().substring(0, 10);
-  
-    if (event.shiftKey) {
-      // 実績日編集の開始
-      dispatch(startEditingActualDate({ entryId: entry.id }));
-      dispatch(setActualStartDate({ id: entry.id, startDate: newDate }));
-      dispatch(setActualEndDate({ id: entry.id, endDate: newDate }));
-    } else {
-      // 予定日編集の開始
-      dispatch(startEditingPlannedDate({ entryId: entry.id }));
-      dispatch(setPlannedStartDate({ id: entry.id, startDate: newDate }));
-      dispatch(setPlannedEndDate({ id: entry.id, endDate: newDate }));
-    }
-  }, [dispatch, calculateDateFromX, entry.id]);
   
   return (
     <>
         <Row
           key={index}
           data-index={index}
-          onDoubleClick={handleDoubleClick}
-          className="wbsRow"
           style={{width: `${calendarWidth}px`}}
         >
           {plannedStartDate && plannedEndDate ? (() => {
@@ -166,6 +136,6 @@ const GridHorizontal: React.FC<ChartRowProps> = ({ entry, index, dateArray, wbsW
         </Row>
     </>
   );
-};
+});
 
 export default memo(GridHorizontal);

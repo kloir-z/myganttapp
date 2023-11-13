@@ -2,7 +2,7 @@ import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { WBSData, ChartRow } from '../types/DataTypes';
 import { testData } from '../testdata/testdata';
 import { v4 as uuidv4 } from 'uuid';
-import scheduleEditSlice from './scheduleEditSlice';
+import hoverSlice from './hoverSlice';
 
 const assignIds = (data: WBSData[]): { [id: string]: WBSData } => {
   const dataWithIds: { [id: string]: WBSData } = {};
@@ -75,7 +75,7 @@ export const {
 export const store = configureStore({
   reducer: {
     wbsData: wbsDataSlice.reducer,
-    scheduleEdit: scheduleEditSlice,
+    hover: hoverSlice,
   },
 });
 

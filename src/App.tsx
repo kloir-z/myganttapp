@@ -11,12 +11,16 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch, setData, setPlannedStartDate, setPlannedEndDate, setActualStartDate, setActualEndDate } from './reduxComponents/store';
 import { generateDates } from './utils/CalendarUtil';
 import GridVertical from './components/GridVertical';
-import throttle from 'lodash/throttle';
-import { scheduleEditSlice, startEditingActualDate, startEditingPlannedDate, stopEditingPlannedDate, stopEditingActualDate } from './reduxComponents/scheduleEditSlice';
+import { setHoveredDayColumnIndex, setHoveredWbsRowIndex } from './reduxComponents/hoverSlice';
+
+type EditingInfo = {
+  id: string | null;
+  mode: 'planned' | 'actual' | null;
+};
 
 function App() {
   const data = useSelector((state: RootState) => state.wbsData);
-  const editingState = useSelector((state: RootState) => state.scheduleEdit);
+  const [editingChartRow, setEditingChartRow] = useState<EditingInfo>({ id: null, mode: null });
   const dispatch = useDispatch<AppDispatch>();
   const [wbsWidth, setWbsWidth] = useState(350);
   const [dateRange, setDateRange] = useState({
@@ -24,6 +28,7 @@ function App() {
     endDate: new Date('2024-10-05'),
   });
   const [dateArray, setDateArray] = useState(generateDates(dateRange.startDate, dateRange.endDate));
+  const hoveredRowIndex = useSelector((state: RootState) => state.hover.hoveredWbsRowIndex);
 
   const wbsRef = useRef<HTMLDivElement>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
@@ -42,132 +47,99 @@ function App() {
     }
   };
 
-  //ここはuseCallbackを使用すると劇的にパフォーマンスが改善する。
-  //Calendarのdivが横軸のチャートのdivの背面にあり、hoverが到達しないため以下の方法をとった。
   const lastMousePosition = useRef({ x: 0, y: 0 });
-  const lastDayColumnIndexRef1 = useRef<number | null>(null);
-  const lastDayColumnIndexRef2 = useRef<number | null>(null);
-  const lastWbsRowIndexRef1 = useRef<number | null>(null);
-  const lastWbsRowIndexRef2 = useRef<number | null>(null);
-  
+
   const handleMouseMove = useCallback((event: MouseEvent) => {
-    const { clientX, clientY } = event;
-    const newX = Math.floor(clientX / 21);
-    const newY = Math.floor(clientY / 21);
-
-    // document.querySelectorAll('.dayColumn.hover-effect, .wbsRow.hover-effect').forEach((element) => {
-    //   element.classList.remove('hover-effect');
-    // });
+    if (gridRef.current) {
+      const gridOffset = gridRef.current.getBoundingClientRect();
+      const scrollLeft = gridRef.current.scrollLeft;
+      const scrollTop = gridRef.current.scrollTop;
   
-    const applyHoverEffectToTopElement = (x: number, y: number) => {
-      const elements = document.elementsFromPoint(x, y);  
-      const topMostDayColumn = elements.find((element) =>
-        element instanceof HTMLElement && element.matches('.dayColumn')
-      ) as HTMLElement | undefined;
+      const relativeX = event.clientX - gridOffset.left + scrollLeft;
+      const relativeY = event.clientY - gridOffset.top + scrollTop;
   
-      const topMostWbsRow = elements.find((element) =>
-        element instanceof HTMLElement && element.matches('.wbsRow')
-      ) as HTMLElement | undefined;
-
-      if (topMostDayColumn) {
-        const currentColumnIndex = topMostDayColumn.dataset.index ? parseInt(topMostDayColumn.dataset.index, 10) : null;
-        if (lastDayColumnIndexRef1.current !== currentColumnIndex) {
-          if (lastDayColumnIndexRef1.current !== null) {
-            // 前回のhover-effectを削除
-            document.querySelectorAll('.dayColumn.hover-effect').forEach((element) => {
-              element.classList.remove('hover-effect');
-            });
-          }
-          topMostDayColumn.classList.add('hover-effect');
-          lastDayColumnIndexRef1.current = currentColumnIndex;
-        }
-        if (currentColumnIndex === null || currentColumnIndex < 0 || currentColumnIndex >= dateArray.length) {
-
-        } else {
-
-          const newDate = dateArray[currentColumnIndex].toISOString().substring(0, 10);
-
-          if (editingState.isEditingActualDate && editingState.entryId) {
-            dispatch(setActualEndDate({ id: editingState.entryId, endDate: newDate }));
-
-          } else if (editingState.isEditingPlannedDate && editingState.entryId) {
-            dispatch(setPlannedEndDate({ id: editingState.entryId, endDate: newDate }));
-            
-          }
+      const newX = Math.floor(relativeX / 21);
+      const newY = Math.floor(relativeY / 21);
+  
+      if (lastMousePosition.current.x !== newX || lastMousePosition.current.y !== newY) {
+        dispatch(setHoveredDayColumnIndex(newX));
+        dispatch(setHoveredWbsRowIndex(newY));
+        lastMousePosition.current = { x: newX, y: newY };
+      }
+      if (editingChartRow.id) {
+        if (editingChartRow.mode === 'planned') {
+          const newDate = dateArray[newX].toISOString().substring(0, 10);
+          dispatch(setPlannedEndDate({ id: editingChartRow.id, endDate: newDate }));
+        } else if (editingChartRow.mode === 'actual') {
+          const newDate = dateArray[newX].toISOString().substring(0, 10);
+          dispatch(setActualEndDate({ id: editingChartRow.id, endDate: newDate }));
         }
       }
-  
-      if (topMostWbsRow) {
-        const currentRowIndex = topMostWbsRow.dataset.index ? parseInt(topMostWbsRow.dataset.index, 10) : null;
-        if (lastWbsRowIndexRef1.current !== currentRowIndex) {
-          if (lastWbsRowIndexRef1.current !== null) {
-            // 前回のhover-effectを削除
-            document.querySelectorAll('.wbsRow.hover-effect').forEach((element) => {
-              element.classList.remove('hover-effect');
-            });
-          }
-          topMostWbsRow.classList.add('hover-effect');
-          lastWbsRowIndexRef1.current = currentRowIndex;
-        }
-      }
-      
-    };
-    const applyHoverEffectToTopElement2 = (x: number, y: number) => {
-      const elements = document.elementsFromPoint(x, y);  
-      const topMostDayColumn = elements.find((element) =>
-        element instanceof HTMLElement && element.matches('.dayColumn')
-      ) as HTMLElement | undefined;
-
-      if (topMostDayColumn) {
-        const currentColumnIndex = topMostDayColumn.dataset.index ? parseInt(topMostDayColumn.dataset.index, 10) : null;
-        topMostDayColumn.classList.add('hover-effect');
-        lastDayColumnIndexRef2.current = currentColumnIndex;
-      }
-    };
-
-    const applyHoverEffectToTopElement3 = (x: number, y: number) => {
-      const elements = document.elementsFromPoint(x, y);  
-      const topMostWbsRow = elements.find((element) =>
-        element instanceof HTMLElement && element.matches('.wbsRow')
-      ) as HTMLElement | undefined;
-
-      if (topMostWbsRow) {
-        const currentRowIndex = topMostWbsRow.dataset.index ? parseInt(topMostWbsRow.dataset.index, 10) : null;
-        topMostWbsRow.classList.add('hover-effect');
-        lastWbsRowIndexRef2.current = currentRowIndex;
-      }
-      
-    };
-
-    const xDirection = newX > lastMousePosition.current.x ? 4 : (newX < lastMousePosition.current.x ? -4 : 0);
-    const yDirection = newY > lastMousePosition.current.y ? 4 : (newY < lastMousePosition.current.y ? -4 : 0);
-  
-    if ((clientX + xDirection) < wbsWidth) {
-      applyHoverEffectToTopElement((wbsWidth + 10), (clientY + yDirection));
-    } else {
-      applyHoverEffectToTopElement((clientX + xDirection), (clientY + yDirection));
     }
-    applyHoverEffectToTopElement2((clientX + xDirection), 30);
-    applyHoverEffectToTopElement3(30, (clientY + yDirection));
-
-    lastMousePosition.current = { x: newX, y: newY };
-  }, [editingState]);
-
-  const handleMouseUp = useCallback(() => {
-    if (editingState.isEditingPlannedDate || editingState.isEditingActualDate) {
-      dispatch(stopEditingPlannedDate());
-      dispatch(stopEditingActualDate());
-    }
-  }, [editingState, lastDayColumnIndexRef1, lastWbsRowIndexRef1, lastDayColumnIndexRef2, lastWbsRowIndexRef2]); 
+  }, [dispatch, editingChartRow]);
 
   useEffect(() => {
     document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [handleMouseMove, handleMouseUp]);
+  }, [handleMouseMove]);
+
+  const handleDoubleClick = useCallback((event: MouseEvent) => {
+    if (gridRef.current) {
+      const gridOffset = gridRef.current.getBoundingClientRect();
+      const scrollLeft = gridRef.current.scrollLeft;
+      const scrollTop = gridRef.current.scrollTop;
+  
+      const relativeX = event.clientX - gridOffset.left + scrollLeft;
+      const relativeY = event.clientY - gridOffset.top + scrollTop;
+  
+      const newX = Math.floor(relativeX / 21);
+      const newY = Math.floor(relativeY / 21);
+  
+      const rowIds = Object.keys(data);
+      const chartRowId = newY < rowIds.length ? rowIds[newY] : null;
+      const newDate = dateArray[newX].toISOString().substring(0, 10);
+    
+      if (chartRowId) {
+        if (event.shiftKey) {
+          dispatch(setActualStartDate({ id: chartRowId, startDate: newDate }));
+          dispatch(setActualEndDate({ id: chartRowId, endDate: newDate }));
+          setEditingChartRow({ id: chartRowId, mode: 'actual' });
+        } else {
+          dispatch(setPlannedStartDate({ id: chartRowId, startDate: newDate }));
+          dispatch(setPlannedEndDate({ id: chartRowId, endDate: newDate }));
+          setEditingChartRow({ id: chartRowId, mode: 'planned' });
+        }
+      }
+    }
+  }, [data, setEditingChartRow]);
+
+  useEffect(() => {
+    const gridElement = gridRef.current;
+    if (gridElement) {
+      gridElement.addEventListener('dblclick', handleDoubleClick);
+      return () => {
+        gridElement.removeEventListener('dblclick', handleDoubleClick);
+      };
+    }
+  }, [handleDoubleClick]);  
+
+  const handleGridClick = useCallback(() => {
+    if (editingChartRow && editingChartRow.id) {
+      setEditingChartRow({ id: null, mode: null });
+    }
+  }, [editingChartRow, setEditingChartRow]);
+  
+  useEffect(() => {
+    const gridElement = gridRef.current;
+    if (gridElement) {
+      gridElement.addEventListener('click', handleGridClick);
+      return () => {
+        gridElement.removeEventListener('click', handleGridClick);
+      };
+    }
+  }, [handleGridClick]);
   
   const handleKeyPress = useCallback((event: KeyboardEvent) => {
     if (event.key === 'h' || event.key === 'l') {
@@ -240,28 +212,30 @@ function App() {
   return (
     <div style={{position: 'fixed', left: '30px'}}>
     <div style={{position: 'relative'}}>
-      <div style={{position: 'absolute', left: `${wbsWidth}px`, width: `calc(100vw - ${wbsWidth}px)`, height: '100vh', overflow: 'hidden'}} ref={calendarRef}>
+      <div style={{position: 'absolute', left: `${wbsWidth}px`, width: `calc(100vw - 30px - ${wbsWidth}px)`, height: '100vh', overflow: 'hidden'}} ref={calendarRef}>
         <Calendar dateArray={dateArray} />
         <GridVertical dateArray={dateArray} />
       </div>
       <div style={{position: 'absolute', top: '42px', width: `${wbsWidth}px`, height: `calc(100vh - 41px)`, overflowX: 'scroll', overflowY: 'hidden'}} ref={wbsRef}>
         {Object.entries(data).map(([id, entry], index) => {
           const topPosition = index * 21;
+          const isHovered = index === hoveredRowIndex;
           if (entry.rowType === 'Chart') {
             return (
-              <div
+              <Row
                 key={id}
                 style={{
                   position: 'absolute',
                   top: `${topPosition}px`,
                 }}
+                className={`wbsRow ${isHovered ? 'hover-effect' : ''}`}
               >
                 <WBSInfo
                   entry={entry as ChartRow}
                   index={index}
                   wbsWidth={wbsWidth}
                 />
-              </div>
+              </Row>
             );
           } else if (entry.rowType === 'Separator') {
             return (
@@ -307,26 +281,26 @@ function App() {
           return null;
         })}
       </div>
-      <div style={{position: 'absolute',top: '42px', left: `${wbsWidth}px`, width: `calc(100vw - ${wbsWidth}px)`, height: `calc(100vh - 41px)`, overflow: 'scroll'}} ref={gridRef}>
+      <div style={{position: 'absolute',top: '42px', left: `${wbsWidth}px`, width: `calc(100vw - 30px - ${wbsWidth}px)`, height: `calc(100vh - 41px)`, overflow: 'scroll'}} ref={gridRef}>
         {Object.entries(data).map(([id, entry], index) => {
           const topPosition = index * 21;
+          const isHovered = index === hoveredRowIndex;
           if (entry.rowType === 'Chart') {
             return (
-              <div
+              <Row
                 key={id}
                 style={{
                   position: 'absolute',
                   top: `${topPosition}px`
                 }}
+                className={`wbsRow ${isHovered ? 'hover-effect' : ''}`}
               >
                 <GridHorizontal
                   entry={entry as ChartRow}
                   index={index}
                   dateArray={dateArray}
-                  wbsWidth={wbsWidth}
-                  gridRef={gridRef}
                 />
-              </div>
+              </Row>
             );
           } else if (entry.rowType === 'Separator') {
             return (

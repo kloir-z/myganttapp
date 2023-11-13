@@ -1,15 +1,18 @@
 // Calendar.tsx
-import React, {useState,useEffect} from 'react';
+import React, {useState, memo, useEffect} from 'react';
 import { isHoliday } from '../utils/CalendarUtil';
 import { Row, Cell } from '../styles/GanttStyles';
+import { useSelector } from 'react-redux';
+import { RootState } from '../reduxComponents/store';
 
 interface CalendarProps {
   dateArray: Date[];
 };
 
-const Calendar: React.FC<CalendarProps> = ({ dateArray }) => {
+const Calendar: React.FC<CalendarProps> = memo(({ dateArray }) => {
   let previousMonth = dateArray[0].getMonth();
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const hoveredColumnIndex = useSelector((state: RootState) => state.hover.hoveredDayColumnIndex);
 
   useEffect(() => {
     const handleResize = () => {
@@ -54,13 +57,14 @@ const Calendar: React.FC<CalendarProps> = ({ dateArray }) => {
           if (date.getDay() === 6) type = 'saturday';
           if (date.getDay() === 0 || isHoliday(date)) type = 'sundayOrHoliday';
           const left = 21 * index;
+          const isHovered = index === hoveredColumnIndex;
 
           return (
             <Cell
               key={index}
               data-index={index}
               $type={type}
-              className="dayColumn"
+              className={`dayColumn ${isHovered ? 'hover-effect' : ''}`}
               style={{
                 position: 'absolute',
                 left: `${left}px`,
@@ -76,6 +80,6 @@ const Calendar: React.FC<CalendarProps> = ({ dateArray }) => {
       </Row>
     </div>
   );
-};
+});
 
-export default Calendar;
+export default memo(Calendar);
