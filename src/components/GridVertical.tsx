@@ -1,7 +1,7 @@
 // GridVertial.tsx
 import React, { memo } from 'react';
 import { isHoliday } from '../utils/CalendarUtil';
-import { Row, Cell } from '../styles/GanttStyles';
+import { GanttRow, Cell } from '../styles/GanttStyles';
 import { useSelector } from 'react-redux';
 import { RootState } from '../reduxComponents/store';
 
@@ -13,7 +13,7 @@ const GridVertical: React.FC<CalendarProps> = memo(({ dateArray }) => {
   const hoveredColumnIndex = useSelector((state: RootState) => state.hover.hoveredDayColumnIndex);
 
   return (
-    <Row style={{height: '0px', borderBottom: 'none'}}>
+    <GanttRow style={{height: '0px', borderBottom: 'none'}}>
       {dateArray.map((date, index) => {
         let type = 'weekday';
 
@@ -37,7 +37,7 @@ const GridVertical: React.FC<CalendarProps> = memo(({ dateArray }) => {
           />
         );
       })}
-    </Row>
+    </GanttRow>
   );
 });
 

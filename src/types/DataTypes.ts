@@ -2,10 +2,10 @@
 export type RowType = "Chart" | "Separator" | "Event";
 
 export interface BaseRow {
+  no: number;
   id: string;
   rowType: RowType;
   displayName: string;
-  isChanged?: boolean;
 }
 
 export interface ChartRow extends BaseRow {
@@ -17,7 +17,7 @@ export interface ChartRow extends BaseRow {
   charge: string;
   plannedStartDate: string;
   plannedEndDate: string;
-  estimatedDaysRequired: number;
+  estimatedDaysRequired: string,
   actualStartDate: string;
   actualEndDate: string;
   comment: string;
@@ -32,7 +32,7 @@ export interface EventData {
   displayName: string;
   plannedStartDate: string;
   plannedEndDate: string;
-  estimatedDaysRequired: number;
+  estimatedDaysRequired: "5",
   actualStartDate: string;
   actualEndDate: string;
   comment: string;

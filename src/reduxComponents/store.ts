@@ -5,12 +5,12 @@ import { v4 as uuidv4 } from 'uuid';
 import hoverSlice from './hoverSlice';
 
 const assignIds = (data: WBSData[]): { [id: string]: WBSData } => {
-  const dataWithIds: { [id: string]: WBSData } = {};
-  data.forEach((row) => {
+  const dataWithIdsAndNos: { [id: string]: WBSData } = {};
+  data.forEach((row, index) => {
     const id = uuidv4();
-    dataWithIds[id] = { ...row, id };
+    dataWithIdsAndNos[id] = { ...row, id, no: index + 1 };
   });
-  return dataWithIds;
+  return dataWithIdsAndNos;
 };
 
 const initialState: { [id: string]: WBSData } = assignIds(testData);
@@ -46,12 +46,6 @@ export const wbsDataSlice = createSlice({
         (state[id] as ChartRow).actualEndDate = endDate;
       }
     },
-    setCharge: (state, action: PayloadAction<{ id: string; charge: string }>) => {
-      const { id, charge } = action.payload;
-      if (state[id] && state[id].rowType === 'Chart') {
-        (state[id] as ChartRow).charge = charge;
-      }
-    },
     setDisplayName: (state, action: PayloadAction<{ id: string; displayName: string }>) => {
       const { id, displayName } = action.payload;
       if (state[id]) {
@@ -68,7 +62,6 @@ export const {
   setPlannedEndDate, 
   setActualStartDate, 
   setActualEndDate,
-  setCharge,
   setDisplayName 
 } = wbsDataSlice.actions;
 

@@ -1,8 +1,8 @@
 // App.tsx
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Calendar from './components/Calendar';
-import { ChartRow  } from './types/DataTypes';
-import { Row, InputBox } from './styles/GanttStyles';
+import { WBSData, ChartRow  } from './types/DataTypes';
+import { GanttRow, InputBox } from './styles/GanttStyles';
 import "react-datepicker/dist/react-datepicker.css"; 
 import './css/DatePicker.css'
 import WBSInfo from './components/WBSInfo';
@@ -140,35 +140,6 @@ function App() {
       };
     }
   }, [handleGridClick]);
-  
-  const handleKeyPress = useCallback((event: KeyboardEvent) => {
-    if (event.key === 'h' || event.key === 'l') {
-      const moveDay = 1000 * 60 * 60 * 24 * 1;
-      setDateRange(prevRange => {
-        const newStartDate = new Date(
-          event.key === 'h'
-            ? prevRange.startDate.getTime() - moveDay
-            : prevRange.startDate.getTime() + moveDay
-        );
-        const newEndDate = new Date(
-          event.key === 'l'
-            ? prevRange.endDate.getTime() + moveDay
-            : prevRange.endDate.getTime() - moveDay
-        );
-        return {
-          startDate: newStartDate,
-          endDate: newEndDate,
-        };
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyPress);
-    return () => {
-      window.removeEventListener('keydown', handleKeyPress);
-    };
-  }, [handleKeyPress]);
 
   useEffect(() => {
     const handleVerticalScroll = (sourceRef: React.RefObject<HTMLDivElement>, targetRef: React.RefObject<HTMLDivElement>) => {
@@ -210,76 +181,15 @@ function App() {
   }, []);
 
   return (
+    
     <div style={{position: 'fixed', left: '30px'}}>
     <div style={{position: 'relative'}}>
       <div style={{position: 'absolute', left: `${wbsWidth}px`, width: `calc(100vw - 30px - ${wbsWidth}px)`, height: '100vh', overflow: 'hidden'}} ref={calendarRef}>
         <Calendar dateArray={dateArray} />
         <GridVertical dateArray={dateArray} />
       </div>
-      <div style={{position: 'absolute', top: '42px', width: `${wbsWidth}px`, height: `calc(100vh - 41px)`, overflowX: 'scroll', overflowY: 'hidden'}} ref={wbsRef}>
-        {Object.entries(data).map(([id, entry], index) => {
-          const topPosition = index * 21;
-          const isHovered = index === hoveredRowIndex;
-          if (entry.rowType === 'Chart') {
-            return (
-              <Row
-                key={id}
-                style={{
-                  position: 'absolute',
-                  top: `${topPosition}px`,
-                }}
-                className={`wbsRow ${isHovered ? 'hover-effect' : ''}`}
-              >
-                <WBSInfo
-                  entry={entry as ChartRow}
-                  index={index}
-                  wbsWidth={wbsWidth}
-                />
-              </Row>
-            );
-          } else if (entry.rowType === 'Separator') {
-            return (
-              <div
-                key={id}
-                style={{
-                  backgroundColor: '#ddedff',
-                  width: `${wbsWidth}px`,
-                  position: 'absolute',
-                  top: `${topPosition}px`,
-                }}
-              >
-                <Row key={id} style={{ backgroundColor: '#ddedff', width: `${wbsWidth}px`}}>
-                  <InputBox
-                    style={{background: 'transparent'}}
-                    value={entry.displayName}
-                    onChange={(e) => updateField(id, 'displayName', e.target.value)}
-                    $inputSize={entry.displayName.length}
-                  />
-                </Row>
-              </div>
-            );
-          } else if (entry.rowType === 'Event') {
-            return (
-              <div
-                key={id}
-                style={{
-                  width: `${wbsWidth}px`,
-                  position: 'absolute',
-                  top: `${topPosition}px`,
-                }}
-              >
-                <Row key={index} style={{ width: `${wbsWidth}px`}}>
-                  <InputBox
-                    value={entry.displayName}
-                    onChange={(e) => updateField(id, 'displayName', e.target.value)}
-                    $inputSize={entry.displayName.length}
-                  />
-                </Row>
-              </div>
-            );
-          }
-          return null;
-        })}
+      <div style={{position: 'absolute', top: '21px', width: `${wbsWidth}px`, height: `calc(100vh - 21px)`, overflowX: 'scroll', overflowY: 'hidden'}} ref={wbsRef}>
+        <WBSInfo />
       </div>
       <div style={{position: 'absolute',top: '42px', left: `${wbsWidth}px`, width: `calc(100vw - 30px - ${wbsWidth}px)`, height: `calc(100vh - 41px)`, overflow: 'scroll'}} ref={gridRef}>
         {Object.entries(data).map(([id, entry], index) => {
@@ -287,11 +197,12 @@ function App() {
           const isHovered = index === hoveredRowIndex;
           if (entry.rowType === 'Chart') {
             return (
-              <Row
+              <GanttRow
                 key={id}
                 style={{
                   position: 'absolute',
-                  top: `${topPosition}px`
+                  top: `${topPosition}px`,
+                  width: `${calendarWidth}px`
                 }}
                 className={`wbsRow ${isHovered ? 'hover-effect' : ''}`}
               >
@@ -300,7 +211,7 @@ function App() {
                   index={index}
                   dateArray={dateArray}
                 />
-              </Row>
+              </GanttRow>
             );
           } else if (entry.rowType === 'Separator') {
             return (
@@ -312,7 +223,7 @@ function App() {
                   top: `${topPosition}px`,
                 }}
               >
-                <Row key={id} style={{ backgroundColor: '#ddedff', width: `${calendarWidth}px`}}/>
+                <GanttRow key={id} style={{ backgroundColor: '#ddedff', width: `${calendarWidth}px`}}/>
               </div>
             );
           } else if (entry.rowType === 'Event') {
@@ -324,8 +235,8 @@ function App() {
                   top: `${topPosition}px`,
                 }}
               >
-                <Row key={index} style={{ width: `${calendarWidth}px`}}>
-                </Row>
+                <GanttRow key={index} style={{ width: `${calendarWidth}px`}}>
+                </GanttRow>
               </div>
             );
           }

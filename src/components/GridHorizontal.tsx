@@ -1,7 +1,7 @@
 import React, { useState, memo, useEffect, useCallback, useRef } from 'react';
 import { ChartRow } from '../types/DataTypes';
-import { Row } from '../styles/GanttStyles';
-import { MemoizedCell } from './GanttCell';
+import { GanttRow } from '../styles/GanttStyles';
+import { ChartCell } from './ChartCell';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState} from '../reduxComponents/store';
 
@@ -12,7 +12,6 @@ interface ChartRowProps {
 }   
 
 const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, index, dateArray }) => {
-  const calendarWidth = dateArray.length * 21;
   const row = useSelector((state: RootState) => state.wbsData[entry.id]);
   const charge = (row && 'charge' in row) ? row.charge : '';
   const displayName = row?.displayName ?? '';
@@ -60,79 +59,74 @@ const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, index, dateArray 
   
   return (
     <>
-        <Row
-          key={index}
-          data-index={index}
-          style={{width: `${calendarWidth}px`}}
-        >
-          {plannedStartDate && plannedEndDate ? (() => {
-              const startIndex = dateArray.findIndex(date => date >= plannedStartDate);
-              let endIndex = dateArray.findIndex(date => date >= plannedEndDate);
-              endIndex = endIndex !== -1 ? endIndex : dateArray.length - 1; 
-              const dateArrayStart = dateArray[0];
-              const dateArrayEnd = dateArray[dateArray.length - 1];
-        
-              if (plannedStartDate > dateArrayEnd || plannedEndDate < dateArrayStart) {
-                return null;
-              }
-              if (startIndex !== -1 && endIndex !== -1) {
-                const width = ((endIndex - startIndex + 1) * 21)+0.3;
-                const leftPosition = startIndex * 21;
+      {actualStartDate && actualEndDate ? (() => {
+        const startIndex = dateArray.findIndex(date => date >= actualStartDate);
+        let endIndex = dateArray.findIndex(date => date >= actualEndDate);
+        endIndex = endIndex !== -1 ? endIndex : dateArray.length - 1;
+        const dateArrayStart = dateArray[0];
+        const dateArrayEnd = dateArray[dateArray.length - 1];
 
-              return (
-                <div
-                  style={{
-                    position: 'absolute',
-                    left: `${leftPosition}px`,
-                    width: `${width}px`
-                  }}
-                >
-                  <MemoizedCell
-                    isPlanned={true}
-                    charge={charge}
-                    displayName={displayName}
-                    width={width}
-                  />
-                </div>
-              );
-            }
+        // StartDateまたはEndDateがdateArray範囲外である場合はnullを返す
+        if (actualStartDate > dateArrayEnd || actualEndDate < dateArrayStart) {
+          return null;
+        }
+
+        // startIndex と endIndex が有効範囲内にあるかチェックする
+        if (startIndex !== -1 && endIndex !== -1) {
+          const width = ((endIndex - startIndex + 1) * 21)+0.3;
+          const leftPosition = startIndex * 21;
+
+          return (
+            <div
+              style={{
+                position: 'absolute',
+                left: `${leftPosition}px`,
+                width: `${width}px`
+              }}
+            >
+              <ChartCell
+                isActual={true}
+                width={width}
+              />
+            </div>
+          );
+        }
+        return null;
+      })() : null}
+      {plannedStartDate && plannedEndDate ? (() => {
+          const startIndex = dateArray.findIndex(date => date >= plannedStartDate);
+          let endIndex = dateArray.findIndex(date => date >= plannedEndDate);
+          endIndex = endIndex !== -1 ? endIndex : dateArray.length - 1; 
+          const dateArrayStart = dateArray[0];
+          const dateArrayEnd = dateArray[dateArray.length - 1];
+    
+          if (plannedStartDate > dateArrayEnd || plannedEndDate < dateArrayStart) {
             return null;
-          })() : null}
-          {actualStartDate && actualEndDate ? (() => {
-            const startIndex = dateArray.findIndex(date => date >= actualStartDate);
-            let endIndex = dateArray.findIndex(date => date >= actualEndDate);
-            endIndex = endIndex !== -1 ? endIndex : dateArray.length - 1;
-            const dateArrayStart = dateArray[0];
-            const dateArrayEnd = dateArray[dateArray.length - 1];
+          }
+          if (startIndex !== -1 && endIndex !== -1) {
+            const width = ((endIndex - startIndex + 1) * 21)+0.3;
+            const leftPosition = startIndex * 21;
 
-            // StartDateまたはEndDateがdateArray範囲外である場合はnullを返す
-            if (actualStartDate > dateArrayEnd || actualEndDate < dateArrayStart) {
-              return null;
-            }
-
-            // startIndex と endIndex が有効範囲内にあるかチェックする
-            if (startIndex !== -1 && endIndex !== -1) {
-              const width = ((endIndex - startIndex + 1) * 21)+0.3;
-              const leftPosition = startIndex * 21;
-
-              return (
-                <div
-                  style={{
-                    position: 'absolute',
-                    left: `${leftPosition}px`,
-                    width: `${width}px`
-                  }}
-                >
-                  <MemoizedCell
-                    isActual={true}
-                    width={width}
-                  />
-                </div>
-              );
-            }
-            return null;
-          })() : null}
-        </Row>
+          return (
+            <div
+              style={{
+                position: 'absolute',
+                left: `${leftPosition}px`,
+                width: `${width}px`
+              }}
+            >
+              <ChartCell
+                entryId={entry.id}
+                isPlanned={true}
+                charge={charge}
+                displayName={displayName}
+                width={width}
+              />
+            </div>
+          );
+        }
+        return null;
+      })() : null}
     </>
   );
 });

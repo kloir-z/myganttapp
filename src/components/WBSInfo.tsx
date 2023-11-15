@@ -1,150 +1,212 @@
 import React, { useState, memo, useEffect, useCallback } from 'react';
-import { ChartRow } from '../types/DataTypes';
-import { Row, InputBox } from '../styles/GanttStyles';
+import { WBSData, ChartRow, SeparatorRow, EventRow  } from '../types/DataTypes';
+import { GanttRow, InputBox } from '../styles/GanttStyles';
 import DatePicker from "react-datepicker";
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState, setPlannedStartDate, setPlannedEndDate, setActualStartDate, setActualEndDate, setCharge, setDisplayName} from '../reduxComponents/store';
+import { RootState, setData} from '../reduxComponents/store';
+import { ReactGrid, Column, Row, DefaultCellTypes, CellChange, HeaderCell, TextCell, DateCell, NumberCell, Id, MenuOption, SelectionMode } from "@silevis/reactgrid";
+import "@silevis/reactgrid/styles.css";
+import { v4 as uuidv4 } from 'uuid';
 
-interface ChartRowProps {
-  entry: ChartRow;
-  index: number;
-  wbsWidth: number;
-}
-
-const WBSInfo: React.FC<ChartRowProps> = memo(({ entry, index, wbsWidth }) => {
+const WBSInfo: React.FC = memo(({}) => {
   const dispatch = useDispatch();
-  const [majorCategory, setMajorCategory] = useState(entry.majorCategory);
-  const [middleCategory, setMiddleCategory] = useState(entry.middleCategory);
-  const [subCategory, setSubCategory] = useState(entry.subCategory);
-  const [task, setTask] = useState(entry.task);
-  const [estimatedDaysRequired, setEstimatedDaysRequired] = useState(entry.estimatedDaysRequired);
+  const data = useSelector((state: RootState) => state.wbsData);
 
-  const row = useSelector((state: RootState) => state.wbsData[entry.id]);
-  const charge = (row && 'charge' in row) ? row.charge : '';
-  const displayName = row?.displayName ?? '';
-  
-  const plannedStartDateString = useSelector((state: RootState) => {
-    const row = state.wbsData[entry.id];
-    if (row.rowType === 'Chart' || row.rowType === 'Event') {
-      // EventRowの場合はeventDataの最初の要素を参照するか、適切なロジックをここに書く
-      return row.rowType === 'Event' ? row.eventData[0].plannedStartDate : row.plannedStartDate;
-    }
-    return null;
-  });
-  
-  const plannedEndDateString = useSelector((state: RootState) => {
-    const row = state.wbsData[entry.id];
-    if (row.rowType === 'Chart' || row.rowType === 'Event') {
-      // EventRowの場合はeventDataの最初の要素を参照するか、適切なロジックをここに書く
-      return row.rowType === 'Event' ? row.eventData[0].plannedEndDate : row.plannedEndDate;
-    }
-    return null;
-  });
+  const [columns, setColumns] = useState<Column[]>([
+    { columnId: "No", width: 20, resizable: false },
+    { columnId: "majorCategory", width: 80, resizable: true },
+    { columnId: "middleCategory", width: 80, resizable: true },
+    { columnId: "subCategory", width: 80, resizable: true },
+    { columnId: "task", width: 80, resizable: true },
+    { columnId: "charge", width: 50, resizable: true },
+    { columnId: "plannedStartDate", width: 80, resizable: true },
+    { columnId: "plannedEndDate", width: 80, resizable: true },
+    { columnId: "estimatedDaysRequired", width: 30, resizable: true },
+    { columnId: "actualStartDate", width: 80, resizable: true },
+    { columnId: "actualEndDate", width: 80, resizable: true },
+    { columnId: "displayName", width: 80, resizable: true },
+  ]);
 
-  const actualStartDateString = useSelector((state: RootState) => {
-    const row = state.wbsData[entry.id];
-    if (row.rowType === 'Chart' || row.rowType === 'Event') {
-      // EventRowの場合はeventDataの最初の要素を参照するか、適切なロジックをここに書く
-      return row.rowType === 'Event' ? row.eventData[0].actualStartDate : row.actualStartDate;
-    }
-    return null;
-  });
+  const headerRow: Row<DefaultCellTypes> = {
+    rowId: "header",
+    height: 21,
+    cells: [
+      { type: "header", text: "No" } as HeaderCell,
+      { type: "header", text: "Major" } as HeaderCell,
+      { type: "header", text: "Middle" } as HeaderCell,
+      { type: "header", text: "Sub" } as HeaderCell,
+      { type: "header", text: "Task" } as HeaderCell,
+      { type: "header", text: "Charge" } as HeaderCell,
+      { type: "header", text: "PlanStart" } as HeaderCell,
+      { type: "header", text: "PlanEnd" } as HeaderCell,
+      { type: "header", text: "Estimate" } as HeaderCell,
+      { type: "header", text: "ActStart" } as HeaderCell,
+      { type: "header", text: "ActEnd" } as HeaderCell,
+      { type: "header", text: "DisplayName" } as HeaderCell,
+    ]
+  };
   
-  const actualEndDateString = useSelector((state: RootState) => {
-    const row = state.wbsData[entry.id];
-    if (row.rowType === 'Chart' || row.rowType === 'Event') {
-      // EventRowの場合はeventDataの最初の要素を参照するか、適切なロジックをここに書く
-      return row.rowType === 'Event' ? row.eventData[0].actualEndDate : row.actualEndDate;
-    }
-    return null;
-  });
-  
-  const plannedStartDate = plannedStartDateString ? new Date(plannedStartDateString) : null;
-  const plannedEndDate = plannedEndDateString ? new Date(plannedEndDateString) : null;
-  const actualStartDate = actualStartDateString ? new Date(actualStartDateString) : null;
-  const actualEndDate = actualEndDateString ? new Date(actualEndDateString) : null;
-  
-  const handleChargeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    dispatch(setCharge({ id: entry.id, charge: e.target.value }));
-  }, []);
+  const getRows = (data: WBSData[]): Row<DefaultCellTypes>[] => {
+    const columnCount = columns.length;
 
-  const handlePlannedDateChange = useCallback((dates: [Date | null, Date | null]) => {
-    const [start, end] = dates;
+    return [
+      headerRow,
+      ...data.map((item, index) => {
+        let rowCells = [];
   
-    // タイムゾーンのオフセットを取得（ミリ秒単位）
-    const timezoneOffset = (new Date()).getTimezoneOffset() * 60000;
+        if (item.rowType === 'Chart') {
+          const chartRow = item as ChartRow;
+          rowCells = [
+            { type: "number", value: chartRow.no } as NumberCell,
+            { type: "text", text: chartRow.majorCategory } as TextCell,
+            { type: "text", text: chartRow.middleCategory } as TextCell,
+            { type: "text", text: chartRow.subCategory } as TextCell,
+            { type: "text", text: chartRow.task } as TextCell,
+            { type: "text", text: chartRow.charge } as TextCell,
+            { type: "text", text: chartRow.plannedStartDate } as TextCell,
+            { type: "text", text: chartRow.plannedEndDate } as TextCell,
+            { type: "text", text: chartRow.estimatedDaysRequired } as TextCell,
+            { type: "text", text: chartRow.actualStartDate } as TextCell,
+            { type: "text", text: chartRow.actualEndDate } as TextCell,
+            { type: "text", text: chartRow.displayName } as TextCell,
+          ];
+        } else if (item.rowType === 'Separator') {
+          const separatorRow = item as SeparatorRow;
+          rowCells = [
+            { type: "number", value: separatorRow.no } as NumberCell,
+            { type: "text", text: separatorRow.displayName } as TextCell
+          ];
+        } else if (item.rowType === 'Event') {
+          const eventRow = item as EventRow;
+          rowCells = [
+            { type: "number", value: eventRow.no } as NumberCell,
+            { type: "text", text: eventRow.displayName } as TextCell
+          ];
+        } else {
+          rowCells = [{ type: "text", text: '' } as TextCell];
+        }
   
-    // 開始日と終了日を適切なISO文字列に変換
-    const startIsoString = start ? new Date(start.getTime() - timezoneOffset).toISOString().substring(0, 10) : '';
-    const endIsoString = end ? new Date(end.getTime() - timezoneOffset).toISOString().substring(0, 10) : '';
+        // 足りないセルを空白で埋める
+        while (rowCells.length < columnCount) {
+          rowCells.push({ type: "text", text: '' } as TextCell);
+        }
   
-    if (start) {
-      dispatch(setPlannedStartDate({ id: entry.id, startDate: startIsoString }));
-      // 開始日が選択されたが終了日はまだ選択されていない場合、終了日をクリア
-      if (!end) {
-        dispatch(setPlannedEndDate({ id: entry.id, endDate: '' }));
+        return {
+          rowId: item.rowType === 'Chart' ? (item as ChartRow).id : 'empty-' + index,
+          height: 21,
+          cells: rowCells
+        };
+      })
+    ];
+  };
+  
+  const handleChanges = (changes: CellChange[]) => {
+    const currentState = { ...data };
+    const updatedData = { ...currentState };
+  
+    changes.forEach((change) => {
+      const rowId = change.rowId;
+      const fieldName = change.columnId as keyof WBSData;
+  
+      if (updatedData[rowId] && fieldName in updatedData[rowId]) {
+        if (change.newCell.type === 'text') {
+          updatedData[rowId] = {
+            ...updatedData[rowId],
+            [fieldName]: (change.newCell as TextCell).text,
+          };
+        }
+        // 他のセルタイプに対する処理もここに追加する
       }
-    }
-    if (end) {
-      dispatch(setPlannedEndDate({ id: entry.id, endDate: endIsoString }));
-    }
-  }, []);
+    });
+  
+    dispatch(setData(updatedData));
+  };
+          
+  const handleColumnResize = (columnId: Id, width: number) => {
+    setColumns((prevColumns) => {
+      const columnIndex = prevColumns.findIndex(col => col.columnId === columnId);
+      const updatedColumns = [...prevColumns];
+      updatedColumns[columnIndex] = { ...updatedColumns[columnIndex], width };
+      return updatedColumns;
+    });
+  };
 
-  const handleActualDateChange = useCallback((dates: [Date | null, Date | null]) => {
-    const [start, end] = dates;
   
-    // タイムゾーンのオフセットを取得（ミリ秒単位）
-    const timezoneOffset = (new Date()).getTimezoneOffset() * 60000;
-  
-    // 開始日と終了日を適切なISO文字列に変換
-    const startIsoString = start ? new Date(start.getTime() - timezoneOffset).toISOString().substring(0, 10) : '';
-    const endIsoString = end ? new Date(end.getTime() - timezoneOffset).toISOString().substring(0, 10) : '';
-  
-    if (start) {
-      dispatch(setActualStartDate({ id: entry.id, startDate: startIsoString }));
-      // 開始日が選択されたが終了日はまだ選択されていない場合、終了日をクリア
-      if (!end) {
-        dispatch(setActualEndDate({ id: entry.id, endDate: '' }));
+const assignIds = (data: WBSData[]): { [id: string]: WBSData } => {
+  const dataWithIdsAndNos: { [id: string]: WBSData } = {};
+  data.forEach((row, index) => {
+    const id = uuidv4();
+    dataWithIdsAndNos[id] = { ...row, id, no: index + 1 };
+  });
+  return dataWithIdsAndNos;
+};
+
+const simpleHandleContextMenu = (
+  selectedRowIds: Id[],
+  selectedColIds: Id[],
+  selectionMode: SelectionMode,
+  menuOptions: MenuOption[]
+  ): MenuOption[] => {
+    const selectedIndex = dataArray.findIndex(item => item.id === selectedRowIds[0]);
+    return [
+      ...menuOptions,
+      {
+        id: "addChartRowBelow",
+        label: "Add Chart Row Below",
+        handler: () => {
+          const newDataArray = dataArray.slice();
+          const maxIndex = Math.max(...selectedRowIds.map(id => 
+            newDataArray.findIndex(item => item.id === id)));
+          for (let i = 0; i < selectedRowIds.length; i++) {
+              const newDataRow: WBSData = {
+            rowType: "Chart",
+            no: 0,
+            id: "",
+            majorCategory: "",
+            middleCategory: "",
+            subCategory: "",
+            task: "",
+            charge: "",
+            plannedStartDate: "",
+            plannedEndDate: "",
+            estimatedDaysRequired: "",
+            actualStartDate: "",
+            actualEndDate: "",
+            comment: "",
+            displayName: ""
+          };
+          newDataArray.splice(maxIndex + 1 + i, 0, newDataRow);
+        }
+        dispatch(setData(assignIds(newDataArray)));
       }
-    }
-    if (end) {
-      dispatch(setActualEndDate({ id: entry.id, endDate: endIsoString }));
-    }
-  }, []);
+    },
+      {
+        id: "removeSelectedRow",
+        label: "Remove Selected Row",
+        handler: () => {
+          const newDataArray = dataArray.filter(item => 
+            !selectedRowIds.includes(item.id));
+          dispatch(setData(assignIds(newDataArray)));
+        }
+      }
+    ];
+  };
+
+  const dataArray = Object.values(data);
+  const rows = getRows(dataArray);
 
   return (
-    <>
-      <Row
-        key={index}
-        data-index={index}
-        style={{width: `${wbsWidth}px`}}
-      >
-        <InputBox value={majorCategory} onChange={(e) => setMajorCategory(e.target.value)} $inputSize={majorCategory.length} />
-        <InputBox value={middleCategory} onChange={(e) => setMiddleCategory(e.target.value)} $inputSize={middleCategory.length} />
-        <InputBox value={subCategory} onChange={(e) => setSubCategory(e.target.value)} $inputSize={subCategory.length} />
-        <InputBox value={task} onChange={(e) => setTask(e.target.value)} $inputSize={task.length} />
-        <InputBox value={charge} onChange={handleChargeChange} $inputSize={charge.length} />
-        <DatePicker
-          wrapperClassName="datePicker"
-          dateFormat="M/d"
-          selectsRange={true}
-          startDate={plannedStartDate}
-          endDate={plannedEndDate}
-          onChange={handlePlannedDateChange}
-          isClearable={false}
-        />
-        <InputBox value={estimatedDaysRequired} onChange={(e) => setEstimatedDaysRequired(Number(e.target.value))} />
-        <DatePicker
-          wrapperClassName="datePicker"
-          dateFormat="M/d"
-          selectsRange={true}
-          startDate={actualStartDate}
-          endDate={actualEndDate}
-          onChange={handleActualDateChange}
-          isClearable={false}
-        />
-      </Row>
-    </>
+    <ReactGrid
+      rows={rows}
+      columns={columns}
+      onCellsChanged={handleChanges}
+      onColumnResized={handleColumnResize}
+      onContextMenu={simpleHandleContextMenu}
+      stickyTopRows={1}
+      enableRangeSelection
+      enableRowSelection
+      enableFillHandle
+    />
   );
 });
 

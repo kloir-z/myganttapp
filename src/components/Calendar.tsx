@@ -1,7 +1,7 @@
 // Calendar.tsx
 import React, {useState, memo, useEffect} from 'react';
 import { isHoliday } from '../utils/CalendarUtil';
-import { Row, Cell } from '../styles/GanttStyles';
+import { GanttRow, Cell } from '../styles/GanttStyles';
 import { useSelector } from 'react-redux';
 import { RootState } from '../reduxComponents/store';
 
@@ -29,7 +29,7 @@ const Calendar: React.FC<CalendarProps> = memo(({ dateArray }) => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: `${calendarWidth}px` }}>
-      <Row style={{ borderBottom: 'none', background: 'none'}}>
+      <GanttRow style={{ borderBottom: 'none', background: 'none'}}>
         {dateArray.map((date, index) => {
           const month = date.getMonth();
           if (month !== previousMonth || index === 0) {
@@ -50,8 +50,8 @@ const Calendar: React.FC<CalendarProps> = memo(({ dateArray }) => {
           }
           return null;
         })}
-      </Row>
-      <Row style={{ borderBottom: 'none', background: 'none'}}>
+      </GanttRow>
+      <GanttRow style={{ borderBottom: 'none', background: 'none'}}>
         {dateArray.map((date, index) => {
           let type = 'weekday';
           if (date.getDay() === 6) type = 'saturday';
@@ -77,7 +77,7 @@ const Calendar: React.FC<CalendarProps> = memo(({ dateArray }) => {
             </Cell>
           );
         })}
-      </Row>
+      </GanttRow>
     </div>
   );
 });
