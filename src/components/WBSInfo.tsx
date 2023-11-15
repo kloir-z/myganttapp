@@ -53,7 +53,6 @@ const WBSInfo: React.FC = memo(({}) => {
       headerRow,
       ...data.map((item, index) => {
         let rowCells = [];
-  
         if (item.rowType === 'Chart') {
           const chartRow = item as ChartRow;
           rowCells = [
@@ -85,14 +84,13 @@ const WBSInfo: React.FC = memo(({}) => {
         } else {
           rowCells = [{ type: "text", text: '' } as TextCell];
         }
-  
         // 足りないセルを空白で埋める
         while (rowCells.length < columnCount) {
           rowCells.push({ type: "text", text: '' } as TextCell);
         }
   
         return {
-          rowId: item.rowType === 'Chart' ? (item as ChartRow).id : 'empty-' + index,
+          rowId: item.id,
           height: 21,
           cells: rowCells
         };
@@ -147,7 +145,6 @@ const simpleHandleContextMenu = (
   selectionMode: SelectionMode,
   menuOptions: MenuOption[]
   ): MenuOption[] => {
-    const selectedIndex = dataArray.findIndex(item => item.id === selectedRowIds[0]);
     return [
       ...menuOptions,
       {
