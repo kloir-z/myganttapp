@@ -5,7 +5,6 @@ import { useDispatch } from 'react-redux';
 import { setPlannedStartDate, setPlannedEndDate, setActualStartDate, setActualEndDate } from '../reduxComponents/store';
 import { debounce } from 'lodash';
 
-
 interface ChartRowProps {
   entry: ChartRow;
   dateArray: Date[];

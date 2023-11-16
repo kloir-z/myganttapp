@@ -1,15 +1,21 @@
-import React, { useState, memo } from 'react';
+import React, { useState, memo, useCallback } from 'react';
 import { WBSData, ChartRow, SeparatorRow, EventRow  } from '../types/DataTypes';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, setData} from '../reduxComponents/store';
 import { ReactGrid, Column, Row, DefaultCellTypes, CellChange, HeaderCell, TextCell, DateCell, NumberCell, Id, MenuOption, SelectionMode } from "@silevis/reactgrid";
 import "@silevis/reactgrid/styles.css";
 import { v4 as uuidv4 } from 'uuid';
+import dayjs from 'dayjs';
 
 const WBSInfo: React.FC = memo(({}) => {
   const dispatch = useDispatch();
   const data = useSelector((state: RootState) => state.wbsData);
 
+  const formatDate = useCallback((dateStr: string) => {
+    const date = dayjs(dateStr);
+    return date.isValid() ? date.format('MM/DD') : null;
+  },[]);
+  
   const [columns, setColumns] = useState<Column[]>([
     { columnId: "No", width: 15, resizable: false },
     { columnId: "majorCategory", width: 50, resizable: true },
@@ -60,11 +66,11 @@ const WBSInfo: React.FC = memo(({}) => {
             { type: "text", text: chartRow.subCategory } as TextCell,
             { type: "text", text: chartRow.task } as TextCell,
             { type: "text", text: chartRow.charge } as TextCell,
-            { type: "text", text: chartRow.plannedStartDate } as TextCell,
-            { type: "text", text: chartRow.plannedEndDate } as TextCell,
+            { type: "text", text: formatDate(chartRow.plannedStartDate) } as TextCell,
+            { type: "text", text: formatDate(chartRow.plannedEndDate) } as TextCell,
             { type: "text", text: chartRow.estimatedDaysRequired } as TextCell,
-            { type: "text", text: chartRow.actualStartDate } as TextCell,
-            { type: "text", text: chartRow.actualEndDate } as TextCell,
+            { type: "text", text: formatDate(chartRow.actualStartDate) } as TextCell,
+            { type: "text", text: formatDate(chartRow.actualEndDate) } as TextCell,
             { type: "text", text: chartRow.displayName } as TextCell,
           ];
         } else if (item.rowType === 'Separator') {
@@ -95,7 +101,7 @@ const WBSInfo: React.FC = memo(({}) => {
       })
     ];
   };
-  
+
   const handleChanges = (changes: CellChange[]) => {
     const currentState = { ...data };
     const updatedData = { ...currentState };
@@ -117,7 +123,7 @@ const WBSInfo: React.FC = memo(({}) => {
   
     dispatch(setData(updatedData));
   };
-          
+
   const handleColumnResize = (columnId: Id, width: number) => {
     setColumns((prevColumns) => {
       const columnIndex = prevColumns.findIndex(col => col.columnId === columnId);
@@ -126,7 +132,6 @@ const WBSInfo: React.FC = memo(({}) => {
       return updatedColumns;
     });
   };
-
   
 const assignIds = (data: WBSData[]): { [id: string]: WBSData } => {
   const dataWithIdsAndNos: { [id: string]: WBSData } = {};
