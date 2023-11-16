@@ -1,6 +1,5 @@
 // testdata.ts
 import { WBSData, ChartRow, SeparatorRow, EventRow } from '../types/DataTypes';
-import { v4 as uuidv4 } from 'uuid';
 
 export const testData: WBSData[] = [
   {

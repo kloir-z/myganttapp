@@ -1,7 +1,5 @@
-import React, { useState, memo, useEffect, useCallback } from 'react';
+import React, { useState, memo } from 'react';
 import { WBSData, ChartRow, SeparatorRow, EventRow  } from '../types/DataTypes';
-import { GanttRow, InputBox } from '../styles/GanttStyles';
-import DatePicker from "react-datepicker";
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, setData} from '../reduxComponents/store';
 import { ReactGrid, Column, Row, DefaultCellTypes, CellChange, HeaderCell, TextCell, DateCell, NumberCell, Id, MenuOption, SelectionMode } from "@silevis/reactgrid";
@@ -13,18 +11,18 @@ const WBSInfo: React.FC = memo(({}) => {
   const data = useSelector((state: RootState) => state.wbsData);
 
   const [columns, setColumns] = useState<Column[]>([
-    { columnId: "No", width: 20, resizable: false },
-    { columnId: "majorCategory", width: 80, resizable: true },
-    { columnId: "middleCategory", width: 80, resizable: true },
-    { columnId: "subCategory", width: 80, resizable: true },
-    { columnId: "task", width: 80, resizable: true },
+    { columnId: "No", width: 15, resizable: false },
+    { columnId: "majorCategory", width: 50, resizable: true },
+    { columnId: "middleCategory", width: 50, resizable: true },
+    { columnId: "subCategory", width: 50, resizable: true },
+    { columnId: "task", width: 50, resizable: true },
     { columnId: "charge", width: 50, resizable: true },
-    { columnId: "plannedStartDate", width: 80, resizable: true },
-    { columnId: "plannedEndDate", width: 80, resizable: true },
+    { columnId: "plannedStartDate", width: 100, resizable: true },
+    { columnId: "plannedEndDate", width: 100, resizable: true },
     { columnId: "estimatedDaysRequired", width: 30, resizable: true },
-    { columnId: "actualStartDate", width: 80, resizable: true },
-    { columnId: "actualEndDate", width: 80, resizable: true },
-    { columnId: "displayName", width: 80, resizable: true },
+    { columnId: "actualStartDate", width: 100, resizable: true },
+    { columnId: "actualEndDate", width: 100, resizable: true },
+    { columnId: "displayName", width: 100, resizable: true },
   ]);
 
   const headerRow: Row<DefaultCellTypes> = {

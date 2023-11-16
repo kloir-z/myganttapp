@@ -11,20 +11,6 @@ interface CalendarProps {
 
 const Calendar: React.FC<CalendarProps> = memo(({ dateArray }) => {
   let previousMonth = dateArray[0].getMonth();
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  const hoveredColumnIndex = useSelector((state: RootState) => state.hover.hoveredDayColumnIndex);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
   const calendarWidth = dateArray.length * 21;
 
   return (
@@ -57,14 +43,12 @@ const Calendar: React.FC<CalendarProps> = memo(({ dateArray }) => {
           if (date.getDay() === 6) type = 'saturday';
           if (date.getDay() === 0 || isHoliday(date)) type = 'sundayOrHoliday';
           const left = 21 * index;
-          const isHovered = index === hoveredColumnIndex;
 
           return (
             <Cell
               key={index}
               data-index={index}
               $type={type}
-              className={`dayColumn ${isHovered ? 'hover-effect' : ''}`}
               style={{
                 position: 'absolute',
                 left: `${left}px`,

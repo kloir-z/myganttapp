@@ -91,14 +91,6 @@ export const Cell = styled.div<CellProps>`
     }
     return baseColor;
   }};
-  &.hover-effect {
-    background-color: ${props => getPrecomputedOverlay(
-      props.$type === 'saturday' ? '#cddeff' :
-      props.$type === 'sundayOrHoliday' ? '#ffcaca' : 
-      '#ffffff',
-      { r: -20, g: -20, b: -20 }
-    )};
-  }
   &:hover {
     border: 1px solid #001aff83;
   }
