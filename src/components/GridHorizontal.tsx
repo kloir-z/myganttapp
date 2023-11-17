@@ -9,7 +9,7 @@ interface ChartRowProps {
   entry: ChartRow;
   dateArray: Date[];
   gridRef: React.RefObject<HTMLDivElement>;
-}   
+}
 
 const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRef }) => {
   const dispatch = useDispatch();
@@ -19,34 +19,70 @@ const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRe
   const [localPlannedEndDate, setLocalPlannedEndDate] = useState(entry.plannedEndDate ? new Date(entry.plannedEndDate) : null);
   const [localActualStartDate, setLocalActualStartDate] = useState(entry.actualStartDate ? new Date(entry.actualStartDate) : null);
   const [localActualEndDate, setLocalActualEndDate] = useState(entry.actualEndDate ? new Date(entry.actualEndDate) : null);
+  const [currentDate, setCurrentDate] = useState<Date | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isShiftKeyDown, setIsShiftKeyDown] = useState(false);
   const calendarWidth = dateArray.length * 21;
+
   const calculateDateFromX = (x: number) => {
     const dateIndex = Math.floor(x / 21);
-    return dateArray[dateIndex];
+    if (dateIndex < 0) {
+      return adjustToJST(dateArray[0]);
+    } else if (dateIndex >= dateArray.length) {
+      return adjustToJST(dateArray[dateArray.length - 1]);
+    }
+    return adjustToJST(dateArray[dateIndex]);
   };
 
+  const adjustToJST = (date: Date) => {
+    const newDate = new Date(date);
+    newDate.setHours(0, 0, 0, 0);
+    const timezoneOffset = newDate.getTimezoneOffset() * 60000;
+    const jstOffset = -9 * 60 * 60000;
+    const jstDate = new Date(newDate.getTime() - timezoneOffset + jstOffset);
+    return jstDate;
+  };
+  
   const handleDoubleClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect();  
+    const rect = event.currentTarget.getBoundingClientRect();
     const relativeX = event.clientX - rect.left;
+    const clickedDate = calculateDateFromX(relativeX);
     setIsEditing(true);
-    setLocalPlannedStartDate(calculateDateFromX(relativeX));
-    setLocalPlannedEndDate(calculateDateFromX(relativeX));
+    setCurrentDate(clickedDate);
+    setIsShiftKeyDown(event.shiftKey);
+  
+    const setStartDate = event.shiftKey ? setLocalActualStartDate : setLocalPlannedStartDate;
+    const setEndDate = event.shiftKey ? setLocalActualEndDate : setLocalPlannedEndDate;
+    setStartDate(clickedDate);
+    setEndDate(clickedDate);
   };
-
+  
   const handleMouseMove = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     const gridRect = gridRef.current?.getBoundingClientRect();
-    if (!gridRect) return;
+    if (!gridRect || !currentDate || !isEditing) return;
+  
     const scrollLeft = gridRef.current?.scrollLeft || 0;
     const relativeX = event.clientX - gridRect.left + scrollLeft;
-    if (!isEditing) return;
     const newDate = calculateDateFromX(relativeX);
-    if (localPlannedStartDate && newDate > localPlannedStartDate) {
-      setLocalPlannedEndDate(newDate);
-    } else if (localPlannedEndDate) {
-      setLocalPlannedStartDate(newDate);
+  
+    const isEndDate = newDate > currentDate;
+    if (isShiftKeyDown) {
+      setLocalActualStartDate(isEndDate ? currentDate : newDate);
+      setLocalActualEndDate(isEndDate ? newDate : currentDate);
+    } else {
+      setLocalPlannedStartDate(isEndDate ? currentDate : newDate);
+      setLocalPlannedEndDate(isEndDate ? newDate : currentDate);
     }
-  }, [isEditing]);
+  }, [isEditing, currentDate, isShiftKeyDown]);
+  
+  useEffect(() => {
+    if (!isEditing) {
+      setLocalPlannedStartDate(entry.plannedStartDate ? new Date(entry.plannedStartDate) : null);
+      setLocalPlannedEndDate(entry.plannedEndDate ? new Date(entry.plannedEndDate) : null);
+      setLocalActualStartDate(entry.actualStartDate ? new Date(entry.actualStartDate) : null);
+      setLocalActualEndDate(entry.actualEndDate ? new Date(entry.actualEndDate) : null);
+    }
+  }, [entry.plannedStartDate, entry.plannedEndDate, entry.actualStartDate, entry.actualEndDate, isEditing]);
 
   const syncToStore = useCallback(debounce(() => {
     if (isEditing) {
@@ -55,16 +91,7 @@ const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRe
       if (localActualStartDate) {dispatch(setActualStartDate({ id: entry.id, startDate: localActualStartDate.toISOString() }));}
       if (localActualEndDate) {dispatch(setActualEndDate({ id: entry.id, endDate: localActualEndDate.toISOString() }));}
     }
-  }, 30), [localPlannedStartDate, localPlannedEndDate, isEditing, dispatch]);
-
-  useEffect(() => {
-    if (!isEditing) {
-      setLocalPlannedStartDate(entry.plannedStartDate ? new Date(entry.plannedStartDate) : null);
-      setLocalPlannedEndDate(entry.plannedEndDate ? new Date(entry.plannedEndDate) : null);
-      setLocalActualStartDate(entry.actualStartDate ? new Date(entry.actualStartDate) : null);
-      setLocalActualEndDate(entry.actualEndDate ? new Date(entry.actualEndDate) : null);
-    }
-  }, [entry.plannedStartDate, entry.plannedEndDate, isEditing]);
+  }, 30), [localPlannedStartDate, localPlannedEndDate, localActualStartDate, localActualEndDate, isEditing, dispatch]);
 
   useEffect(() => {
     syncToStore();
@@ -92,7 +119,7 @@ const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRe
           return null;
         }
         if (startIndex !== -1 && endIndex !== -1) {
-          const width = ((endIndex - startIndex + 1) * 21) + 0.3;
+          const width = ((endIndex - startIndex+1) * 21) + 0.3;
           const leftPosition = startIndex * 21;
   
           return (
@@ -116,7 +143,7 @@ const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRe
           return null;
         }
         if (startIndex !== -1 && endIndex !== -1) {
-          const width = ((endIndex - startIndex + 1) * 21) + 0.3;
+          const width = ((endIndex - startIndex+1) * 21) + 0.3;
           const leftPosition = startIndex * 21;
   
           return (

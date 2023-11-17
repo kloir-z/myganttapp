@@ -1,8 +1,9 @@
 // GanttCell.tsx
 import React from 'react';
-import { Cell, InputBox } from '../styles/GanttStyles';
+import { Cell } from '../styles/GanttStyles';
 import { useSelector, useDispatch } from 'react-redux';
 import { setDisplayName} from '../reduxComponents/store';
+import AutoWidthInputBox from './AutoWidthInputBox';
 
 interface MemoedChartCellProps {
   entryId? : string;
@@ -24,6 +25,11 @@ const MemoedChartCell: React.FC<MemoedChartCellProps> = ({
   width
 }) => {
   const dispatch = useDispatch();
+  const handleDisplayNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (entryId) {
+      dispatch(setDisplayName({ id: entryId, displayName: e.target.value }));
+    }
+  };
   return (
     <Cell
       $type={type}
@@ -31,11 +37,14 @@ const MemoedChartCell: React.FC<MemoedChartCellProps> = ({
       $isActual={isActual}
       $charge={charge}
       $width={width}
-      style={{display: 'flex'}}
+      style={{position: 'relative'}}
     >
-      {(displayName && entryId) ? (
-        <InputBox value={displayName} onChange={(e) => dispatch(setDisplayName({id: entryId, displayName: e.target.value}))} $inputSize={displayName.length}/>
-      ) : null}
+      {isPlanned && (
+        <AutoWidthInputBox 
+          value={displayName}
+          onChange={handleDisplayNameChange}
+        />
+      )}
     </Cell>
   );
 };

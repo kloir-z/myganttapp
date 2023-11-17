@@ -95,25 +95,3 @@ export const Cell = styled.div<CellProps>`
     border: 1px solid #001aff83;
   }
 `;
-
-export const InputBox = styled.input<{ $inputSize?: number }>`
-  box-sizing: border-box;
-  text-decoration:underline;
-  overflow: visible;
-  white-space: nowrap;
-  cursor: pointer;
-  font-size: 0.8rem;
-  line-height: 16px;
-  padding: 0px;
-  background: none;
-  border: solid 1px transparent;
-  width: ${(props) => props.$inputSize ? props.$inputSize + "ch" : "20px"};
-  min-width: ${(props) => props.$inputSize ? "80px" : "20px"};
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  &:focus {
-    outline: none;
-    border: solid 1px #007bff;
-  }
-`;
