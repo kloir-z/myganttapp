@@ -58,18 +58,15 @@ const AutoWidthInputBox: React.FC<AutoWidthInputBoxProps> = ({
   onChange,
   placeholder = ''
 }) => {
-  const [inputValue, setInputValue] = useState(value || '');
   const dummyRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (dummyRef.current) {
-      dummyRef.current.textContent = inputValue || placeholder;
+      dummyRef.current.textContent = value || placeholder;
     }
-  }, [inputValue, placeholder]);
+  }, [value, placeholder]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    setInputValue(newValue);
     if (onChange) {
       onChange(e);
     }
@@ -81,7 +78,7 @@ const AutoWidthInputBox: React.FC<AutoWidthInputBoxProps> = ({
       <StyledInput
         type="text"
         placeholder={placeholder}
-        value={inputValue}
+        value={value || ''}
         onChange={handleChange}
       />
     </InputWrapper>
