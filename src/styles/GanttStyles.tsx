@@ -29,6 +29,7 @@ export const Cell = styled.div<CellProps>`
   text-align: center;
   width: ${props => (props.$width ? `${props.$width}px` : '21.1px')};
   height: 21px;
+  border: 1px solid transparent;
   border-left: ${props => ((props.$isPlanned || props.$isActual) ? '1px solid transparent' : '1px solid #00000016')};
   background-color: ${props => {
     let baseColor = '#ffffff00';
