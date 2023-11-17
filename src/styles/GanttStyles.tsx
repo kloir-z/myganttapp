@@ -1,10 +1,6 @@
 //GridStyles.ts
 import styled from 'styled-components';
 
-export const RowContainer = styled.div`
-  background: none;
-`;
-
 export const GanttRow = styled.div`
   box-sizing: border-box;
   display: flex;
@@ -18,51 +14,6 @@ export const GanttRow = styled.div`
     border-bottom: solid 1px #001aff83;
   };
 `;
-
-type RGB = {
-  r: number;
-  g: number;
-  b: number;
-};
-
-const addOverlay = (baseColor: string, overlay: RGB): string => {
-  const base = {
-    r: parseInt(baseColor.slice(1, 3), 16),
-    g: parseInt(baseColor.slice(3, 5), 16),
-    b: parseInt(baseColor.slice(5, 7), 16),
-  };
-
-  const overlayAdded = {
-    r: Math.min(255, base.r + overlay.r),
-    g: Math.min(255, base.g + overlay.g),
-    b: Math.min(255, base.b + overlay.b),
-  };
-
-  return `#${overlayAdded.r.toString(16).padStart(2, '0')}${overlayAdded.g.toString(16).padStart(2, '0')}${overlayAdded.b.toString(16).padStart(2, '0')}`;
-};
-
-type OverlayMap = {
-  [key: string]: {
-    [overlayKey: string]: string;
-  };
-};
-
-const precomputedOverlays: OverlayMap = {
-  '#ffffff': {
-    '-20,-20,-20': addOverlay('#ffffff', { r: -20, g: -20, b: -20 }),
-  },
-  '#cddeff': {
-    '-20,-20,-20': addOverlay('#cddeff', { r: -20, g: -20, b: -20 }),
-  },
-  '#ffcaca': {
-    '-20,-20,-20': addOverlay('#ffcaca', { r: -20, g: -20, b: -20 }),
-  },
-};
-
-const getPrecomputedOverlay = (baseColor: string, overlay: RGB): string => {
-  const overlayKey = `${overlay.r},${overlay.g},${overlay.b}`;
-  return precomputedOverlays[baseColor]?.[overlayKey] || baseColor;
-};
 
 interface CellProps {
   $type?: string;
