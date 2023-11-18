@@ -8,7 +8,7 @@ import './css/DatePicker.css'
 import WBSInfo from './components/WBSInfo';
 import GridHorizontal from './components/GridHorizontal';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState, AppDispatch } from './reduxComponents/store';
+import { RootState } from './reduxComponents/store';
 import { generateDates } from './utils/CalendarUtil';
 import GridVertical from './components/GridVertical';
 

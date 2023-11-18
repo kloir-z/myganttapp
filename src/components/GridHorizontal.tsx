@@ -93,7 +93,7 @@ const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRe
     }
   }, [localPlannedStartDate, localPlannedEndDate, localActualStartDate, localActualEndDate, isEditing, dispatch]);
 
-  const debouncedSyncToStore = useCallback(debounce(syncToStore, 100), [syncToStore]);
+  const debouncedSyncToStore = useCallback(debounce(syncToStore, 20), [syncToStore]);
 
   useEffect(() => {
     debouncedSyncToStore();
