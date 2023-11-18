@@ -1,5 +1,8 @@
-import React, { useState, useRef, useEffect, ChangeEvent } from 'react';
+import React, { useState, useRef, useEffect, useCallback, ChangeEvent } from 'react';
 import styled from 'styled-components';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, setDisplayName} from '../reduxComponents/store';
+import { debounce } from 'lodash';
 
 const InputWrapper = styled.div`
   position: absolute;
@@ -11,7 +14,7 @@ const AutoWidthDiv = styled.div`
   display: inline-block;
   box-sizing: border-box;
   overflow: hidden;
-  min-width: 1em;
+  min-width: 2em;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -48,29 +51,53 @@ const StyledInput = styled.input`
 `;
 
 interface AutoWidthInputBoxProps {
-  value?: string;
-  onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
-  placeholder?: string;
+  entryId : string;
 }
 
 const AutoWidthInputBox: React.FC<AutoWidthInputBoxProps> = ({
-  value,
-  onChange,
-  placeholder = ''
+  entryId,
 }) => {
+  const storeDisplayName = useSelector((state: RootState) => state.wbsData[entryId]?.displayName);
+  const dispatch = useDispatch();
+  const [localDisplayName, setLocalDisplayName] = useState(storeDisplayName);
+  const [isEditing, setIsEditing] = useState(false);
   const dummyRef = useRef<HTMLDivElement>(null);
+  const placeholder = '    '
+
+  const handleFocus = () => {
+    setIsEditing(true);
+  };
+
+  const handleBlur = () => {
+    setIsEditing(false);
+  };
 
   useEffect(() => {
     if (dummyRef.current) {
-      dummyRef.current.textContent = value || placeholder;
+      dummyRef.current.textContent = localDisplayName || placeholder;
     }
-  }, [value, placeholder]);
+  }, [localDisplayName, placeholder]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (onChange) {
-      onChange(e);
-    }
+    setLocalDisplayName(e.target.value);
   };
+
+  useEffect(() => {
+    if (!isEditing) {setLocalDisplayName(storeDisplayName)}
+  }, [storeDisplayName, isEditing]);
+
+  const syncToStore = useCallback(() => {
+    if (isEditing) {
+      dispatch(setDisplayName({ id: entryId, displayName: localDisplayName }));
+    }
+  }, [entryId, localDisplayName, dispatch, isEditing]);
+  
+  const debouncedSyncToStore = useCallback(debounce(syncToStore, 100), [syncToStore]);
+  
+  useEffect(() => {
+    debouncedSyncToStore();
+    return () => debouncedSyncToStore.cancel();
+  }, [debouncedSyncToStore]);
 
   return (
     <InputWrapper>
@@ -78,8 +105,10 @@ const AutoWidthInputBox: React.FC<AutoWidthInputBoxProps> = ({
       <StyledInput
         type="text"
         placeholder={placeholder}
-        value={value || ''}
+        value={localDisplayName}
         onChange={handleChange}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
       />
     </InputWrapper>
   );

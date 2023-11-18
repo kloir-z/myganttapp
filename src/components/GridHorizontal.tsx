@@ -84,19 +84,21 @@ const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRe
     }
   }, [entry.plannedStartDate, entry.plannedEndDate, entry.actualStartDate, entry.actualEndDate, isEditing]);
 
-  const syncToStore = useCallback(debounce(() => {
+  const syncToStore = useCallback(() => {
     if (isEditing) {
       if (localPlannedStartDate) {dispatch(setPlannedStartDate({ id: entry.id, startDate: localPlannedStartDate.toISOString() }));}
       if (localPlannedEndDate) {dispatch(setPlannedEndDate({ id: entry.id, endDate: localPlannedEndDate.toISOString() }));}
       if (localActualStartDate) {dispatch(setActualStartDate({ id: entry.id, startDate: localActualStartDate.toISOString() }));}
       if (localActualEndDate) {dispatch(setActualEndDate({ id: entry.id, endDate: localActualEndDate.toISOString() }));}
     }
-  }, 30), [localPlannedStartDate, localPlannedEndDate, localActualStartDate, localActualEndDate, isEditing, dispatch]);
+  }, [localPlannedStartDate, localPlannedEndDate, localActualStartDate, localActualEndDate, isEditing, dispatch]);
+
+  const debouncedSyncToStore = useCallback(debounce(syncToStore, 100), [syncToStore]);
 
   useEffect(() => {
-    syncToStore();
-    return () => syncToStore.cancel();
-  }, [syncToStore]);
+    debouncedSyncToStore();
+    return () => debouncedSyncToStore.cancel();
+  }, [debouncedSyncToStore]);
 
   return (
     <div style={{position: 'absolute', height: '21px', width: `${calendarWidth}px`}} onDoubleClick={handleDoubleClick}>
@@ -152,7 +154,6 @@ const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRe
                 entryId={entry.id}
                 isPlanned={true}
                 charge={charge}
-                displayName={displayName}
                 width={width}
               />
             </div>
