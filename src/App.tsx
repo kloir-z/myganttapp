@@ -11,6 +11,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from './reduxComponents/store';
 import { generateDates } from './utils/CalendarUtil';
 import GridVertical from './components/GridVertical';
+import ResizeBar from './components/WbsWidthResizer';
 
 function App() {
   const data = useSelector((state: RootState) => state.wbsData);
@@ -68,6 +69,12 @@ function App() {
     };
   }, []);
 
+// In the App component
+const handleResize = (newWidth: number) => {
+  setWbsWidth(newWidth);
+};
+
+
   return (
     
     <div style={{position: 'fixed', left: '30px'}}>
@@ -79,6 +86,7 @@ function App() {
       <div style={{position: 'absolute', top: '21px', width: `${wbsWidth}px`, height: `calc(100vh - 21px)`, overflowX: 'scroll', overflowY: 'hidden'}} ref={wbsRef}>
         <WBSInfo />
       </div>
+      <ResizeBar onDrag={handleResize} initialWidth={wbsWidth} />
       <div style={{position: 'absolute',top: '42px', left: `${wbsWidth}px`, width: `calc(100vw - 30px - ${wbsWidth}px)`, height: `calc(100vh - 41px)`, overflow: 'scroll'}} ref={gridRef}>
         {Object.entries(data).map(([id, entry], index) => {
           const topPosition = index * 21;

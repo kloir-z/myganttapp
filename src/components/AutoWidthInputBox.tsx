@@ -99,6 +99,10 @@ const AutoWidthInputBox: React.FC<AutoWidthInputBoxProps> = ({
     return () => debouncedSyncToStore.cancel();
   }, [debouncedSyncToStore]);
 
+  const handleDoubleClick = (e: React.MouseEvent<HTMLInputElement>) => {
+    e.stopPropagation();
+  };
+
   return (
     <InputWrapper>
       <AutoWidthDiv ref={dummyRef} data-placeholder={placeholder}></AutoWidthDiv>
@@ -109,6 +113,7 @@ const AutoWidthInputBox: React.FC<AutoWidthInputBoxProps> = ({
         onChange={handleChange}
         onFocus={handleFocus}
         onBlur={handleBlur}
+        onDoubleClick={handleDoubleClick}
       />
     </InputWrapper>
   );
