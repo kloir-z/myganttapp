@@ -26,20 +26,17 @@ const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRe
   const calculateDateFromX = (x: number) => {
     const dateIndex = Math.floor(x / 21);
     if (dateIndex < 0) {
-      return adjustToJST(dateArray[0]);
+      return adjustToLocalMidnight(dateArray[0]);
     } else if (dateIndex >= dateArray.length) {
-      return adjustToJST(dateArray[dateArray.length - 1]);
+      return adjustToLocalMidnight(dateArray[dateArray.length - 1]);
     }
-    return adjustToJST(dateArray[dateIndex]);
+    return adjustToLocalMidnight(dateArray[dateIndex]);
   };
 
-  const adjustToJST = (date: Date) => {
+  const adjustToLocalMidnight = (date: Date) => {
     const newDate = new Date(date);
-    newDate.setHours(0, 0, 0, 0);
-    const timezoneOffset = newDate.getTimezoneOffset() * 60000;
-    const jstOffset = -9 * 60 * 60000;
-    const jstDate = new Date(newDate.getTime() - timezoneOffset + jstOffset);
-    return jstDate;
+    newDate.setHours(0, 0, 0, 0); // ローカルタイムゾーンでの0:00に設定
+    return newDate;
   };
   
   const handleDoubleClick = (event: React.MouseEvent<HTMLDivElement>) => {

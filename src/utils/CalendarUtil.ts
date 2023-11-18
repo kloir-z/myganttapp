@@ -7,14 +7,14 @@ export const isHoliday = (date: Date) => {
 export const generateDates = (start: Date, end: Date) => {
   const dateArray: Date[] = [];
   let currentDate = new Date(start);
-  const timezoneOffset = 9 * 60 * 60 * 1000; // 日本はUTC+9
 
   while (currentDate <= end) {
-    const adjustedDate = new Date(currentDate.getTime() + timezoneOffset);
-    adjustedDate.setHours(0, 0, 0, 0); // 時刻を00:00:00.000に設定
+    const adjustedDate = new Date(currentDate);
+    adjustedDate.setHours(0, 0, 0, 0);
     dateArray.push(adjustedDate);
     currentDate.setDate(currentDate.getDate() + 1);
   }
+
   return dateArray;
 };
 
