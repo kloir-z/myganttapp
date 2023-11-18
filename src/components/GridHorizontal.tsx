@@ -14,7 +14,6 @@ interface ChartRowProps {
 const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRef }) => {
   const dispatch = useDispatch();
   const charge = entry.charge;
-  const displayName = entry.displayName;
   const [localPlannedStartDate, setLocalPlannedStartDate] = useState(entry.plannedStartDate ? new Date(entry.plannedStartDate) : null);
   const [localPlannedEndDate, setLocalPlannedEndDate] = useState(entry.plannedEndDate ? new Date(entry.plannedEndDate) : null);
   const [localActualStartDate, setLocalActualStartDate] = useState(entry.actualStartDate ? new Date(entry.actualStartDate) : null);
@@ -110,18 +109,16 @@ const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRe
         />
       )}
       {localActualStartDate && localActualEndDate ? (() => {
-        const actualStart = new Date(localActualStartDate);
-        const actualEnd = new Date(localActualEndDate);
-        const startIndex = dateArray.findIndex(date => date >= actualStart);
-        let endIndex = dateArray.findIndex(date => date >= actualEnd);
+        const startIndex = dateArray.findIndex(date => date >= localActualStartDate);
+        let endIndex = dateArray.findIndex(date => date >= localActualEndDate);
         endIndex = endIndex !== -1 ? endIndex : dateArray.length - 1;
         const dateArrayStart = dateArray[0];
         const dateArrayEnd = dateArray[dateArray.length - 1];
-        if (actualStart > dateArrayEnd || actualEnd < dateArrayStart) {
+        if (localActualStartDate > dateArrayEnd || localActualEndDate < dateArrayStart) {
           return null;
         }
         if (startIndex !== -1 && endIndex !== -1) {
-          const width = ((endIndex - startIndex+1) * 21) + 0.3;
+          const width = ((endIndex - startIndex + 1) * 21) + 0.3;
           const leftPosition = startIndex * 21;
   
           return (
@@ -145,7 +142,7 @@ const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRe
           return null;
         }
         if (startIndex !== -1 && endIndex !== -1) {
-          const width = ((endIndex - startIndex+1) * 21) + 0.3;
+          const width = ((endIndex - startIndex + 1) * 21) + 0.3;
           const leftPosition = startIndex * 21;
   
           return (

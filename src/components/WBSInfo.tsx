@@ -13,7 +13,7 @@ const WBSInfo: React.FC = memo(({}) => {
 
   const formatDate = useCallback((dateStr: string) => {
     const date = dayjs(dateStr);
-    return date.isValid() ? date.format('MM/DD') : null;
+    return date.isValid() ? date.format('YYYY/MM/DD') : null;
   },[]);
   
   const [columns, setColumns] = useState<Column[]>([
