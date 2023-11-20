@@ -12,6 +12,7 @@ import { RootState } from './reduxComponents/store';
 import { generateDates } from './utils/CalendarUtil';
 import GridVertical from './components/GridVertical';
 import ResizeBar from './components/WbsWidthResizer';
+import "./css/ReactGrid.css";
 
 function App() {
   const data = useSelector((state: RootState) => state.wbsData);
@@ -117,7 +118,7 @@ const handleResize = (newWidth: number) => {
                   top: `${topPosition}px`,
                 }}
               >
-                <GanttRow key={id} style={{ backgroundColor: '#ddedff', width: `${calendarWidth}px`}}/>
+                <GanttRow key={id} style={{ backgroundColor: '#ddedff', borderBottom: 'solid 1px #e8e8e8', width: `${calendarWidth}px`}}/>
               </div>
             );
           } else if (entry.rowType === 'Event') {
