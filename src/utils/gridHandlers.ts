@@ -1,3 +1,4 @@
+// gridHandlers.ts
 import { CellChange, TextCell } from "@silevis/reactgrid";
 import { WBSData } from '../types/DataTypes';
 import { Dispatch } from 'redux';
@@ -9,19 +10,27 @@ export const handleGridChanges = (dispatch: Dispatch, data: { [id: string]: WBSD
   changes.forEach((change) => {
     const rowId = change.rowId.toString();
     const fieldName = change.columnId as keyof WBSData;
-  
-    if (updatedData[rowId] && fieldName in updatedData[rowId]) {
+    const rowData = updatedData[rowId];
+
+    if (rowData) {
       const newCell = change.newCell;
 
-      if (newCell.type === 'text') {
+      if (rowData.rowType === 'Separator') {
+        if (newCell.type === 'text') {
+          updatedData[rowId] = {
+            ...rowData,
+            displayName: (newCell as TextCell).text
+          };
+        }
+      } else if (newCell.type === 'text') {
         updatedData[rowId] = {
-          ...updatedData[rowId],
+          ...rowData,
           [fieldName]: (newCell as TextCell).text,
         };
       } else if (newCell.type === 'date') {
         const dateValue = (newCell as any).date;
         updatedData[rowId] = {
-          ...updatedData[rowId],
+          ...rowData,
           [fieldName]: dateValue instanceof Date ? dateValue.toISOString() : dateValue,
         };
       }

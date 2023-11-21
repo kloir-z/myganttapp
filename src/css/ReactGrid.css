@@ -8,12 +8,3 @@
   border: none; /* ボーダーを非表示にする */
   /* 必要に応じて他のスタイリングを追加 */
 }
-
-.rg-separator-cell {
-    background-color: #ddedff;
-    color: #333;
-    border-right-style: none !important;
-    padding-right: 100%;
-    box-sizing: border-box; 
-    /* その他のスタイリングをここに追加 */
-}

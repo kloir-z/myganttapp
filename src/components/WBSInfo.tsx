@@ -1,32 +1,30 @@
-import React, { memo } from 'react';
+// WBSInfo.tsx
+import React, { memo, useEffect } from 'react';
 import { WBSData, ChartRow, SeparatorRow, EventRow  } from '../types/DataTypes';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../reduxComponents/store';
 import { ReactGrid, Row, DefaultCellTypes, TextCell, Id, MenuOption, SelectionMode } from "@silevis/reactgrid";
 import "@silevis/reactgrid/styles.css";
 import { useWBSData } from '../hooks/useWBSData';
-import { handleAddChartRowBelow, handleRemoveSelectedRow } from '../utils/contextMenuHandlers';
+import { handleAddChartRowBelow, handleAddSeparatorRowBelow, handleRemoveSelectedRow } from '../utils/contextMenuHandlers';
 import { createChartRow, createSeparatorRow, createEventRow } from '../utils/wbsRowCreators';
 import { handleGridChanges } from '../utils/gridHandlers';
 import { useColumnResizer } from '../hooks/useColumnResizer';
-import { SeparatorCell, SeparatorCellTemplate } from './SeparatorCellTemplate';
 
 const WBSInfo: React.FC = memo(({}) => {
   const dispatch = useDispatch();
-  const { headerRow, columns, setColumns } = useWBSData();
+  const { data, headerRow, columns, setColumns } = useWBSData();
   const handleColumnResize = useColumnResizer(setColumns);
-  const data = useSelector((state: RootState) => state.wbsData);
   const dataArray = Object.values(data);
-  const separatorCellTemplate = new SeparatorCellTemplate();
 
-  const getRows = (data: WBSData[]): Row<DefaultCellTypes | SeparatorCell>[] => {
+  const getRows = (data: WBSData[]): Row<DefaultCellTypes>[] => {
     const columnCount = columns.length;
     return [
       headerRow,
       ...data.map((item) => {
         switch (item.rowType) {
           case 'Chart':
-            return createChartRow(item as ChartRow, columnCount);
+            return createChartRow(item as ChartRow, columns);
           case 'Separator':
             return createSeparatorRow(item as SeparatorRow, columnCount);
           case 'Event':
@@ -53,12 +51,36 @@ const WBSInfo: React.FC = memo(({}) => {
         handler: () => handleAddChartRowBelow(dispatch, selectedRowIds, dataArray)
       },
       {
+        id: "addSeparatorRowBelow",
+        label: "Add Separator Row Below",
+        handler: () => handleAddSeparatorRowBelow(dispatch, selectedRowIds, dataArray)
+      },
+      {
         id: "removeSelectedRow",
         label: "Remove Selected Row",
         handler: () => handleRemoveSelectedRow(dispatch, selectedRowIds, dataArray)
       }
     ];
   };
+  
+  const handleRowsReorder = (targetRowId: Id, rowIds: Id[]) => {
+    // 行の並べ替え処理
+  };
+
+  const handleColumnsReorder = (targetColumnId: Id, columnIds: Id[]) => {
+    const newColumnsOrder = [...columns];
+    const targetIndex = newColumnsOrder.findIndex(column => column.columnId === targetColumnId);
+  
+    columnIds.forEach(columnId => {
+      const index = newColumnsOrder.findIndex(column => column.columnId === columnId);
+      if (index >= 0) {
+        const [column] = newColumnsOrder.splice(index, 1);
+        newColumnsOrder.splice(targetIndex, 0, column);
+      }
+    });
+  
+    setColumns(newColumnsOrder);
+  };  
 
   return (
     <ReactGrid
@@ -68,10 +90,14 @@ const WBSInfo: React.FC = memo(({}) => {
       onColumnResized={handleColumnResize}
       onContextMenu={simpleHandleContextMenu}
       stickyTopRows={1}
+      stickyLeftColumns={1}
       enableRangeSelection
+      enableColumnSelection
       enableRowSelection
       enableFillHandle
-      customCellTemplates={{ separator: separatorCellTemplate }}
+      onRowsReordered={handleRowsReorder}
+      onColumnsReordered={handleColumnsReorder}
+      canReorderRows={(targetRowId, rowIds) => targetRowId !== 'header'}
     />
   );
 });

@@ -13,6 +13,7 @@ import { generateDates } from './utils/CalendarUtil';
 import GridVertical from './components/GridVertical';
 import ResizeBar from './components/WbsWidthResizer';
 import "./css/ReactGrid.css";
+import "./css/HiddenScrollBar.css";
 
 function App() {
   const data = useSelector((state: RootState) => state.wbsData);
@@ -70,11 +71,10 @@ function App() {
     };
   }, []);
 
-// In the App component
-const handleResize = (newWidth: number) => {
-  setWbsWidth(newWidth);
-};
-
+  // In the App component
+  const handleResize = (newWidth: number) => {
+    setWbsWidth(newWidth);
+  };
 
   return (
     
@@ -84,7 +84,7 @@ const handleResize = (newWidth: number) => {
         <Calendar dateArray={dateArray} />
         <GridVertical dateArray={dateArray} />
       </div>
-      <div style={{position: 'absolute', top: '21px', width: `${wbsWidth}px`, height: `calc(100vh - 21px)`, overflowX: 'scroll', overflowY: 'hidden'}} ref={wbsRef}>
+      <div className="hiddenScrollbar" style={{position: 'absolute', top: '21px', width: `${wbsWidth}px`, height: `calc(100vh - 21px)`, overflowX: 'scroll' }} ref={wbsRef}>
         <WBSInfo />
       </div>
       <ResizeBar onDrag={handleResize} initialWidth={wbsWidth} />
