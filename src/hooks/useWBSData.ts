@@ -1,7 +1,5 @@
 // hooks/useWBSData.ts
 import { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../reduxComponents/store';
 import { Column, Row, DefaultCellTypes, HeaderCell } from "@silevis/reactgrid";
 
 interface ColumnMap {
@@ -35,10 +33,10 @@ const columnMap: ColumnMap = {
 };
 
 export const useWBSData = () => {
-  const data = useSelector((state: RootState) => state.wbsData);
 
   const [columns, setColumns] = useState<Column[]>([
     { columnId: "no", width: 15, resizable: false },
+    { columnId: "displayName", width: 100, resizable: true, reorderable: true },
     { columnId: "majorCategory", width: 50, resizable: true, reorderable: true },
     { columnId: "middleCategory", width: 50, resizable: true, reorderable: true },
     { columnId: "subCategory", width: 50, resizable: true, reorderable: true },
@@ -49,7 +47,6 @@ export const useWBSData = () => {
     { columnId: "estimatedDaysRequired", width: 30, resizable: true, reorderable: true },
     { columnId: "actualStartDate", width: 100, resizable: true, reorderable: true },
     { columnId: "actualEndDate", width: 100, resizable: true, reorderable: true },
-    { columnId: "displayName", width: 100, resizable: true, reorderable: true },
   ]);
 
   const getHeaderRow = (columns: Column[], columnMap: ColumnMap): Row<DefaultCellTypes> => {
@@ -71,5 +68,5 @@ export const useWBSData = () => {
     setHeaderRow(getHeaderRow(columns, columnMap));
   }, [columns, columnMap]);
   
-  return { data, columns, setColumns, headerRow };
+  return { columns, setColumns, headerRow };
 };

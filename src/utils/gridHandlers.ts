@@ -1,5 +1,5 @@
 // gridHandlers.ts
-import { CellChange, TextCell } from "@silevis/reactgrid";
+import { CellChange, TextCell, DateCell } from "@silevis/reactgrid";
 import { WBSData } from '../types/DataTypes';
 import { Dispatch } from 'redux';
 import { setData } from '../reduxComponents/store';
@@ -15,23 +15,34 @@ export const handleGridChanges = (dispatch: Dispatch, data: { [id: string]: WBSD
     if (rowData) {
       const newCell = change.newCell;
 
-      if (rowData.rowType === 'Separator') {
-        if (newCell.type === 'text') {
+      if (newCell.type === 'date') {
+        const dateValue = (newCell as DateCell).date;
+
+        if (dateValue === undefined || dateValue === null) {
           updatedData[rowId] = {
             ...rowData,
-            displayName: (newCell as TextCell).text
+            [fieldName]: ""
+          };
+        } else if (isValidDate(dateValue)) {
+          updatedData[rowId] = {
+            ...rowData,
+            [fieldName]: dateValue.toISOString(),
+          };
+        } else {
+          updatedData[rowId] = {
+            ...rowData,
+            [fieldName]: ""
           };
         }
+      } else if (rowData.rowType === 'Separator' && newCell.type === 'text') {
+        updatedData[rowId] = {
+          ...rowData,
+          displayName: (newCell as TextCell).text
+        };
       } else if (newCell.type === 'text') {
         updatedData[rowId] = {
           ...rowData,
           [fieldName]: (newCell as TextCell).text,
-        };
-      } else if (newCell.type === 'date') {
-        const dateValue = (newCell as any).date;
-        updatedData[rowId] = {
-          ...rowData,
-          [fieldName]: dateValue instanceof Date ? dateValue.toISOString() : dateValue,
         };
       }
       // 他のセルタイプに対する処理も必要に応じて追加
@@ -40,3 +51,7 @@ export const handleGridChanges = (dispatch: Dispatch, data: { [id: string]: WBSD
 
   dispatch(setData(updatedData));
 };
+
+function isValidDate(date: Date): boolean {
+  return date instanceof Date && !isNaN(date.getTime());
+}

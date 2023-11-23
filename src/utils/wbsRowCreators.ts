@@ -32,15 +32,15 @@ export const createChartRow = (chartRow: ChartRow, columns: Column[]): Row<Defau
       case "charge":
         return { type: "text", text: chartRow.charge } as TextCell;
       case "plannedStartDate":
-        return { type: "date", date: new Date(chartRow.plannedStartDate) } as DateCell;
+        return { type: "text", text: chartRow.plannedStartDate } as TextCell;
       case "plannedEndDate":
-        return { type: "date", date: new Date(chartRow.plannedEndDate) } as DateCell;
+        return { type: "text", text: chartRow.plannedEndDate } as TextCell;
       case "estimatedDaysRequired":
         return { type: "text", text: chartRow.estimatedDaysRequired } as TextCell;
       case "actualStartDate":
-        return { type: "date", date: new Date(chartRow.actualStartDate) } as DateCell;
+        return { type: "text", text: chartRow.actualStartDate } as TextCell;
       case "actualEndDate":
-        return { type: "date", date: new Date(chartRow.actualEndDate) } as DateCell;
+        return { type: "text", text: chartRow.actualEndDate } as TextCell; // DateCellからTextCellに変更
       case "displayName":
         return { type: "text", text: chartRow.displayName } as TextCell;
       default:

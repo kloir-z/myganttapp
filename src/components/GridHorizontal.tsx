@@ -43,16 +43,18 @@ const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRe
     const rect = event.currentTarget.getBoundingClientRect();
     const relativeX = event.clientX - rect.left;
     const clickedDate = calculateDateFromX(relativeX);
+    console.log(clickedDate)
     setIsEditing(true);
     setCurrentDate(clickedDate);
-    setIsShiftKeyDown(event.shiftKey);
+    const isShiftKeyDown = event.shiftKey;
+    setIsShiftKeyDown(isShiftKeyDown);
   
-    const setStartDate = event.shiftKey ? setLocalActualStartDate : setLocalPlannedStartDate;
-    const setEndDate = event.shiftKey ? setLocalActualEndDate : setLocalPlannedEndDate;
+    const setStartDate = isShiftKeyDown ? setLocalActualStartDate : setLocalPlannedStartDate;
+    const setEndDate = isShiftKeyDown ? setLocalActualEndDate : setLocalPlannedEndDate;
     setStartDate(clickedDate);
     setEndDate(clickedDate);
-  };
-  
+  }
+
   const handleMouseMove = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     const gridRect = gridRef.current?.getBoundingClientRect();
     if (!gridRect || !currentDate || !isEditing) return;
@@ -80,12 +82,21 @@ const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRe
     }
   }, [entry.plannedStartDate, entry.plannedEndDate, entry.actualStartDate, entry.actualEndDate, isEditing]);
 
+  function formatDate(date: Date) {
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const formattedMonth = month < 10 ? `0${month}` : month;
+    const formattedDay = day < 10 ? `0${day}` : day;
+    return `${year}/${formattedMonth}/${formattedDay}`;
+  }
+
   const syncToStore = useCallback(() => {
     if (isEditing) {
-      if (localPlannedStartDate) {dispatch(setPlannedStartDate({ id: entry.id, startDate: localPlannedStartDate.toISOString() }));}
-      if (localPlannedEndDate) {dispatch(setPlannedEndDate({ id: entry.id, endDate: localPlannedEndDate.toISOString() }));}
-      if (localActualStartDate) {dispatch(setActualStartDate({ id: entry.id, startDate: localActualStartDate.toISOString() }));}
-      if (localActualEndDate) {dispatch(setActualEndDate({ id: entry.id, endDate: localActualEndDate.toISOString() }));}
+      if (localPlannedStartDate) {dispatch(setPlannedStartDate({ id: entry.id, startDate: formatDate(localPlannedStartDate) }));}
+      if (localPlannedEndDate) {dispatch(setPlannedEndDate({ id: entry.id, endDate: formatDate(localPlannedEndDate) }));}
+      if (localActualStartDate) {dispatch(setActualStartDate({ id: entry.id, startDate: formatDate(localActualStartDate) }));}
+      if (localActualEndDate) {dispatch(setActualEndDate({ id: entry.id, endDate: formatDate(localActualEndDate) }));}
     }
   }, [localPlannedStartDate, localPlannedEndDate, localActualStartDate, localActualEndDate, isEditing, dispatch]);
 

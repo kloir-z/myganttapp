@@ -1,8 +1,6 @@
 // WBSInfo.tsx
-import React, { memo, useEffect } from 'react';
+import React, { useCallback, memo } from 'react';
 import { WBSData, ChartRow, SeparatorRow, EventRow  } from '../types/DataTypes';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../reduxComponents/store';
 import { ReactGrid, Row, DefaultCellTypes, TextCell, Id, MenuOption, SelectionMode } from "@silevis/reactgrid";
 import "@silevis/reactgrid/styles.css";
 import { useWBSData } from '../hooks/useWBSData';
@@ -10,14 +8,17 @@ import { handleAddChartRowBelow, handleAddSeparatorRowBelow, handleRemoveSelecte
 import { createChartRow, createSeparatorRow, createEventRow } from '../utils/wbsRowCreators';
 import { handleGridChanges } from '../utils/gridHandlers';
 import { useColumnResizer } from '../hooks/useColumnResizer';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '../reduxComponents/store';
 
 const WBSInfo: React.FC = memo(({}) => {
   const dispatch = useDispatch();
-  const { data, headerRow, columns, setColumns } = useWBSData();
+  const data = useSelector((state: RootState) => state.wbsData);
+  const { headerRow, columns, setColumns } = useWBSData();
   const handleColumnResize = useColumnResizer(setColumns);
   const dataArray = Object.values(data);
 
-  const getRows = (data: WBSData[]): Row<DefaultCellTypes>[] => {
+  const getRows = useCallback((data: WBSData[]): Row<DefaultCellTypes>[] => {
     const columnCount = columns.length;
     return [
       headerRow,
@@ -34,10 +35,11 @@ const WBSInfo: React.FC = memo(({}) => {
         }
       })
     ];
-  };
+  }, [columns, headerRow]);
+
   const rows = getRows(dataArray);
 
-  const simpleHandleContextMenu = (
+  const simpleHandleContextMenu = useCallback((
     selectedRowIds: Id[],
     selectedColIds: Id[],
     selectionMode: SelectionMode,
@@ -61,13 +63,13 @@ const WBSInfo: React.FC = memo(({}) => {
         handler: () => handleRemoveSelectedRow(dispatch, selectedRowIds, dataArray)
       }
     ];
-  };
+  }, [dispatch, dataArray]);
   
   const handleRowsReorder = (targetRowId: Id, rowIds: Id[]) => {
     // 行の並べ替え処理
   };
 
-  const handleColumnsReorder = (targetColumnId: Id, columnIds: Id[]) => {
+  const handleColumnsReorder = useCallback((targetColumnId: Id, columnIds: Id[]) => {
     const newColumnsOrder = [...columns];
     const targetIndex = newColumnsOrder.findIndex(column => column.columnId === targetColumnId);
   
@@ -80,7 +82,7 @@ const WBSInfo: React.FC = memo(({}) => {
     });
   
     setColumns(newColumnsOrder);
-  };  
+  }, [columns, setColumns]);
 
   return (
     <ReactGrid
