@@ -35,7 +35,7 @@ const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRe
 
   const adjustToLocalMidnight = (date: Date) => {
     const newDate = new Date(date);
-    newDate.setHours(0, 0, 0, 0); // ローカルタイムゾーンでの0:00に設定
+    newDate.setHours(0, 0, 0, 0);
     return newDate;
   };
   
@@ -43,7 +43,6 @@ const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRe
     const rect = event.currentTarget.getBoundingClientRect();
     const relativeX = event.clientX - rect.left;
     const clickedDate = calculateDateFromX(relativeX);
-    console.log(clickedDate)
     setIsEditing(true);
     setCurrentDate(clickedDate);
     const isShiftKeyDown = event.shiftKey;

@@ -10,6 +10,7 @@ import { handleGridChanges } from '../utils/gridHandlers';
 import { useColumnResizer } from '../hooks/useColumnResizer';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../reduxComponents/store';
+import { CustomDateCell, CustomDateCellTemplate } from '../utils/CustomDateCell';
 
 const WBSInfo: React.FC = memo(({}) => {
   const dispatch = useDispatch();
@@ -17,8 +18,10 @@ const WBSInfo: React.FC = memo(({}) => {
   const { headerRow, columns, setColumns } = useWBSData();
   const handleColumnResize = useColumnResizer(setColumns);
   const dataArray = Object.values(data);
+  const customDateCellTemplate = new CustomDateCellTemplate();
 
-  const getRows = useCallback((data: WBSData[]): Row<DefaultCellTypes>[] => {
+
+  const getRows = useCallback((data: WBSData[]): Row<DefaultCellTypes | CustomDateCell>[] => {
     const columnCount = columns.length;
     return [
       headerRow,
@@ -100,6 +103,7 @@ const WBSInfo: React.FC = memo(({}) => {
       onRowsReordered={handleRowsReorder}
       onColumnsReordered={handleColumnsReorder}
       canReorderRows={(targetRowId, rowIds) => targetRowId !== 'header'}
+      customCellTemplates={{ customDate: customDateCellTemplate }}
     />
   );
 });

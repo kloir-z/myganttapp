@@ -1,14 +1,14 @@
 // wbsRowCreators.ts
 import { ChartRow, SeparatorRow, EventRow } from '../types/DataTypes';
-import { Row, DefaultCellTypes, NumberCell, TextCell, DateCell, Column } from "@silevis/reactgrid";
+import { Row, DefaultCellTypes, NumberCell, TextCell, Column } from "@silevis/reactgrid";
+import { CustomDateCell } from '../utils/CustomDateCell';
 
-const fillEmptyCells = (cells: (NumberCell | TextCell | DateCell)[], columnCount: number, cellType: "text" | "date" = "text", style?: any) => {
+const fillEmptyCells = (cells: (NumberCell | TextCell | CustomDateCell)[], columnCount: number, cellType: "text" | "customDate" = "text", style?: any) => {
   while (cells.length < columnCount) {
-    let emptyCell: TextCell | DateCell;
-
+    let emptyCell: TextCell | CustomDateCell;
     switch (cellType) {
-      case "date":
-        emptyCell = { type: "date", date: new Date(), style };
+      case "customDate":
+        emptyCell = { type: "customDate", text: "", shortDate: "", value: NaN, style };
         break;
       default:
         emptyCell = { type: "text", text: "", style };
@@ -16,35 +16,19 @@ const fillEmptyCells = (cells: (NumberCell | TextCell | DateCell)[], columnCount
     cells.push(emptyCell);
   }
 };
-export const createChartRow = (chartRow: ChartRow, columns: Column[]): Row<DefaultCellTypes> => {
+
+export const createChartRow = (chartRow: ChartRow, columns: Column[]): Row<DefaultCellTypes | CustomDateCell> => {
   const rowCells = columns.map(column => {
-    switch (column.columnId) {
-      case "no":
-        return { type: "number", value: chartRow.no, style: { background: 'rgba(128, 128, 128, 0.1)'} } as NumberCell;
-      case "majorCategory":
-        return { type: "text", text: chartRow.majorCategory } as TextCell;
-      case "middleCategory":
-        return { type: "text", text: chartRow.middleCategory } as TextCell;
-      case "subCategory":
-        return { type: "text", text: chartRow.subCategory } as TextCell;
-      case "task":
-        return { type: "text", text: chartRow.task } as TextCell;
-      case "charge":
-        return { type: "text", text: chartRow.charge } as TextCell;
-      case "plannedStartDate":
-        return { type: "text", text: chartRow.plannedStartDate } as TextCell;
-      case "plannedEndDate":
-        return { type: "text", text: chartRow.plannedEndDate } as TextCell;
-      case "estimatedDaysRequired":
-        return { type: "text", text: chartRow.estimatedDaysRequired } as TextCell;
-      case "actualStartDate":
-        return { type: "text", text: chartRow.actualStartDate } as TextCell;
-      case "actualEndDate":
-        return { type: "text", text: chartRow.actualEndDate } as TextCell; // DateCellからTextCellに変更
-      case "displayName":
-        return { type: "text", text: chartRow.displayName } as TextCell;
-      default:
-        return { type: "text", text: "" } as TextCell;  
+    const columnId = column.columnId as string;
+    const cellValue = (chartRow as any)[columnId];
+    if (["plannedStartDate", "plannedEndDate", "actualStartDate", "actualEndDate"].includes(columnId)) {
+      return { type: "customDate", text: cellValue, value: NaN } as CustomDateCell;
+    }
+    else if (columnId === "no") {
+      return { type: "number", value: cellValue as number, style: { background: 'rgba(128, 128, 128, 0.1)'} } as NumberCell;
+    }
+    else {
+      return { type: "text", text: cellValue as string } as TextCell;
     }
   });
   return { rowId: chartRow.id, height: 21, cells: rowCells };

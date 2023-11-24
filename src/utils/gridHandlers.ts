@@ -1,10 +1,13 @@
 // gridHandlers.ts
-import { CellChange, TextCell, DateCell } from "@silevis/reactgrid";
+import { CellChange, TextCell, NumberCell, CheckboxCell, EmailCell, DropdownCell, ChevronCell, HeaderCell, TimeCell, DateCell } from "@silevis/reactgrid";
 import { WBSData } from '../types/DataTypes';
 import { Dispatch } from 'redux';
 import { setData } from '../reduxComponents/store';
+import { CustomDateCell, CustomDateCellTemplate } from '../utils/CustomDateCell';
 
-export const handleGridChanges = (dispatch: Dispatch, data: { [id: string]: WBSData }, changes: CellChange[]) => {
+type AllCellTypes  = TextCell | NumberCell | CheckboxCell | EmailCell | DropdownCell | ChevronCell | HeaderCell | TimeCell | DateCell | CustomDateCell;  
+
+export const handleGridChanges = (dispatch: Dispatch, data: { [id: string]: WBSData }, changes: CellChange<AllCellTypes>[]) => {
   const updatedData = { ...data };
 
   changes.forEach((change) => {
@@ -15,25 +18,12 @@ export const handleGridChanges = (dispatch: Dispatch, data: { [id: string]: WBSD
     if (rowData) {
       const newCell = change.newCell;
 
-      if (newCell.type === 'date') {
-        const dateValue = (newCell as DateCell).date;
-
-        if (dateValue === undefined || dateValue === null) {
-          updatedData[rowId] = {
-            ...rowData,
-            [fieldName]: ""
-          };
-        } else if (isValidDate(dateValue)) {
-          updatedData[rowId] = {
-            ...rowData,
-            [fieldName]: dateValue.toISOString(),
-          };
-        } else {
-          updatedData[rowId] = {
-            ...rowData,
-            [fieldName]: ""
-          };
-        }
+      if (newCell.type === 'customDate') {
+        const customDateCell = newCell as CustomDateCell;
+        updatedData[rowId] = {
+          ...rowData,
+          [fieldName]: customDateCell.text
+        };
       } else if (rowData.rowType === 'Separator' && newCell.type === 'text') {
         updatedData[rowId] = {
           ...rowData,
@@ -45,13 +35,8 @@ export const handleGridChanges = (dispatch: Dispatch, data: { [id: string]: WBSD
           [fieldName]: (newCell as TextCell).text,
         };
       }
-      // 他のセルタイプに対する処理も必要に応じて追加
     }
   });
 
   dispatch(setData(updatedData));
 };
-
-function isValidDate(date: Date): boolean {
-  return date instanceof Date && !isNaN(date.getTime());
-}
