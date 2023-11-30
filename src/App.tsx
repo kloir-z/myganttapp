@@ -20,7 +20,7 @@ function App() {
   const [wbsWidth, setWbsWidth] = useState(550);
   const [dateRange, setDateRange] = useState({
     startDate: new Date('2023-09-01'),
-    endDate: new Date('2024-10-05'),
+    endDate: new Date('2025-10-05'),
   });
   const [dateArray, setDateArray] = useState(generateDates(dateRange.startDate, dateRange.endDate));
   const wbsRef = useRef<HTMLDivElement>(null);
@@ -76,13 +76,21 @@ function App() {
     setWbsWidth(newWidth);
   };
 
+  const calculateGridHeight = () => {
+    const rowCount = Object.keys(data).length;
+    const maxGridHeight = `calc(100vh - 41px)`;
+    const dynamicGridHeight = `${rowCount * 21}px`;
+  
+    return rowCount * 21 < window.innerHeight - 41 ? dynamicGridHeight : maxGridHeight;
+  };
+
   return (
     
     <div style={{position: 'fixed', left: '30px'}}>
     <div style={{position: 'relative'}}>
       <div style={{position: 'absolute', left: `${wbsWidth}px`, width: `calc(100vw - 30px - ${wbsWidth}px)`, height: '100vh', overflow: 'hidden'}} ref={calendarRef}>
         <Calendar dateArray={dateArray} />
-        <GridVertical dateArray={dateArray} />
+        <GridVertical dateArray={dateArray} gridHeight={calculateGridHeight()} />
       </div>
       <div className="hiddenScrollbar" style={{position: 'absolute', top: '21px', width: `${wbsWidth}px`, height: `calc(100vh - 21px)`, overflowX: 'scroll' }} ref={wbsRef}>
         <WBSInfo />

@@ -5,9 +5,10 @@ import { GanttRow, Cell } from '../styles/GanttStyles';
 
 interface CalendarProps {
   dateArray: Date[];
+  gridHeight: string;
 };
 
-const GridVertical: React.FC<CalendarProps> = memo(({ dateArray }) => {
+const GridVertical: React.FC<CalendarProps> = memo(({ dateArray, gridHeight }) => {
   return (
     <GanttRow style={{height: '0px', borderBottom: 'none'}}>
       {dateArray.map((date, index) => {
@@ -26,7 +27,7 @@ const GridVertical: React.FC<CalendarProps> = memo(({ dateArray }) => {
               position: 'absolute',
               top: '0px',
               left: `${left}px`,
-              height: `calc(100vh - 41px)`,
+              height: gridHeight,
             }}
           />
         );
