@@ -4,7 +4,10 @@
 
 .rg-celleditor input{
   font-size: 0.8rem; /* 希望のフォントサイズに変更 */
-  max-width: 100%; /* セルの幅に合わせて調整 */
   border: none; /* ボーダーを非表示にする */
   /* 必要に応じて他のスタイリングを追加 */
+}
+
+.rg-text-celleditor{
+  width: 400px !important;
 }

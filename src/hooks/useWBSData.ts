@@ -4,31 +4,31 @@ import { Column, Row, DefaultCellTypes, HeaderCell } from "@silevis/reactgrid";
 
 interface ColumnMap {
   no: 'No';
-  majorCategory: 'Major';
-  middleCategory: 'Middle';
-  subCategory: 'Sub';
-  task: 'Task';
+  majorCategory: 'C1';
+  middleCategory: 'C2';
+  subCategory: 'C3';
+  task: 'C4';
   charge: 'Charge';
-  plannedStartDate: 'PlanStart';
-  plannedEndDate: 'PlanEnd';
-  estimatedDaysRequired: 'Estimate';
-  actualStartDate: 'ActStart';
-  actualEndDate: 'ActEnd';
+  plannedStartDate: 'PlanS';
+  plannedEndDate: 'PlanE';
+  estimatedDaysRequired: 'Est';
+  actualStartDate: 'ActS';
+  actualEndDate: 'ActE';
   displayName: 'DisplayName';
 }
 
 const columnMap: ColumnMap = {
   no: 'No',
-  majorCategory: 'Major',
-  middleCategory: 'Middle',
-  subCategory: 'Sub',
-  task: 'Task',
+  majorCategory: 'C1',
+  middleCategory: 'C2',
+  subCategory: 'C3',
+  task: 'C4',
   charge: 'Charge',
-  plannedStartDate: 'PlanStart',
-  plannedEndDate: 'PlanEnd',
-  estimatedDaysRequired: 'Estimate',
-  actualStartDate: 'ActStart',
-  actualEndDate: 'ActEnd',
+  plannedStartDate: 'PlanS',
+  plannedEndDate: 'PlanE',
+  estimatedDaysRequired: 'Est',
+  actualStartDate: 'ActS',
+  actualEndDate: 'ActE',
   displayName: 'DisplayName',
 };
 
@@ -42,11 +42,11 @@ export const useWBSData = () => {
     { columnId: "subCategory", width: 50, resizable: true, reorderable: true },
     { columnId: "task", width: 50, resizable: true, reorderable: true },
     { columnId: "charge", width: 50, resizable: true, reorderable: true },
-    { columnId: "plannedStartDate", width: 100, resizable: true, reorderable: true },
-    { columnId: "plannedEndDate", width: 100, resizable: true, reorderable: true },
+    { columnId: "plannedStartDate", width: 40, resizable: true, reorderable: true },
+    { columnId: "plannedEndDate", width: 40, resizable: true, reorderable: true },
     { columnId: "estimatedDaysRequired", width: 30, resizable: true, reorderable: true },
-    { columnId: "actualStartDate", width: 100, resizable: true, reorderable: true },
-    { columnId: "actualEndDate", width: 100, resizable: true, reorderable: true },
+    { columnId: "actualStartDate", width: 40, resizable: true, reorderable: true },
+    { columnId: "actualEndDate", width: 40, resizable: true, reorderable: true },
   ]);
 
   const getHeaderRow = (columns: Column[], columnMap: ColumnMap): Row<DefaultCellTypes> => {

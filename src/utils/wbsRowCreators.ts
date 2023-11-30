@@ -31,7 +31,7 @@ export const createChartRow = (chartRow: ChartRow, columns: Column[]): Row<Defau
       return { type: "text", text: cellValue as string } as TextCell;
     }
   });
-  return { rowId: chartRow.id, height: 21, cells: rowCells };
+  return { rowId: chartRow.id, height: 21, cells: rowCells, reorderable: true };
 };
 
 export const createSeparatorRow = (separatorRow: SeparatorRow, columnCount: number): Row<DefaultCellTypes> => {
@@ -40,7 +40,7 @@ export const createSeparatorRow = (separatorRow: SeparatorRow, columnCount: numb
     { type: "text", text: separatorRow.displayName, colspan: 10, style: { background: '#ddedff' } } as TextCell
   ];
   fillEmptyCells(rowCells, columnCount, "text", { background: '#ddedff' });
-  return { rowId: separatorRow.id, height: 21, cells: rowCells as any[] };
+  return { rowId: separatorRow.id, height: 21, cells: rowCells as any[], reorderable: true };
 };
 
 export const createEventRow = (eventRow: EventRow, columnCount: number): Row<DefaultCellTypes> => {
@@ -49,5 +49,5 @@ export const createEventRow = (eventRow: EventRow, columnCount: number): Row<Def
     { type: "text", text: eventRow.displayName } as TextCell
   ];
   fillEmptyCells(rowCells, columnCount);
-  return {rowId: eventRow.id, height: 21, cells: rowCells};
+  return {rowId: eventRow.id, height: 21, cells: rowCells, reorderable: true };
 };

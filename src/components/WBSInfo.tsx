@@ -9,8 +9,9 @@ import { createChartRow, createSeparatorRow, createEventRow } from '../utils/wbs
 import { handleGridChanges } from '../utils/gridHandlers';
 import { useColumnResizer } from '../hooks/useColumnResizer';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../reduxComponents/store';
+import { RootState, setData } from '../reduxComponents/store';
 import { CustomDateCell, CustomDateCellTemplate } from '../utils/CustomDateCell';
+import { assignIds, reorderArray } from '../utils/wbsHelpers';
 
 const WBSInfo: React.FC = memo(({}) => {
   const dispatch = useDispatch();
@@ -19,7 +20,6 @@ const WBSInfo: React.FC = memo(({}) => {
   const handleColumnResize = useColumnResizer(setColumns);
   const dataArray = Object.values(data);
   const customDateCellTemplate = new CustomDateCellTemplate();
-
 
   const getRows = useCallback((data: WBSData[]): Row<DefaultCellTypes | CustomDateCell>[] => {
     const columnCount = columns.length;
@@ -34,11 +34,11 @@ const WBSInfo: React.FC = memo(({}) => {
           case 'Event':
             return createEventRow(item as EventRow, columnCount);
           default:
-            return { rowId: 'empty', height: 21, cells: [{ type: "text", text: '' } as TextCell] };
+            return { rowId: 'empty', height: 21, cells: [{ type: "text", text: '' } as TextCell], reorderable: true };
         }
       })
     ];
-  }, [columns, headerRow]);
+  }, [data, columns, headerRow]);
 
   const rows = getRows(dataArray);
 
@@ -67,10 +67,15 @@ const WBSInfo: React.FC = memo(({}) => {
       }
     ];
   }, [dispatch, dataArray]);
+
+  const handleRowsReorder = useCallback((targetRowId: Id, rowIds: Id[]) => {
+    const targetIndex = dataArray.findIndex(data => data.id === targetRowId);
+    const movingRowsIndexes = rowIds.map(id => dataArray.findIndex(data => data.id === id));
   
-  const handleRowsReorder = (targetRowId: Id, rowIds: Id[]) => {
-    // 行の並べ替え処理
-  };
+    const reorderedData = reorderArray(dataArray, movingRowsIndexes, targetIndex);
+  
+    dispatch(setData(assignIds(reorderedData)));
+  }, [dataArray, dispatch]);
 
   const handleColumnsReorder = useCallback((targetColumnId: Id, columnIds: Id[]) => {
     const newColumnsOrder = [...columns];
@@ -87,6 +92,10 @@ const WBSInfo: React.FC = memo(({}) => {
     setColumns(newColumnsOrder);
   }, [columns, setColumns]);
 
+  const handleCanReorderRows = (targetRowId: Id, rowIds: Id[]): boolean => {
+    return targetRowId !== 'header';
+  }
+
   return (
     <ReactGrid
       rows={rows}
@@ -102,7 +111,7 @@ const WBSInfo: React.FC = memo(({}) => {
       enableFillHandle
       onRowsReordered={handleRowsReorder}
       onColumnsReordered={handleColumnsReorder}
-      canReorderRows={(targetRowId, rowIds) => targetRowId !== 'header'}
+      canReorderRows={handleCanReorderRows}
       customCellTemplates={{ customDate: customDateCellTemplate }}
     />
   );

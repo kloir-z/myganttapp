@@ -10,3 +10,16 @@ export const assignIds = (data: WBSData[]): { [id: string]: WBSData } => {
   });
   return dataWithIdsAndNos;
 };
+
+export const reorderArray = <T extends { id: string }>(arr: T[], indexesToMove: number[], newIndex: number): T[] => {
+  const itemsToMove = indexesToMove.map(index => arr[index]);
+  let remainingItems = arr.filter((_, index) => !indexesToMove.includes(index));
+
+  if (newIndex > arr.length) newIndex = arr.length;
+  else if (newIndex < 0) newIndex = 0;
+
+  const start = remainingItems.slice(0, newIndex);
+  const end = remainingItems.slice(newIndex);
+
+  return [...start, ...itemsToMove, ...end];
+};
