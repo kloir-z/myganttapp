@@ -3,9 +3,10 @@ import { CellChange, TextCell, NumberCell, CheckboxCell, EmailCell, DropdownCell
 import { WBSData } from '../types/DataTypes';
 import { Dispatch } from 'redux';
 import { setData } from '../reduxComponents/store';
-import { CustomDateCell, CustomDateCellTemplate } from '../utils/CustomDateCell';
+import { CustomDateCell } from './CustomDateCell';
+import { CustomTextCell } from "./CustomTextCell";
 
-type AllCellTypes  = TextCell | NumberCell | CheckboxCell | EmailCell | DropdownCell | ChevronCell | HeaderCell | TimeCell | DateCell | CustomDateCell;  
+type AllCellTypes  = TextCell | NumberCell | CheckboxCell | EmailCell | DropdownCell | ChevronCell | HeaderCell | TimeCell | DateCell | CustomDateCell | CustomTextCell;  
 
 export const handleGridChanges = (dispatch: Dispatch, data: { [id: string]: WBSData }, changes: CellChange<AllCellTypes>[]) => {
   const updatedData = { ...data };
@@ -23,6 +24,12 @@ export const handleGridChanges = (dispatch: Dispatch, data: { [id: string]: WBSD
         updatedData[rowId] = {
           ...rowData,
           [fieldName]: customDateCell.text
+        };
+      } else if (newCell.type === 'customText') {
+        const customTextCell = newCell as CustomTextCell;
+        updatedData[rowId] = {
+          ...rowData,
+          [fieldName]: customTextCell.text
         };
       } else if (rowData.rowType === 'Separator' && newCell.type === 'text') {
         updatedData[rowId] = {

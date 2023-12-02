@@ -11,6 +11,7 @@ import { useColumnResizer } from '../hooks/useColumnResizer';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, setData } from '../reduxComponents/store';
 import { CustomDateCell, CustomDateCellTemplate } from '../utils/CustomDateCell';
+import { CustomTextCell, CustomTextCellTemplate } from '../utils/CustomTextCell';
 import { assignIds, reorderArray } from '../utils/wbsHelpers';
 
 const WBSInfo: React.FC = memo(({}) => {
@@ -20,8 +21,9 @@ const WBSInfo: React.FC = memo(({}) => {
   const handleColumnResize = useColumnResizer(setColumns);
   const dataArray = Object.values(data);
   const customDateCellTemplate = new CustomDateCellTemplate();
+  const customTextCellTemplate = new CustomTextCellTemplate();  
 
-  const getRows = useCallback((data: WBSData[]): Row<DefaultCellTypes | CustomDateCell>[] => {
+  const getRows = useCallback((data: WBSData[]): Row<DefaultCellTypes | CustomDateCell | CustomTextCell>[] => {
     const columnCount = columns.length;
     return [
       headerRow,
@@ -34,7 +36,7 @@ const WBSInfo: React.FC = memo(({}) => {
           case 'Event':
             return createEventRow(item as EventRow, columnCount);
           default:
-            return { rowId: 'empty', height: 21, cells: [{ type: "text", text: '' } as TextCell], reorderable: true };
+            return { rowId: 'empty', height: 21, cells: [{ type: "customText", text: '' } as CustomTextCell], reorderable: true };
         }
       })
     ];
@@ -112,7 +114,7 @@ const WBSInfo: React.FC = memo(({}) => {
       onRowsReordered={handleRowsReorder}
       onColumnsReordered={handleColumnsReorder}
       canReorderRows={handleCanReorderRows}
-      customCellTemplates={{ customDate: customDateCellTemplate }}
+      customCellTemplates={{ customDate: customDateCellTemplate, customText: customTextCellTemplate }}
     />
   );
 });

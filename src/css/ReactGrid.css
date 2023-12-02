@@ -1,13 +1,8 @@
 .reactgrid {
-    font-size: 0.8rem; /* 希望のフォントサイズに変更 */
-  }
-
-.rg-celleditor input{
-  font-size: 0.8rem; /* 希望のフォントサイズに変更 */
-  border: none; /* ボーダーを非表示にする */
-  /* 必要に応じて他のスタイリングを追加 */
+  font-size: 0.8rem;
 }
 
-.rg-text-celleditor{
-  width: 400px !important;
+.rg-celleditor input{
+  font-size: 0.8rem;
+  border: none;
 }
