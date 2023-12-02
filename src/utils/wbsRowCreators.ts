@@ -29,7 +29,7 @@ export const createChartRow = (chartRow: ChartRow, columns: Column[]): Row<Defau
       return { type: "number", value: cellValue as number, style: { background: 'rgba(128, 128, 128, 0.1)'}} as NumberCell;
     }
     else {
-      return { type: "customText", text: cellValue as string, value: (cellValue as string).length } as CustomTextCell; // CustomTextCellを使用
+      return { type: "customText", text: cellValue as string, value: (cellValue as string).length } as CustomTextCell;
     }
   });
   return { rowId: chartRow.id, height: 21, cells: rowCells, reorderable: true };

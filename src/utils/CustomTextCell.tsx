@@ -1,6 +1,8 @@
 // CustomDateCellTemplate.tsx
 import * as React from "react";
 import { CellTemplate, Compatible, Uncertain, UncertainCompatible, keyCodes, Cell } from "@silevis/reactgrid";
+import { isAlphaNumericKey, isNavigationKey } from "@silevis/reactgrid";
+import "./CustomTextCellTemplate.css";
 
 export interface CustomTextCell extends Cell {
   type: 'customText';
@@ -9,6 +11,7 @@ export interface CustomTextCell extends Cell {
 }
 
 export class CustomTextCellTemplate implements CellTemplate<CustomTextCell> {
+  private wasEscKeyPressed = false;
   getCompatibleCell(uncertainCell: Uncertain<CustomTextCell>): Compatible<CustomTextCell> {
     let text = uncertainCell.text || '';
     let value = text.length;
@@ -36,27 +39,41 @@ export class CustomTextCellTemplate implements CellTemplate<CustomTextCell> {
   ): React.ReactNode {
     if (isInEditMode) {
       return (
-        <input
-          type="text"
-          defaultValue={cell.text}
-          ref={input => input && input.focus()}
-          onChange={e => {
-            onCellChanged({ ...cell, text: e.target.value }, false);
-          }}
-          onBlur={e => {
-            onCellChanged({ ...cell, text: e.target.value }, true);
-          }}
-          onCopy={e => e.stopPropagation()}
-          onCut={e => e.stopPropagation()}
-          onPaste={e => e.stopPropagation()}
-          onPointerDown={e => e.stopPropagation()}
-          onKeyDown={e => {
-            if (e.key === "Enter" || e.key === "Escape") {
-              e.stopPropagation();
-              onCellChanged({ ...cell, text: e.currentTarget.value }, true);
-            }
-          }}
-        />
+        <div className="input-text__item">
+          <div className="input-text__dummy js-dummy-input-text" data-placeholder="Enter text here"></div>
+          <input
+            type="text"
+            className="input-text js-input-text"
+            defaultValue={cell.text}
+            ref={input => {
+              if (input) {
+                input.focus();
+                const dummyElement = input.previousSibling as HTMLElement;
+                if (dummyElement) {
+                  dummyElement.textContent = cell.text;
+                }
+              }
+            }}
+            onChange={e => {
+              const value = e.currentTarget.value;
+              onCellChanged(this.getCompatibleCell({ ...cell, text: value }), false);
+              
+              const dummyElement = e.currentTarget.previousSibling as HTMLElement;
+              if (dummyElement) {
+                dummyElement.textContent = value;
+              }
+            }}
+            onBlur={e => { onCellChanged(this.getCompatibleCell({ ...cell, text: e.currentTarget.value }), !this.wasEscKeyPressed); this.wasEscKeyPressed = false; }}
+            onCopy={e => e.stopPropagation()}
+            onCut={e => e.stopPropagation()}
+            onPaste={e => e.stopPropagation()}
+            onPointerDown={e => e.stopPropagation()}
+            onKeyDown={e => {
+              if (isAlphaNumericKey(e.keyCode) || (isNavigationKey(e.keyCode))) e.stopPropagation();
+              if (e.keyCode === keyCodes.ESCAPE) this.wasEscKeyPressed = true;
+            }}
+          />
+        </div>
       );
     }
     return <span>{cell.text}</span>;
