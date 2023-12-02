@@ -10,9 +10,6 @@ export const GanttRow = styled.div`
   position: relative;
   user-select: none;
   align-items: center;
-  &.hover-effect {
-    border-bottom: solid 1px #001aff83;
-  };
 `;
 
 interface CellProps {
@@ -44,6 +41,7 @@ export const Cell = styled.div<CellProps>`
     return baseColor;
   }};
   &:hover {
-    border: 1px solid #001aff83;
+    border: ${props => ((props.$isPlanned || props.$isActual) ? '1px solid #001aff83' : '1px solid transparent')};
+    border-left: ${props => ((props.$isPlanned || props.$isActual) ? '1px solid #001aff83' : '1px solid #00000016')};
   }
 `;
