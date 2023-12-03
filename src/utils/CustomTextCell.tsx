@@ -40,7 +40,7 @@ export class CustomTextCellTemplate implements CellTemplate<CustomTextCell> {
     if (isInEditMode) {
       return (
         <div className="input-text__item">
-          <div className="input-text__dummy js-dummy-input-text" data-placeholder="Enter text here"></div>
+          <div className="input-text__dummy js-dummy-input-text" data-placeholder=" "></div>
           <input
             type="text"
             className="input-text js-input-text"

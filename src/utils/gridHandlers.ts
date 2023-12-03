@@ -40,9 +40,15 @@ export const handleGridChanges = (dispatch: Dispatch, data: { [id: string]: WBSD
       if (newDate || fieldName === 'businessDays') {
         const chartRow = updatedData[rowId] as ChartRow;
         if (fieldName === 'plannedStartDate' || fieldName === 'plannedEndDate') {
-          const startDate = new Date(chartRow.plannedStartDate);
-          const endDate = new Date(chartRow.plannedEndDate);
-          chartRow.businessDays = calculateBusinessDays(startDate, endDate).toString();
+          if (chartRow.plannedStartDate && chartRow.plannedEndDate) {
+            const startDate = new Date(chartRow.plannedStartDate);
+            const endDate = new Date(chartRow.plannedEndDate);
+            if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+              chartRow.businessDays = calculateBusinessDays(startDate, endDate).toString();
+            }
+          } else {
+            chartRow.businessDays = '';
+          }
         } else if (fieldName === 'businessDays') {
           const startDate = new Date(chartRow.plannedStartDate);
           const businessDays = parseInt(chartRow.businessDays, 10);
