@@ -11,7 +11,7 @@ interface ColumnMap {
   charge: 'Charge';
   plannedStartDate: 'PlanS';
   plannedEndDate: 'PlanE';
-  estimatedDaysRequired: 'Est';
+  businessDays: 'D';
   actualStartDate: 'ActS';
   actualEndDate: 'ActE';
   displayName: 'DisplayName';
@@ -26,7 +26,7 @@ const columnMap: ColumnMap = {
   charge: 'Charge',
   plannedStartDate: 'PlanS',
   plannedEndDate: 'PlanE',
-  estimatedDaysRequired: 'Est',
+  businessDays: 'D',
   actualStartDate: 'ActS',
   actualEndDate: 'ActE',
   displayName: 'DisplayName',
@@ -44,7 +44,7 @@ export const useWBSData = () => {
     { columnId: "charge", width: 50, resizable: true, reorderable: true },
     { columnId: "plannedStartDate", width: 40, resizable: true, reorderable: true },
     { columnId: "plannedEndDate", width: 40, resizable: true, reorderable: true },
-    { columnId: "estimatedDaysRequired", width: 30, resizable: true, reorderable: true },
+    { columnId: "businessDays", width: 30, resizable: true, reorderable: true },
     { columnId: "actualStartDate", width: 40, resizable: true, reorderable: true },
     { columnId: "actualEndDate", width: 40, resizable: true, reorderable: true },
   ]);

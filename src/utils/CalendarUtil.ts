@@ -68,3 +68,44 @@ export const generateDates = (start: Date, end: Date) => {
 
   return dateArray;
 };
+
+export const calculateBusinessDays = (start: Date, end: Date): number => {
+  let count = 0;
+  let currentDate = new Date(start);
+
+  while (currentDate <= end) {
+    const dayOfWeek = currentDate.getDay();
+    if (dayOfWeek !== 0 && dayOfWeek !== 6 && !isHoliday(currentDate)) {
+      count++;
+    }
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return count;
+};
+
+export const addBusinessDays = (start: Date, days: number): Date => {
+  let currentDate = new Date(start);
+  let addedDays = 0;
+
+  const startDayOfWeek = currentDate.getDay();
+  if (startDayOfWeek !== 0 && startDayOfWeek !== 6 && !isHoliday(currentDate)) {
+    addedDays = 1;
+  }
+
+  while (addedDays < days) {
+    currentDate.setDate(currentDate.getDate() + 1);
+    const dayOfWeek = currentDate.getDay();
+    if (dayOfWeek !== 0 && dayOfWeek !== 6 && !isHoliday(currentDate)) {
+      addedDays++;
+    }
+  }
+
+  return currentDate;
+};
+
+export const toLocalISOString = (date: Date): string => {
+  const offset = date.getTimezoneOffset();
+  const adjustedDate = new Date(date.getTime() - offset * 60 * 1000);
+  return adjustedDate.toISOString().split('T')[0];
+};

@@ -17,7 +17,7 @@ export interface ChartRow extends BaseRow {
   charge: string;
   plannedStartDate: string;
   plannedEndDate: string;
-  estimatedDaysRequired: string,
+  businessDays: string,
   actualStartDate: string;
   actualEndDate: string;
   comment: string;
@@ -32,7 +32,7 @@ export interface EventData {
   displayName: string;
   plannedStartDate: string;
   plannedEndDate: string;
-  estimatedDaysRequired: "5",
+  businessDays: "5",
   actualStartDate: string;
   actualEndDate: string;
   comment: string;

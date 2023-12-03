@@ -10,14 +10,19 @@ interface ChartBarProps {
   charge?: string;
 }
 
+const getStartOfDay = (date: Date) => {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+};
+
 const ChartBar: React.FC<ChartBarProps> = ({ startDate, endDate, dateArray, isActual, entryId, charge }) => {
   if (!startDate || !endDate) {
     return null;
   }
 
+  const endOfDay = getStartOfDay(endDate);
   const startIndex = dateArray.findIndex(date => date >= startDate);
-  let endIndex = dateArray.findIndex(date => date >= endDate);
-  endIndex = endIndex !== -1 ? endIndex : dateArray.length - 1;
+  let endIndex = dateArray.findIndex(date => date > endOfDay);
+  endIndex = endIndex !== -1 ? endIndex - 1 : dateArray.length - 1;
   const dateArrayStart = dateArray[0];
   const dateArrayEnd = dateArray[dateArray.length - 1];
 

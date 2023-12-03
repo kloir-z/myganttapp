@@ -2,12 +2,21 @@ import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { WBSData, ChartRow } from '../types/DataTypes';
 import { testData } from '../testdata/testdata';
 import { v4 as uuidv4 } from 'uuid';
+import { calculateBusinessDays } from '../utils/CalendarUtil';
 
 const assignIds = (data: WBSData[]): { [id: string]: WBSData } => {
   const dataWithIdsAndNos: { [id: string]: WBSData } = {};
   data.forEach((row, index) => {
     const id = uuidv4();
-    dataWithIdsAndNos[id] = { ...row, id, no: index + 1 };
+    if (row.rowType === 'Chart') {
+      const chartRow = row as ChartRow;
+      const startDate = new Date(chartRow.plannedStartDate);
+      const endDate = new Date(chartRow.plannedEndDate);
+      const businessDays = calculateBusinessDays(startDate, endDate).toString();
+      dataWithIdsAndNos[id] = { ...chartRow, id, no: index + 1, businessDays };
+    } else {
+      dataWithIdsAndNos[id] = { ...row, id, no: index + 1 };
+    }
   });
   return dataWithIdsAndNos;
 };
@@ -24,13 +33,31 @@ export const wbsDataSlice = createSlice({
     setPlannedStartDate: (state, action: PayloadAction<{ id: string; startDate: string }>) => {
       const { id, startDate } = action.payload;
       if (state[id] && state[id].rowType === 'Chart') {
-        (state[id] as ChartRow).plannedStartDate = startDate;
+        const chartRow = state[id] as ChartRow;
+        chartRow.plannedStartDate = startDate;
+        if (chartRow.plannedEndDate) {
+          const newStartDate = new Date(startDate);
+          const endDate = new Date(chartRow.plannedEndDate);
+          chartRow.businessDays = calculateBusinessDays(newStartDate, endDate).toString();
+        }
       }
     },
     setPlannedEndDate: (state, action: PayloadAction<{ id: string; endDate: string }>) => {
       const { id, endDate } = action.payload;
       if (state[id] && state[id].rowType === 'Chart') {
-        (state[id] as ChartRow).plannedEndDate = endDate;
+        const chartRow = state[id] as ChartRow;
+        chartRow.plannedEndDate = endDate;
+        if (chartRow.plannedStartDate) {
+          const startDate = new Date(chartRow.plannedStartDate);
+          const newEndDate = new Date(endDate);
+          chartRow.businessDays = calculateBusinessDays(startDate, newEndDate).toString();
+        }
+      }
+    },
+    setBusinessDays: (state, action: PayloadAction<{ id: string; days: string }>) => {
+      const { id, days } = action.payload;
+      if (state[id] && state[id].rowType === 'Chart') {
+        (state[id] as ChartRow).businessDays = days;
       }
     },
     setActualStartDate: (state, action: PayloadAction<{ id: string; startDate: string }>) => {
@@ -58,7 +85,8 @@ export const wbsDataSlice = createSlice({
 export const { 
   setData, 
   setPlannedStartDate, 
-  setPlannedEndDate, 
+  setPlannedEndDate,
+  setBusinessDays,
   setActualStartDate, 
   setActualEndDate,
   setDisplayName 
