@@ -69,11 +69,15 @@ export const generateDates = (start: Date, end: Date) => {
   return dateArray;
 };
 
+const getStartOfDay = (date: Date) => {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+};
+
 export const calculateBusinessDays = (start: Date, end: Date): number => {
   let count = 0;
-  let currentDate = new Date(start);
+  let currentDate = new Date(getStartOfDay(start));
 
-  while (currentDate <= end) {
+  while (currentDate <= getStartOfDay(end)) {
     const dayOfWeek = currentDate.getDay();
     if (dayOfWeek !== 0 && dayOfWeek !== 6 && !isHoliday(currentDate)) {
       count++;

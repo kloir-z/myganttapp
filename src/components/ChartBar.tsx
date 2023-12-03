@@ -19,9 +19,11 @@ const ChartBar: React.FC<ChartBarProps> = ({ startDate, endDate, dateArray, isAc
     return null;
   }
 
+  const startOfDay = getStartOfDay(startDate);
   const endOfDay = getStartOfDay(endDate);
-  const startIndex = dateArray.findIndex(date => date >= startDate);
+  let startIndex = dateArray.findIndex(date => date > startOfDay);
   let endIndex = dateArray.findIndex(date => date > endOfDay);
+  startIndex = startIndex !== -1 ? startIndex - 1 : dateArray.length - 1;
   endIndex = endIndex !== -1 ? endIndex - 1 : dateArray.length - 1;
   const dateArrayStart = dateArray[0];
   const dateArrayEnd = dateArray[dateArray.length - 1];

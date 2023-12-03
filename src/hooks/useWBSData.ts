@@ -33,7 +33,6 @@ const columnMap: ColumnMap = {
 };
 
 export const useWBSData = () => {
-
   const [columns, setColumns] = useState<Column[]>([
     { columnId: "no", width: 15, resizable: false },
     { columnId: "displayName", width: 100, resizable: true, reorderable: true },
@@ -66,7 +65,7 @@ export const useWBSData = () => {
 
   useEffect(() => {
     setHeaderRow(getHeaderRow(columns, columnMap));
-  }, [columns, columnMap]);
+  }, [columns]);
   
   return { columns, setColumns, headerRow };
 };
