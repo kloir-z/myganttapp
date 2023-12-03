@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useRef } from 'react';
 
 interface ResizeBarProps {
   onDrag: (newWidth: number) => void;

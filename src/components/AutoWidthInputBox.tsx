@@ -92,7 +92,7 @@ const AutoWidthInputBox: React.FC<AutoWidthInputBoxProps> = ({
     }
   }, [entryId, localDisplayName, dispatch, isEditing]);
   
-  const debouncedSyncToStore = useCallback(debounce(syncToStore, 100), [syncToStore]);
+  const debouncedSyncToStore = debounce(syncToStore, 100);
   
   useEffect(() => {
     debouncedSyncToStore();

@@ -1,7 +1,7 @@
 // WBSInfo.tsx
 import React, { useCallback, memo } from 'react';
 import { WBSData, ChartRow, SeparatorRow, EventRow  } from '../types/DataTypes';
-import { ReactGrid, Row, DefaultCellTypes, TextCell, Id, MenuOption, SelectionMode } from "@silevis/reactgrid";
+import { ReactGrid, Row, DefaultCellTypes, Id, MenuOption, SelectionMode } from "@silevis/reactgrid";
 import "@silevis/reactgrid/styles.css";
 import { useWBSData } from '../hooks/useWBSData';
 import { handleAddChartRowBelow, handleAddSeparatorRowBelow, handleRemoveSelectedRow } from '../utils/contextMenuHandlers';
@@ -14,7 +14,7 @@ import { CustomDateCell, CustomDateCellTemplate } from '../utils/CustomDateCell'
 import { CustomTextCell, CustomTextCellTemplate } from '../utils/CustomTextCell';
 import { assignIds, reorderArray } from '../utils/wbsHelpers';
 
-const WBSInfo: React.FC = memo(({}) => {
+const WBSInfo: React.FC = memo(() => {
   const dispatch = useDispatch();
   const data = useSelector((state: RootState) => state.wbsData);
   const { headerRow, columns, setColumns } = useWBSData();
@@ -40,7 +40,7 @@ const WBSInfo: React.FC = memo(({}) => {
         }
       })
     ];
-  }, [data, columns, headerRow]);
+  }, [columns, headerRow]);
 
   const rows = getRows(dataArray);
 

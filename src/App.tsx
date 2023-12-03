@@ -1,5 +1,5 @@
 // App.tsx
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Calendar from './components/Calendar';
 import { ChartRow  } from './types/DataTypes';
 import { GanttRow } from './styles/GanttStyles';
@@ -7,7 +7,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import './css/DatePicker.css'
 import WBSInfo from './components/WBSInfo';
 import GridHorizontal from './components/GridHorizontal';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { RootState } from './reduxComponents/store';
 import { generateDates } from './utils/CalendarUtil';
 import GridVertical from './components/GridVertical';
