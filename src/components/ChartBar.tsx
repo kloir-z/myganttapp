@@ -8,13 +8,14 @@ interface ChartBarProps {
   isActual: boolean;
   entryId: string;
   charge?: string;
+  onBarMouseDown: (event: React.MouseEvent<HTMLDivElement>) => void;
 }
 
 const getStartOfDay = (date: Date) => {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 };
 
-const ChartBar: React.FC<ChartBarProps> = ({ startDate, endDate, dateArray, isActual, entryId, charge }) => {
+const ChartBar: React.FC<ChartBarProps> = ({ startDate, endDate, dateArray, isActual, entryId, charge, onBarMouseDown }) => {
   if (!startDate || !endDate) {
     return null;
   }
@@ -37,7 +38,10 @@ const ChartBar: React.FC<ChartBarProps> = ({ startDate, endDate, dateArray, isAc
     const leftPosition = startIndex * 21;
 
     return (
-      <div style={{position: 'absolute', left: `${leftPosition}px`, width: `${width}px`}}>
+      <div
+        style={{position: 'absolute', left: `${leftPosition}px`, width: `${width}px`}}
+        onMouseDown={onBarMouseDown}
+      >
         <ChartCell
           entryId={entryId}
           isActual={isActual}

@@ -25,11 +25,21 @@ export const reorderArray = <T extends { id: string }>(arr: T[], indexesToMove: 
   return [...start, ...itemsToMove, ...end];
 };
 
+const dateCache = {
+  longFormat: new Map<string, string>(),
+  shortFormat: new Map<string, string>()
+};
+
 export function standardizeShortDateFormat(dateStr: string) {
+  if (dateCache.shortFormat.has(dateStr)) {
+    return dateCache.shortFormat.get(dateStr);
+  }
+
   const formats = [
     'yyyy/MM/dd', 'yyyy-MM-dd', 'MM/dd/yyyy', 'dd/MM/yyyy',
     'yy/MM/dd', 'yy-MM-dd', 'M/d/yy', 'd/M/yy'
   ];
+  let result = dateStr;
 
   for (let fmt of formats) {
     try {
@@ -38,20 +48,28 @@ export function standardizeShortDateFormat(dateStr: string) {
         parsedDate = adjustCenturyForTwoDigitYear(parsedDate);
       }
       if (!isNaN(parsedDate.getTime())) {
-        return format(parsedDate, 'M/d');
+        result = format(parsedDate, 'M/d');
+        break;
       }
     } catch (e) {
       continue;
     }
   }
-  return dateStr;
+
+  dateCache.shortFormat.set(dateStr, result);
+  return result;
 }
 
 export function standardizeLongDateFormat(dateStr: string) {
+  if (dateCache.longFormat.has(dateStr)) {
+    return dateCache.longFormat.get(dateStr);
+  }
+
   const formats = [
     'yyyy/MM/dd', 'yyyy-MM-dd', 'MM/dd/yyyy', 'dd/MM/yyyy',
     'yy/MM/dd', 'yy-MM-dd', 'M/d/yy', 'd/M/yy'
   ];
+  let result = dateStr;
 
   for (let fmt of formats) {
     try {
@@ -60,13 +78,16 @@ export function standardizeLongDateFormat(dateStr: string) {
         parsedDate = adjustCenturyForTwoDigitYear(parsedDate);
       }
       if (!isNaN(parsedDate.getTime())) {
-        return format(parsedDate, 'yyyy-MM-dd');
+        result = format(parsedDate, 'yyyy-MM-dd');
+        break;
       }
     } catch (e) {
       continue;
     }
   }
-  return dateStr;
+
+  dateCache.longFormat.set(dateStr, result);
+  return result;
 }
 
 function adjustCenturyForTwoDigitYear(date: Date) {

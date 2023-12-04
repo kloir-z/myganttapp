@@ -14,8 +14,8 @@ export class CustomDateCellTemplate implements CellTemplate<CustomDateCell> {
   getCompatibleCell(uncertainCell: Uncertain<CustomDateCell>): Compatible<CustomDateCell> {
     let text = uncertainCell.text || '';
     let shortDate = ''
-    text = standardizeLongDateFormat(text);
-    shortDate = standardizeShortDateFormat(text);
+    text = standardizeLongDateFormat(text) || '';
+    shortDate = standardizeShortDateFormat(text) || '';
     const value = NaN;
     return { ...uncertainCell, text, shortDate, value };
   }

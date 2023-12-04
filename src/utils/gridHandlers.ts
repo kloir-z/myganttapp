@@ -24,7 +24,12 @@ export const handleGridChanges = (dispatch: Dispatch, data: { [id: string]: WBSD
 
       if (newCell.type === 'customDate') {
         const customDateCell = newCell as CustomDateCell;
-        newDate = new Date(standardizeLongDateFormat(customDateCell.text));
+        const standardizedDate = standardizeLongDateFormat(customDateCell.text);
+        if (standardizedDate) {
+          newDate = new Date(standardizedDate);
+        } else {
+          newDate = null;
+        }
         updatedData[rowId] = {
           ...rowData,
           [fieldName]: customDateCell.text
