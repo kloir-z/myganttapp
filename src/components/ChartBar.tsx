@@ -8,14 +8,15 @@ interface ChartBarProps {
   isActual: boolean;
   entryId: string;
   charge?: string;
-  onBarMouseDown: (event: React.MouseEvent<HTMLDivElement>) => void;
+  onBarMouseDown: (event: React.MouseEvent<HTMLDivElement>) => void; 
+  onBarEndMouseDown: (event: React.MouseEvent<HTMLDivElement>) => void; 
 }
 
 const getStartOfDay = (date: Date) => {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 };
 
-const ChartBar: React.FC<ChartBarProps> = ({ startDate, endDate, dateArray, isActual, entryId, charge, onBarMouseDown }) => {
+const ChartBar: React.FC<ChartBarProps> = ({ startDate, endDate, dateArray, isActual, entryId, charge, onBarMouseDown, onBarEndMouseDown }) => {
   if (!startDate || !endDate) {
     return null;
   }
@@ -38,18 +39,24 @@ const ChartBar: React.FC<ChartBarProps> = ({ startDate, endDate, dateArray, isAc
     const leftPosition = startIndex * 21;
 
     return (
-      <div
-        style={{position: 'absolute', left: `${leftPosition}px`, width: `${width}px`}}
-        onMouseDown={onBarMouseDown}
-      >
-        <ChartCell
-          entryId={entryId}
-          isActual={isActual}
-          isPlanned={!isActual}
-          charge={charge}
-          width={width}
-        />
-      </div>
+      <>
+        <div
+          style={{position: 'absolute', left: `${leftPosition}px`, width: `${width}px`}}
+          {...(isActual ? {} : { onMouseDown: onBarMouseDown })}
+        >
+          <ChartCell
+            entryId={entryId}
+            isActual={isActual}
+            isPlanned={!isActual}
+            charge={charge}
+            width={width}
+          />
+        </div>
+        <div
+          style={{position: 'absolute', left: `${leftPosition + width}px`, width: '8px', height: '21px', cursor: 'ew-resize', opacity: 0 }}
+          {...(isActual ? {} : { onMouseDown: onBarEndMouseDown })}
+        ></div>
+      </>
     );
   }
 

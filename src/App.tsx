@@ -1,5 +1,5 @@
 // App.tsx
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Calendar from './components/Calendar';
 import { ChartRow  } from './types/DataTypes';
 import { GanttRow } from './styles/GanttStyles';
@@ -23,6 +23,10 @@ function App() {
     endDate: new Date('2025-10-05'),
   });
   const [dateArray, setDateArray] = useState(generateDates(dateRange.startDate, dateRange.endDate));
+  const [isDragging, setIsDragging] = useState(false);
+  const [canDrag, setCanDrag] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [startY, setStartY] = useState(0);
   const wbsRef = useRef<HTMLDivElement>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -84,6 +88,40 @@ function App() {
     return rowCount * 21 < window.innerHeight - 41 ? dynamicGridHeight : maxGridHeight;
   };
 
+  const handleMouseDown = useCallback((event: React.MouseEvent) => {
+    if (canDrag && gridRef.current) {
+      setIsDragging(true);
+      setStartX(event.clientX + gridRef.current.scrollLeft);
+      setStartY(event.clientY + gridRef.current.scrollTop);
+    }
+  }, [canDrag]);
+
+  const handleMouseMove = useCallback((event: MouseEvent) => {
+    if (canDrag && isDragging && gridRef.current) {
+      gridRef.current.scrollLeft = startX - event.clientX;
+      gridRef.current.scrollTop = startY - event.clientY;
+    }
+  }, [canDrag, isDragging, startX, startY]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  useEffect(() => {
+    const gridElement = gridRef.current;
+    if (gridElement) {
+      gridElement.addEventListener('mousedown', handleMouseDown as any);
+      window.addEventListener('mousemove', handleMouseMove as any);
+      window.addEventListener('mouseup', handleMouseUp);
+
+      return () => {
+        gridElement.removeEventListener('mousedown', handleMouseDown as any);
+        window.removeEventListener('mousemove', handleMouseMove as any);
+        window.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [handleMouseDown, handleMouseMove, handleMouseUp]);
+
   return (
     
     <div style={{position: 'fixed', left: '30px'}}>
@@ -113,6 +151,7 @@ function App() {
                   entry={entry as ChartRow}
                   dateArray={dateArray}
                   gridRef={gridRef}
+                  setCanDrag={setCanDrag}
                 />
               </GanttRow>
             );
