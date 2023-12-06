@@ -88,13 +88,16 @@ export const calculateBusinessDays = (start: Date, end: Date): number => {
   return count;
 };
 
-export const addBusinessDays = (start: Date, days: number): Date => {
+export const addBusinessDays = (start: Date, days: number, includeStartDay: boolean = true): Date => {
   let currentDate = new Date(start);
   let addedDays = 0;
 
   const startDayOfWeek = currentDate.getDay();
-  if (startDayOfWeek !== 0 && startDayOfWeek !== 6 && !isHoliday(currentDate)) {
-    addedDays = 1;
+
+  if (includeStartDay) {
+    if (startDayOfWeek !== 0 && startDayOfWeek !== 6 && !isHoliday(currentDate)) {
+      addedDays = 1;
+    }
   }
 
   while (addedDays < days) {

@@ -75,7 +75,6 @@ function App() {
     };
   }, []);
 
-  // In the App component
   const handleResize = (newWidth: number) => {
     setWbsWidth(newWidth);
   };

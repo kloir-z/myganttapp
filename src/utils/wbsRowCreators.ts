@@ -21,7 +21,10 @@ const fillEmptyCells = (cells: (NumberCell | CustomTextCell | CustomDateCell)[],
 export const createChartRow = (chartRow: ChartRow, columns: Column[]): Row<DefaultCellTypes | CustomTextCell | CustomDateCell> => {
   const rowCells = columns.map(column => {
     const columnId = column.columnId as string;
-    const cellValue = (chartRow as any)[columnId];
+    let cellValue = (chartRow as any)[columnId];
+    if (columnId === 'chain' && (cellValue === null || cellValue === undefined)) {
+      cellValue = '';
+    }
     if (["plannedStartDate", "plannedEndDate", "actualStartDate", "actualEndDate"].includes(columnId)) {
       return { type: "customDate", text: cellValue, value: NaN } as CustomDateCell;
     }

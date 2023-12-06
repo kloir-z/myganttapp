@@ -5,8 +5,6 @@ import { Dispatch } from 'redux';
 import { setData } from '../reduxComponents/store';
 import { CustomDateCell } from './CustomDateCell';
 import { CustomTextCell } from "./CustomTextCell";
-import { calculateBusinessDays, addBusinessDays, toLocalISOString } from '../utils/CalendarUtil';
-import { standardizeLongDateFormat } from "./wbsHelpers";
 
 type AllCellTypes  = TextCell | NumberCell | CheckboxCell | EmailCell | DropdownCell | ChevronCell | HeaderCell | TimeCell | DateCell | CustomDateCell | CustomTextCell;  
 
@@ -20,16 +18,9 @@ export const handleGridChanges = (dispatch: Dispatch, data: { [id: string]: WBSD
     if (rowData && rowData.rowType === 'Chart') {
       const fieldName = change.columnId as keyof ChartRow; 
       const newCell = change.newCell;
-      let newDate: Date | null = null;
 
       if (newCell.type === 'customDate') {
         const customDateCell = newCell as CustomDateCell;
-        const standardizedDate = standardizeLongDateFormat(customDateCell.text);
-        if (standardizedDate) {
-          newDate = new Date(standardizedDate);
-        } else {
-          newDate = null;
-        }
         updatedData[rowId] = {
           ...rowData,
           [fieldName]: customDateCell.text
@@ -41,28 +32,8 @@ export const handleGridChanges = (dispatch: Dispatch, data: { [id: string]: WBSD
           [fieldName]: customTextCell.text
         };
       }
-
-      if (newDate || fieldName === 'businessDays') {
-        const chartRow = updatedData[rowId] as ChartRow;
-        if (fieldName === 'plannedStartDate' || fieldName === 'plannedEndDate') {
-          if (chartRow.plannedStartDate && chartRow.plannedEndDate) {
-            const startDate = new Date(chartRow.plannedStartDate);
-            const endDate = new Date(chartRow.plannedEndDate);
-            if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
-              chartRow.businessDays = calculateBusinessDays(startDate, endDate).toString();
-            }
-          } else {
-            chartRow.businessDays = '';
-          }
-        } else if (fieldName === 'businessDays') {
-          const startDate = new Date(chartRow.plannedStartDate);
-          const businessDays = parseInt(chartRow.businessDays, 10);
-          const endDate = addBusinessDays(startDate, businessDays);
-          chartRow.plannedEndDate = toLocalISOString(endDate);
-        }
-      }
     }
-    
+
     if (rowData && rowData.rowType === 'Separator') {
       const fieldName = change.columnId as keyof SeparatorRow;
       const newCell = change.newCell;

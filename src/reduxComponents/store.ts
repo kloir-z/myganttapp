@@ -2,7 +2,7 @@ import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { WBSData, ChartRow } from '../types/DataTypes';
 import { testData } from '../testdata/testdata';
 import { v4 as uuidv4 } from 'uuid';
-import { calculateBusinessDays } from '../utils/CalendarUtil';
+import { calculateBusinessDays, addBusinessDays, toLocalISOString } from '../utils/CalendarUtil';
 
 const assignIds = (data: WBSData[]): { [id: string]: WBSData } => {
   const dataWithIdsAndNos: { [id: string]: WBSData } = {};
@@ -23,12 +23,86 @@ const assignIds = (data: WBSData[]): { [id: string]: WBSData } => {
 
 const initialState: { [id: string]: WBSData } = assignIds(testData);
 
+const updateDependentRows = (state: { [id: string]: WBSData }, currentId: string, newEndDate: Date) => {
+  Object.values(state).forEach((row: WBSData) => {
+    if (row.rowType === 'Chart' && (row as ChartRow).chain === currentId) {
+      const dependentRow = row as ChartRow;
+      const newStartDate = addBusinessDays(newEndDate, 1, false);
+      dependentRow.plannedStartDate = toLocalISOString(newStartDate);
+      const dependentEndDate = addBusinessDays(newStartDate, parseInt(dependentRow.businessDays));
+      dependentRow.plannedEndDate = toLocalISOString(dependentEndDate);
+      updateDependentRows(state, dependentRow.id, dependentEndDate);
+    }
+  });
+};
+
 export const wbsDataSlice = createSlice({
   name: 'wbsData',
   initialState,
   reducers: {
     setData: (state, action: PayloadAction<{ [id: string]: WBSData }>) => {
-      return action.payload;
+      const newData = action.payload;
+    
+      Object.keys(newData).forEach(id => {
+        const newRow = newData[id];
+        if (newRow.rowType === 'Chart') {
+          const newChartRow = newRow as ChartRow;
+          const oldChartRow = state[id] as ChartRow;
+    
+          // 新しいオブジェクトを作成し、変更を加える
+          const updatedChartRow = { ...oldChartRow, ...newChartRow };
+    
+          // plannedStartDate の変更がある場合
+          if (newChartRow.plannedStartDate !== oldChartRow.plannedStartDate) {
+            updatedChartRow.plannedStartDate = newChartRow.plannedStartDate;
+            if (newChartRow.plannedEndDate) {
+              const newStartDate = new Date(newChartRow.plannedStartDate);
+              const endDate = new Date(newChartRow.plannedEndDate);
+              updatedChartRow.businessDays = calculateBusinessDays(newStartDate, endDate).toString();
+            }
+          }
+    
+          // plannedEndDate の変更がある場合
+          if (newChartRow.plannedEndDate !== oldChartRow.plannedEndDate) {
+            updatedChartRow.plannedEndDate = newChartRow.plannedEndDate;
+            if (newChartRow.plannedStartDate) {
+              const startDate = new Date(newChartRow.plannedStartDate);
+              const newEndDate = new Date(newChartRow.plannedEndDate);
+              updatedChartRow.businessDays = calculateBusinessDays(startDate, newEndDate).toString();
+    
+              // 依存する行の更新
+              updateDependentRows(state, id, newEndDate);
+            }
+          }
+    
+          // businessDays の変更がある場合
+          if (newChartRow.businessDays !== oldChartRow.businessDays) {
+            updatedChartRow.businessDays = newChartRow.businessDays;
+            if (newChartRow.plannedStartDate && newChartRow.businessDays) {
+              const startDate = new Date(newChartRow.plannedStartDate);
+              const businessDays = parseInt(newChartRow.businessDays, 10);
+              const newEndDate = addBusinessDays(startDate, businessDays);
+              updatedChartRow.plannedEndDate = toLocalISOString(newEndDate);
+    
+              // 依存する行の更新
+              updateDependentRows(state, id, newEndDate);
+            }
+          }
+    
+          // 最終的な更新
+          state[id] = updatedChartRow;
+        }
+      });
+      Object.keys(state).forEach(id => {
+        const row = state[id];
+        if (row.rowType === 'Chart') {
+          const chartRow = row as ChartRow;
+          if (chartRow.plannedEndDate) {
+            const newEndDate = new Date(chartRow.plannedEndDate);
+            updateDependentRows(state, id, newEndDate);
+          }
+        }
+      });
     },
     setPlannedStartDate: (state, action: PayloadAction<{ id: string; startDate: string }>) => {
       const { id, startDate } = action.payload;
@@ -52,12 +126,32 @@ export const wbsDataSlice = createSlice({
           const newEndDate = new Date(endDate);
           chartRow.businessDays = calculateBusinessDays(startDate, newEndDate).toString();
         }
+        updateDependentRows(state, id, new Date(endDate));
       }
     },
     setBusinessDays: (state, action: PayloadAction<{ id: string; days: string }>) => {
       const { id, days } = action.payload;
+      const updateDependentRows = (currentId: string, newEndDate: Date) => {
+        Object.values(state).forEach(row => {
+          if (row.rowType === 'Chart' && (row as ChartRow).chain === currentId) {
+            const dependentRow = row as ChartRow;
+            const newStartDate = addBusinessDays(newEndDate, 1, false);
+            dependentRow.plannedStartDate = toLocalISOString(newStartDate);
+            const dependentEndDate = addBusinessDays(newStartDate, parseInt(dependentRow.businessDays));
+            dependentRow.plannedEndDate = toLocalISOString(dependentEndDate);
+            updateDependentRows(dependentRow.id, dependentEndDate);
+          }
+        });
+      };
       if (state[id] && state[id].rowType === 'Chart') {
-        (state[id] as ChartRow).businessDays = days;
+        const chartRow = state[id] as ChartRow;
+        chartRow.businessDays = days;
+        if (chartRow.plannedStartDate && days) {
+          const startDate = new Date(chartRow.plannedStartDate);
+          const businessDays = parseInt(days, 10);
+          const endDate = addBusinessDays(startDate, businessDays);
+          updateDependentRows(id, new Date(endDate));
+        }
       }
     },
     setActualStartDate: (state, action: PayloadAction<{ id: string; startDate: string }>) => {
@@ -78,7 +172,6 @@ export const wbsDataSlice = createSlice({
         state[id].displayName = displayName;
       }
     },
-    // 他のreducersをここに追加できます...
   },
 });
 

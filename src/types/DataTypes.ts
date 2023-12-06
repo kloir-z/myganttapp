@@ -21,6 +21,7 @@ export interface ChartRow extends BaseRow {
   actualStartDate: string;
   actualEndDate: string;
   comment: string;
+  chain: string;
 }
 
 export interface SeparatorRow extends BaseRow {
