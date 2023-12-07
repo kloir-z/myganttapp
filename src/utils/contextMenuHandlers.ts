@@ -1,7 +1,7 @@
 // utils/contextMenuHandlers.ts
 import { WBSData, ChartRow, SeparatorRow } from '../types/DataTypes';
 import { assignIds } from './wbsHelpers';
-import { setData } from '../reduxComponents/store';
+import { simpleSetData } from '../reduxComponents/store';
 import { Id } from "@silevis/reactgrid";
 import { Dispatch } from 'redux'; 
 
@@ -32,7 +32,7 @@ export const handleAddChartRowBelow = (dispatch: Dispatch, selectedRowIds: Id[],
     newDataArray.splice(maxIndex + 1 + i, 0, newDataRow);
   }
 
-  dispatch(setData(assignIds(newDataArray)));
+  dispatch(simpleSetData(assignIds(newDataArray)));
 };
 
 export const handleAddSeparatorRowBelow = (dispatch: Dispatch, selectedRowIds: Id[], dataArray: WBSData[]) => {
@@ -51,12 +51,12 @@ export const handleAddSeparatorRowBelow = (dispatch: Dispatch, selectedRowIds: I
     newDataArray.splice(maxIndex + 1 + i, 0, newDataRow);
   }
 
-  dispatch(setData(assignIds(newDataArray)));
+  dispatch(simpleSetData(assignIds(newDataArray)));
 };
 
 
 export const handleRemoveSelectedRow = (dispatch: Dispatch, selectedRowIds: Id[], dataArray: WBSData[]) => {
   const newDataArray = dataArray.filter(item => 
     !selectedRowIds.includes(item.id));
-  dispatch(setData(assignIds(newDataArray)));
+  dispatch(simpleSetData(assignIds(newDataArray)));
 };

@@ -23,7 +23,20 @@ const assignIds = (data: WBSData[]): { [id: string]: WBSData } => {
 
 const initialState: { [id: string]: WBSData } = assignIds(testData);
 
-const updateDependentRows = (state: { [id: string]: WBSData }, currentId: string, newEndDate: Date) => {
+const updateDependentRows = (
+  state: { [id: string]: WBSData },
+  currentId: string,
+  newEndDate: Date,
+  visited = new Set<string>(),
+) => {
+  if (visited.has(currentId)) {
+    if (state[currentId] && state[currentId].rowType === 'Chart') {
+      const chartRow = state[currentId] as ChartRow;
+      chartRow.chain = '';
+    }
+    return;
+  }
+  visited.add(currentId);
   Object.values(state).forEach((row: WBSData) => {
     if (row.rowType === 'Chart' && (row as ChartRow).chain === currentId) {
       const dependentRow = row as ChartRow;
@@ -31,7 +44,7 @@ const updateDependentRows = (state: { [id: string]: WBSData }, currentId: string
       dependentRow.plannedStartDate = toLocalISOString(newStartDate);
       const dependentEndDate = addBusinessDays(newStartDate, parseInt(dependentRow.businessDays));
       dependentRow.plannedEndDate = toLocalISOString(dependentEndDate);
-      updateDependentRows(state, dependentRow.id, dependentEndDate);
+      updateDependentRows(state, dependentRow.id, dependentEndDate, visited);
     }
   });
 };
@@ -40,6 +53,9 @@ export const wbsDataSlice = createSlice({
   name: 'wbsData',
   initialState,
   reducers: {
+    simpleSetData: (state, action: PayloadAction<{ [id: string]: WBSData }>) => {
+      return action.payload;
+    },
     setData: (state, action: PayloadAction<{ [id: string]: WBSData }>) => {
       const newData = action.payload;
     
@@ -48,11 +64,7 @@ export const wbsDataSlice = createSlice({
         if (newRow.rowType === 'Chart') {
           const newChartRow = newRow as ChartRow;
           const oldChartRow = state[id] as ChartRow;
-    
-          // 新しいオブジェクトを作成し、変更を加える
           const updatedChartRow = { ...oldChartRow, ...newChartRow };
-    
-          // plannedStartDate の変更がある場合
           if (newChartRow.plannedStartDate !== oldChartRow.plannedStartDate) {
             updatedChartRow.plannedStartDate = newChartRow.plannedStartDate;
             if (newChartRow.plannedEndDate) {
@@ -61,21 +73,15 @@ export const wbsDataSlice = createSlice({
               updatedChartRow.businessDays = calculateBusinessDays(newStartDate, endDate).toString();
             }
           }
-    
-          // plannedEndDate の変更がある場合
           if (newChartRow.plannedEndDate !== oldChartRow.plannedEndDate) {
             updatedChartRow.plannedEndDate = newChartRow.plannedEndDate;
             if (newChartRow.plannedStartDate) {
               const startDate = new Date(newChartRow.plannedStartDate);
               const newEndDate = new Date(newChartRow.plannedEndDate);
               updatedChartRow.businessDays = calculateBusinessDays(startDate, newEndDate).toString();
-    
-              // 依存する行の更新
               updateDependentRows(state, id, newEndDate);
             }
           }
-    
-          // businessDays の変更がある場合
           if (newChartRow.businessDays !== oldChartRow.businessDays) {
             updatedChartRow.businessDays = newChartRow.businessDays;
             if (newChartRow.plannedStartDate && newChartRow.businessDays) {
@@ -83,13 +89,9 @@ export const wbsDataSlice = createSlice({
               const businessDays = parseInt(newChartRow.businessDays, 10);
               const newEndDate = addBusinessDays(startDate, businessDays);
               updatedChartRow.plannedEndDate = toLocalISOString(newEndDate);
-    
-              // 依存する行の更新
               updateDependentRows(state, id, newEndDate);
             }
           }
-    
-          // 最終的な更新
           state[id] = updatedChartRow;
         }
       });
@@ -175,7 +177,8 @@ export const wbsDataSlice = createSlice({
   },
 });
 
-export const { 
+export const {
+  simpleSetData,
   setData, 
   setPlannedStartDate, 
   setPlannedEndDate,

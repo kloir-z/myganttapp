@@ -6,11 +6,12 @@ import { parse, format } from 'date-fns';
 export const assignIds = (data: WBSData[]): { [id: string]: WBSData } => {
   const dataWithIdsAndNos: { [id: string]: WBSData } = {};
   data.forEach((row, index) => {
-    const id = uuidv4();
+    const id = row.id || uuidv4();
     dataWithIdsAndNos[id] = { ...row, id, no: index + 1 };
   });
   return dataWithIdsAndNos;
 };
+
 
 export const reorderArray = <T extends { id: string }>(arr: T[], indexesToMove: number[], newIndex: number): T[] => {
   const itemsToMove = indexesToMove.map(index => arr[index]);

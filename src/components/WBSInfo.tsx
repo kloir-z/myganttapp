@@ -9,7 +9,7 @@ import { createChartRow, createSeparatorRow, createEventRow } from '../utils/wbs
 import { handleGridChanges } from '../utils/gridHandlers';
 import { useColumnResizer } from '../hooks/useColumnResizer';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState, setData } from '../reduxComponents/store';
+import { RootState, simpleSetData } from '../reduxComponents/store';
 import { CustomDateCell, CustomDateCellTemplate } from '../utils/CustomDateCell';
 import { CustomTextCell, CustomTextCellTemplate } from '../utils/CustomTextCell';
 import { assignIds, reorderArray } from '../utils/wbsHelpers';
@@ -76,7 +76,7 @@ const WBSInfo: React.FC = memo(() => {
   
     const reorderedData = reorderArray(dataArray, movingRowsIndexes, targetIndex);
   
-    dispatch(setData(assignIds(reorderedData)));
+    dispatch(simpleSetData(assignIds(reorderedData)));
   }, [dataArray, dispatch]);
 
   const handleColumnsReorder = useCallback((targetColumnId: Id, columnIds: Id[]) => {
