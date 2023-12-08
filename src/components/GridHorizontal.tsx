@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import { setPlannedStartDate, setPlannedEndDate, setActualStartDate, setActualEndDate } from '../reduxComponents/store';
 import { debounce } from 'lodash';
 import { formatDate, adjustToLocalMidnight } from '../utils/chartHelpers'; 
-import { addBusinessDays, toLocalISOString } from '../utils/CalendarUtil';
+import { addBusinessDays } from '../utils/CalendarUtil';
 import ChartBar from './ChartBar';
 
 interface ChartRowProps {
