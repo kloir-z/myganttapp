@@ -27,7 +27,8 @@ export const handleAddChartRowBelow = (dispatch: Dispatch, selectedRowIds: Id[],
       actualEndDate: "",
       comment: "",
       displayName: "",
-      chain: ""
+      chain: "",
+      chainNo: "",
     };
     newDataArray.splice(maxIndex + 1 + i, 0, newDataRow);
   }

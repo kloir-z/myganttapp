@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import { setPlannedStartDate, setPlannedEndDate, setActualStartDate, setActualEndDate } from '../reduxComponents/store';
 import { debounce } from 'lodash';
 import { formatDate, adjustToLocalMidnight } from '../utils/chartHelpers'; 
+import { addBusinessDays, toLocalISOString } from '../utils/CalendarUtil';
 import ChartBar from './ChartBar';
 
 interface ChartRowProps {
@@ -16,6 +17,7 @@ interface ChartRowProps {
 const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRef, setCanDrag }) => {
   const dispatch = useDispatch();
   const charge = entry.charge;
+  const businessDays = parseInt(entry.businessDays);
   const [localPlannedStartDate, setLocalPlannedStartDate] = useState(entry.plannedStartDate ? new Date(entry.plannedStartDate) : null);
   const [localPlannedEndDate, setLocalPlannedEndDate] = useState(entry.plannedEndDate ? new Date(entry.plannedEndDate) : null);
   const [localActualStartDate, setLocalActualStartDate] = useState(entry.actualStartDate ? new Date(entry.actualStartDate) : null);
@@ -79,8 +81,7 @@ const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRe
       newStartDate.setDate(newStartDate.getDate() + gridSteps);
       setLocalPlannedStartDate(newStartDate);
 
-      const newEndDate = new Date(originalEndDate.getTime());
-      newEndDate.setDate(newEndDate.getDate() + gridSteps);
+      const newEndDate = addBusinessDays(newStartDate, businessDays);
       setLocalPlannedEndDate(newEndDate);
     } else if (isBarEndDragging && initialMouseX !== null && localPlannedStartDate && originalEndDate) {
       const currentMouseX = event.clientX;
@@ -111,7 +112,7 @@ const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRe
         setLocalPlannedEndDate(isEndDate ? newDate : currentDate);
       }
     }
-  }, [isEditing, currentDate, isShiftKeyDown, calculateDateFromX, gridRef, isBarDragging, initialMouseX, originalStartDate, originalEndDate, isBarEndDragging, localPlannedStartDate]);
+  }, [isEditing, currentDate, isShiftKeyDown, calculateDateFromX, gridRef, isBarDragging, initialMouseX, originalStartDate, originalEndDate, isBarEndDragging, localPlannedStartDate, businessDays]);
   
   useEffect(() => {
     if (!isEditing && !isBarDragging && !isBarEndDragging) {

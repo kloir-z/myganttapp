@@ -54,7 +54,23 @@ export const wbsDataSlice = createSlice({
   initialState,
   reducers: {
     simpleSetData: (state, action: PayloadAction<{ [id: string]: WBSData }>) => {
-      return action.payload;
+      const data = action.payload;
+      const idToNoMapping: { [id: string]: number } = {};
+      Object.values(data).forEach(row => {
+        if ('id' in row) {
+          idToNoMapping[row.id] = row.no;
+        }
+      });
+      Object.values(data).forEach(row => {
+        if (row.rowType === "Chart") {
+          if (row.chain in idToNoMapping) {
+            (row as ChartRow).chainNo = idToNoMapping[row.chain].toString();
+          } else {
+            (row as ChartRow).chainNo = '';
+          }
+        }
+      });
+      return data;
     },
     setData: (state, action: PayloadAction<{ [id: string]: WBSData }>) => {
       const newData = action.payload;

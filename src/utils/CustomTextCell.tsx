@@ -12,6 +12,7 @@ export interface CustomTextCell extends Cell {
 
 export class CustomTextCellTemplate implements CellTemplate<CustomTextCell> {
   private wasEscKeyPressed = false;
+  
   getCompatibleCell(uncertainCell: Uncertain<CustomTextCell>): Compatible<CustomTextCell> {
     let text = uncertainCell.text || '';
     let value = text.length;
@@ -20,14 +21,25 @@ export class CustomTextCellTemplate implements CellTemplate<CustomTextCell> {
 
   handleKeyDown(
     cell: Compatible<CustomTextCell>,
-    keyCode: number
+    keyCode: number,
+    ctrl: boolean,
+    shift: boolean,
+    alt: boolean,
+    key?: string
   ): { cell: Compatible<CustomTextCell>; enableEditMode: boolean } {
-    if (keyCode === keyCodes.ENTER || keyCode === keyCodes.POINTER) {
+    if (keyCode === keyCodes.ENTER || ctrl || alt || keyCode === keyCodes.POINTER || isNavigationKey(keyCode)) {
+      return { cell, enableEditMode: false };
+    }
+    if (keyCode === keyCodes.DELETE || keyCode === keyCodes.BACKSPACE) {
       return { cell, enableEditMode: true };
     }
-    return { cell, enableEditMode: false };
+    if (key && isAlphaNumericKey(keyCode)) {
+      return { cell: { ...cell, text: key }, enableEditMode: true };
+    } else {
+      return { cell, enableEditMode: true };
+    }
   }
-
+  
   update(cell: Compatible<CustomTextCell>, cellToMerge: UncertainCompatible<CustomTextCell>): Compatible<CustomTextCell> {
     return this.getCompatibleCell({ ...cell, text: cellToMerge.text });
   }
