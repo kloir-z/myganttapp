@@ -61,16 +61,16 @@ export const wbsDataSlice = createSlice({
           idToNoMapping[row.id] = row.no;
         }
       });
-      Object.values(data).forEach(row => {
-        if (row.rowType === "Chart") {
-          if (row.chain in idToNoMapping) {
-            (row as ChartRow).chainNo = idToNoMapping[row.chain].toString();
-          } else {
-            (row as ChartRow).chainNo = '';
+      const newData = Object.fromEntries(
+        Object.entries(data).map(([id, row]) => {
+          if (row.rowType === "Chart") {
+            const chainNo = row.chain in idToNoMapping ? idToNoMapping[row.chain].toString() : '';
+            return [id, { ...row, chainNo }];
           }
-        }
-      });
-      return data;
+          return [id, row];
+        })
+      );
+      return newData;
     },
     setData: (state, action: PayloadAction<{ [id: string]: WBSData }>) => {
       const newData = action.payload;
