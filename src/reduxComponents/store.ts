@@ -12,7 +12,7 @@ const assignIds = (data: WBSData[]): { [id: string]: WBSData } => {
       const chartRow = row as ChartRow;
       const startDate = new Date(chartRow.plannedStartDate);
       const endDate = new Date(chartRow.plannedEndDate);
-      const businessDays = calculateBusinessDays(startDate, endDate).toString();
+      const businessDays = calculateBusinessDays(startDate, endDate);
       dataWithIdsAndNos[id] = { ...chartRow, id, no: index + 1, businessDays };
     } else {
       dataWithIdsAndNos[id] = { ...row, id, no: index + 1 };
@@ -42,7 +42,7 @@ const updateDependentRows = (
       const dependentRow = row as ChartRow;
       const newStartDate = addBusinessDays(newEndDate, 1, false);
       dependentRow.plannedStartDate = toLocalISOString(newStartDate);
-      const dependentEndDate = addBusinessDays(newStartDate, parseInt(dependentRow.businessDays));
+      const dependentEndDate = addBusinessDays(newStartDate, dependentRow.businessDays);
       dependentRow.plannedEndDate = toLocalISOString(dependentEndDate);
       updateDependentRows(state, dependentRow.id, dependentEndDate, visited);
     }
@@ -86,7 +86,7 @@ export const wbsDataSlice = createSlice({
             if (newChartRow.plannedEndDate) {
               const newStartDate = new Date(newChartRow.plannedStartDate);
               const endDate = new Date(newChartRow.plannedEndDate);
-              updatedChartRow.businessDays = calculateBusinessDays(newStartDate, endDate).toString();
+              updatedChartRow.businessDays = calculateBusinessDays(newStartDate, endDate);
             }
           }
           if (newChartRow.plannedEndDate !== oldChartRow.plannedEndDate) {
@@ -94,7 +94,7 @@ export const wbsDataSlice = createSlice({
             if (newChartRow.plannedStartDate) {
               const startDate = new Date(newChartRow.plannedStartDate);
               const newEndDate = new Date(newChartRow.plannedEndDate);
-              updatedChartRow.businessDays = calculateBusinessDays(startDate, newEndDate).toString();
+              updatedChartRow.businessDays = calculateBusinessDays(startDate, newEndDate);
               updateDependentRows(state, id, newEndDate);
             }
           }
@@ -102,7 +102,14 @@ export const wbsDataSlice = createSlice({
             updatedChartRow.businessDays = newChartRow.businessDays;
             if (newChartRow.plannedStartDate && newChartRow.businessDays) {
               const startDate = new Date(newChartRow.plannedStartDate);
-              const businessDays = parseInt(newChartRow.businessDays, 10);
+              const businessDays = newChartRow.businessDays;
+              const newEndDate = addBusinessDays(startDate, businessDays);
+              updatedChartRow.plannedEndDate = toLocalISOString(newEndDate);
+              updateDependentRows(state, id, newEndDate);
+            } else if (newChartRow.plannedStartDate) {
+              const startDate = new Date(newChartRow.plannedStartDate);
+              const businessDays = 1;
+              updatedChartRow.businessDays = 1;
               const newEndDate = addBusinessDays(startDate, businessDays);
               updatedChartRow.plannedEndDate = toLocalISOString(newEndDate);
               updateDependentRows(state, id, newEndDate);
@@ -130,7 +137,7 @@ export const wbsDataSlice = createSlice({
         if (chartRow.plannedEndDate) {
           const newStartDate = new Date(startDate);
           const endDate = new Date(chartRow.plannedEndDate);
-          chartRow.businessDays = calculateBusinessDays(newStartDate, endDate).toString();
+          chartRow.businessDays = calculateBusinessDays(newStartDate, endDate);
         }
       }
     },
@@ -142,12 +149,12 @@ export const wbsDataSlice = createSlice({
         if (chartRow.plannedStartDate) {
           const startDate = new Date(chartRow.plannedStartDate);
           const newEndDate = new Date(endDate);
-          chartRow.businessDays = calculateBusinessDays(startDate, newEndDate).toString();
+          chartRow.businessDays = calculateBusinessDays(startDate, newEndDate);
         }
         updateDependentRows(state, id, new Date(endDate));
       }
     },
-    setBusinessDays: (state, action: PayloadAction<{ id: string; days: string }>) => {
+    setBusinessDays: (state, action: PayloadAction<{ id: string; days: number }>) => {
       const { id, days } = action.payload;
       const updateDependentRows = (currentId: string, newEndDate: Date) => {
         Object.values(state).forEach(row => {
@@ -155,7 +162,7 @@ export const wbsDataSlice = createSlice({
             const dependentRow = row as ChartRow;
             const newStartDate = addBusinessDays(newEndDate, 1, false);
             dependentRow.plannedStartDate = toLocalISOString(newStartDate);
-            const dependentEndDate = addBusinessDays(newStartDate, parseInt(dependentRow.businessDays));
+            const dependentEndDate = addBusinessDays(newStartDate, dependentRow.businessDays);
             dependentRow.plannedEndDate = toLocalISOString(dependentEndDate);
             updateDependentRows(dependentRow.id, dependentEndDate);
           }
@@ -166,7 +173,7 @@ export const wbsDataSlice = createSlice({
         chartRow.businessDays = days;
         if (chartRow.plannedStartDate && days) {
           const startDate = new Date(chartRow.plannedStartDate);
-          const businessDays = parseInt(days, 10);
+          const businessDays = days;
           const endDate = addBusinessDays(startDate, businessDays);
           updateDependentRows(id, new Date(endDate));
         }

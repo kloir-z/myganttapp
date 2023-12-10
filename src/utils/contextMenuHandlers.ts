@@ -22,13 +22,13 @@ export const handleAddChartRowBelow = (dispatch: Dispatch, selectedRowIds: Id[],
       charge: "",
       plannedStartDate: "",
       plannedEndDate: "",
-      businessDays: "",
+      businessDays: 1,
       actualStartDate: "",
       actualEndDate: "",
       comment: "",
       displayName: "",
       chain: "",
-      chainNo: "",
+      chainNo: null,
     };
     newDataArray.splice(maxIndex + 1 + i, 0, newDataRow);
   }

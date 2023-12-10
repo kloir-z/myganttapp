@@ -17,12 +17,12 @@ export interface ChartRow extends BaseRow {
   charge: string;
   plannedStartDate: string;
   plannedEndDate: string;
-  businessDays: string,
+  businessDays: number,
   actualStartDate: string;
   actualEndDate: string;
   comment: string;
   chain: string;
-  chainNo: string;
+  chainNo: number | null;
 }
 
 export interface SeparatorRow extends BaseRow {
@@ -34,7 +34,7 @@ export interface EventData {
   displayName: string;
   plannedStartDate: string;
   plannedEndDate: string;
-  businessDays: "5",
+  businessDays: 5,
   actualStartDate: string;
   actualEndDate: string;
   comment: string;
