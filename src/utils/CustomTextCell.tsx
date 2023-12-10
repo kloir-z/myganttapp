@@ -27,11 +27,8 @@ export class CustomTextCellTemplate implements CellTemplate<CustomTextCell> {
     alt: boolean,
     key?: string
   ): { cell: Compatible<CustomTextCell>; enableEditMode: boolean } {
-    if (keyCode === keyCodes.ENTER || ctrl || alt || keyCode === keyCodes.POINTER || isNavigationKey(keyCode)) {
+    if (keyCode === keyCodes.ENTER || ctrl || alt || shift || isNavigationKey(keyCode)) {
       return { cell, enableEditMode: false };
-    }
-    if (keyCode === keyCodes.DELETE || keyCode === keyCodes.BACKSPACE) {
-      return { cell, enableEditMode: true };
     }
     if (key && isAlphaNumericKey(keyCode)) {
       return { cell: { ...cell, text: key }, enableEditMode: true };

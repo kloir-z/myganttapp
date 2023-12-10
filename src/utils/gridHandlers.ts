@@ -12,7 +12,6 @@ export const handleGridChanges = (dispatch: Dispatch, data: { [id: string]: WBSD
   const updatedData = { ...data };
   let useSimpleSetData = false;
 
-
   changes.forEach((change) => {
     const rowId = change.rowId.toString();
     const rowData = updatedData[rowId];
