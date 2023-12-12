@@ -41,7 +41,7 @@ export const createChartRow = (chartRow: ChartRow, columns: Column[]): Row<Defau
 export const createSeparatorRow = (separatorRow: SeparatorRow, columnCount: number): Row<DefaultCellTypes | CustomTextCell> => {
   const rowCells = [
     { type: "number", value: separatorRow.no, isEditing: false, style: { background: 'rgba(128, 128, 128, 0.1)'} } as NumberCell,
-    { type: "customText", text: separatorRow.displayName,value: (separatorRow.displayName.length), colspan: 10, style: { background: '#ddedff' } } as CustomTextCell
+    { type: "customText", text: separatorRow.displayName,value: (separatorRow.displayName.length), colspan: 12, style: { background: '#ddedff' } } as CustomTextCell
   ];
   fillEmptyCells(rowCells, columnCount, "customText", { background: '#ddedff' });
   return { rowId: separatorRow.id, height: 21, cells: rowCells as any[], reorderable: true };

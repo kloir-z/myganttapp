@@ -17,16 +17,13 @@ export const handleGridChanges = (dispatch: Dispatch, data: { [id: string]: WBSD
     const rowData = updatedData[rowId];
 
     if (rowData && rowData.rowType === 'Separator') {
-      const fieldName = change.columnId as keyof SeparatorRow;
       const newCell = change.newCell;
       useSimpleSetData = true;
-      if (newCell.type === 'customText' && fieldName === 'displayName') {
-        const customTextCell = newCell as CustomTextCell;
-        updatedData[rowId] = {
-          ...rowData,
-          [fieldName]: customTextCell.text
-        };
-      }
+      const customTextCell = newCell as CustomTextCell;
+      updatedData[rowId] = {
+        ...rowData,
+        displayName: customTextCell.text
+      };
     }
 
     if (rowData && rowData.rowType === 'Chart') {

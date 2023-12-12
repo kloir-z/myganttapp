@@ -122,18 +122,20 @@ function App() {
   }, [handleMouseDown, handleMouseMove, handleMouseUp]);
 
   return (
-    
-    <div style={{position: 'fixed', left: '30px'}}>
+    <div style={{position: 'fixed'}}>
     <div style={{position: 'relative'}}>
-      <div style={{position: 'absolute', left: `${wbsWidth}px`, width: `calc(100vw - 30px - ${wbsWidth}px)`, height: '100vh', overflow: 'hidden'}} ref={calendarRef}>
-        <Calendar dateArray={dateArray} />
+      <div style={{position: 'absolute', left: `${wbsWidth}px`, width: `calc(100vw - ${wbsWidth}px)`, height: '100vh', overflow: 'hidden'}} ref={calendarRef}>
+        <Calendar
+          dateArray={dateArray}
+          setDateRange={setDateRange}
+        />
         <GridVertical dateArray={dateArray} gridHeight={calculateGridHeight()} />
       </div>
       <div className="hiddenScrollbar" style={{position: 'absolute', top: '21px', width: `${wbsWidth}px`, height: `calc(100vh - 21px)`, overflowX: 'scroll' }} ref={wbsRef}>
         <WBSInfo />
       </div>
       <ResizeBar onDrag={handleResize} initialWidth={wbsWidth} />
-      <div style={{position: 'absolute',top: '42px', left: `${wbsWidth}px`, width: `calc(100vw - 30px - ${wbsWidth}px)`, height: `calc(100vh - 41px)`, overflow: 'scroll'}} ref={gridRef}>
+      <div style={{position: 'absolute',top: '42px', left: `${wbsWidth}px`, width: `calc(100vw - ${wbsWidth}px)`, height: `calc(100vh - 41px)`, overflow: 'scroll'}} ref={gridRef}>
         {Object.entries(data).map(([id, entry], index) => {
           const topPosition = index * 21;
           if (entry.rowType === 'Chart') {
