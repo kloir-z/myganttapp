@@ -1,7 +1,7 @@
 // CustomDateCellTemplate.tsx
 import * as React from "react";
 import { CellTemplate, Compatible, Uncertain, UncertainCompatible, keyCodes, Cell } from "@silevis/reactgrid";
-import { isAlphaNumericKey, isNavigationKey } from "@silevis/reactgrid";
+import { isAlphaNumericKey, isNavigationKey, inNumericKey } from "@silevis/reactgrid";
 import "./CustomTextCellTemplate.css";
 
 export interface CustomTextCell extends Cell {
@@ -27,14 +27,13 @@ export class CustomTextCellTemplate implements CellTemplate<CustomTextCell> {
     alt: boolean,
     key?: string
   ): { cell: Compatible<CustomTextCell>; enableEditMode: boolean } {
-    if (keyCode === keyCodes.ENTER || ctrl || alt || shift || isNavigationKey(keyCode)) {
-      return { cell, enableEditMode: false };
-    }
-    if (key && isAlphaNumericKey(keyCode)) {
-      return { cell: { ...cell, text: key }, enableEditMode: true };
-    } else {
+    if (keyCode === keyCodes.POINTER || keyCode === keyCodes.F2) {
       return { cell, enableEditMode: true };
     }
+    if (key && inNumericKey(keyCode)) {
+      return { cell: { ...cell, text: key }, enableEditMode: true };
+    }
+    return { cell, enableEditMode: false };
   }
   
   update(cell: Compatible<CustomTextCell>, cellToMerge: UncertainCompatible<CustomTextCell>): Compatible<CustomTextCell> {
