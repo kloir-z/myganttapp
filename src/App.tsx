@@ -14,6 +14,7 @@ import GridVertical from './components/GridVertical';
 import ResizeBar from './components/WbsWidthResizer';
 import "./css/ReactGrid.css";
 import "./css/HiddenScrollBar.css";
+import SettingButton from './components/SettingButton';
 
 function App() {
   const data = useSelector((state: RootState) => state.wbsData);
@@ -124,6 +125,9 @@ function App() {
   return (
     <div style={{position: 'fixed'}}>
     <div style={{position: 'relative'}}>
+      <div style={{position: 'absolute', left: '5px', width: '50px', overflow: 'hidden'}} ref={calendarRef}>
+        <SettingButton />
+      </div>
       <div style={{position: 'absolute', left: `${wbsWidth}px`, width: `calc(100vw - ${wbsWidth}px)`, height: '100vh', overflow: 'hidden'}} ref={calendarRef}>
         <Calendar
           dateArray={dateArray}

@@ -1,5 +1,6 @@
 //GridStyles.ts
 import styled from 'styled-components';
+import { ChartBarColor } from '../types/ChartTypes';
 
 export const GanttRow = styled.div`
   box-sizing: border-box;
@@ -17,8 +18,30 @@ interface CellProps {
   $isPlanned?: boolean;
   $isActual?: boolean;
   $charge?: string;
+  $chartBarColor?: ChartBarColor;
   $width?: number;
 }
+
+const getColorCode = (colorName: ChartBarColor) => {
+  switch (colorName) {
+    case 'lightblue':
+      return '#70ecff51';
+    case 'blue':
+      return '#70b0ff51';
+    case 'purple':
+      return '#8a70ff51';
+    case 'pink':
+      return '#ff70ea51';
+    case 'red':
+      return '#ff707051';
+    case 'yellow':
+      return '#fffe7051';
+    case 'green':
+      return '#76ff7051';
+    default:
+      return '#76ff7051';
+  }
+};
 
 export const Cell = styled.div<CellProps>`
   box-sizing: border-box;
@@ -33,7 +56,7 @@ export const Cell = styled.div<CellProps>`
     if (props.$type === 'saturday') return '#cddeff';
     if (props.$type === 'sundayOrHoliday') return '#ffcaca';
     if (props.$isPlanned) {
-      baseColor = props.$charge === 'vendor' ? '#74ff7451' : '#b05cff4d';
+      return props.$chartBarColor ? getColorCode(props.$chartBarColor) : '#76ff7051';
     }
     if (props.$isActual) {
       baseColor = '#00000024';

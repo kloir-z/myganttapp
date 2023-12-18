@@ -1,6 +1,6 @@
 // gridHandlers.ts
 import { CellChange, TextCell, NumberCell, CheckboxCell, EmailCell, DropdownCell, ChevronCell, HeaderCell, TimeCell, DateCell } from "@silevis/reactgrid";
-import { WBSData, ChartRow, SeparatorRow } from '../types/DataTypes';
+import { WBSData, ChartRow } from '../types/DataTypes';
 import { Dispatch } from 'redux';
 import { setData, simpleSetData } from '../reduxComponents/store';
 import { CustomDateCell } from './CustomDateCell';
@@ -67,7 +67,6 @@ export const handleGridChanges = (dispatch: Dispatch, data: { [id: string]: WBSD
         };
       }
     }
-
   });
 
   if (useSimpleSetData) {

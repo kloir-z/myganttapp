@@ -1,0 +1,1 @@
+export type ChartBarColor = 'lightblue' | 'blue' | 'purple' | 'pink' | 'red' | 'yellow' | 'green';
