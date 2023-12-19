@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChartCell } from './ChartCell';
+import { ChartBarColor } from '../types/colorAliasMapping';
 
 interface ChartBarProps {
   startDate: Date | null;
@@ -7,7 +8,7 @@ interface ChartBarProps {
   dateArray: Date[];
   isActual: boolean;
   entryId: string;
-  charge?: string;
+  chartBarColor: ChartBarColor;
   onBarMouseDown: (event: React.MouseEvent<HTMLDivElement>) => void; 
   onBarEndMouseDown: (event: React.MouseEvent<HTMLDivElement>) => void; 
 }
@@ -16,7 +17,7 @@ const getStartOfDay = (date: Date) => {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 };
 
-const ChartBar: React.FC<ChartBarProps> = ({ startDate, endDate, dateArray, isActual, entryId, charge, onBarMouseDown, onBarEndMouseDown }) => {
+const ChartBar: React.FC<ChartBarProps> = ({ startDate, endDate, dateArray, isActual, entryId, chartBarColor, onBarMouseDown, onBarEndMouseDown }) => {
   if (!startDate || !endDate) {
     return null;
   }
@@ -48,7 +49,7 @@ const ChartBar: React.FC<ChartBarProps> = ({ startDate, endDate, dateArray, isAc
             entryId={entryId}
             isActual={isActual}
             isPlanned={!isActual}
-            charge={charge}
+            chartBarColor={chartBarColor}
             width={width}
           />
         </div>

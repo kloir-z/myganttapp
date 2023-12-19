@@ -8,7 +8,7 @@ interface ColumnMap {
   middleCategory: 'C2';
   subCategory: 'C3';
   task: 'C4';
-  charge: 'Charge';
+  color: 'Color';
   plannedStartDate: 'PlanS';
   plannedEndDate: 'PlanE';
   businessDays: 'D';
@@ -24,7 +24,7 @@ const columnMap: ColumnMap = {
   middleCategory: 'C2',
   subCategory: 'C3',
   task: 'C4',
-  charge: 'Charge',
+  color: 'Color',
   plannedStartDate: 'PlanS',
   plannedEndDate: 'PlanE',
   businessDays: 'D',
@@ -42,7 +42,7 @@ export const useWBSData = () => {
     { columnId: "middleCategory", width: 50, resizable: true, reorderable: true },
     { columnId: "subCategory", width: 50, resizable: true, reorderable: true },
     { columnId: "task", width: 50, resizable: true, reorderable: true },
-    { columnId: "charge", width: 50, resizable: true, reorderable: true },
+    { columnId: "color", width: 50, resizable: true, reorderable: true },
     { columnId: "plannedStartDate", width: 40, resizable: true, reorderable: true },
     { columnId: "plannedEndDate", width: 40, resizable: true, reorderable: true },
     { columnId: "businessDays", width: 30, resizable: true, reorderable: true },

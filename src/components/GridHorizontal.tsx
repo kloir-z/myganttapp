@@ -6,6 +6,7 @@ import { debounce } from 'lodash';
 import { formatDate, adjustToLocalMidnight } from '../utils/chartHelpers'; 
 import { addBusinessDays } from '../utils/CalendarUtil';
 import ChartBar from './ChartBar';
+import { convertAliasToChartBarColor } from '../types/colorAliasMapping';
 
 interface ChartRowProps {
   entry: ChartRow;
@@ -16,7 +17,7 @@ interface ChartRowProps {
 
 const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRef, setCanDrag }) => {
   const dispatch = useDispatch();
-  const charge = entry.charge;
+  const chartBarColor = convertAliasToChartBarColor(entry.color) || 'green';
   const businessDays = entry.businessDays;
   const [localPlannedStartDate, setLocalPlannedStartDate] = useState(entry.plannedStartDate ? new Date(entry.plannedStartDate) : null);
   const [localPlannedEndDate, setLocalPlannedEndDate] = useState(entry.plannedEndDate ? new Date(entry.plannedEndDate) : null);
@@ -171,7 +172,7 @@ const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRe
           dateArray={dateArray}
           isActual={true}
           entryId={entry.id}
-          charge={charge}
+          chartBarColor={chartBarColor}
           onBarMouseDown={handleBarMouseDown}
           onBarEndMouseDown={handleBarEndMouseDown}
         />
@@ -183,7 +184,7 @@ const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRe
           dateArray={dateArray}
           isActual={false}
           entryId={entry.id}
-          charge={charge}
+          chartBarColor={chartBarColor}
           onBarMouseDown={handleBarMouseDown}
           onBarEndMouseDown={handleBarEndMouseDown}
         />

@@ -14,7 +14,7 @@ export interface ChartRow extends BaseRow {
   middleCategory: string;
   subCategory: string;
   task: string;
-  charge: string;
+  color: string;
   plannedStartDate: string;
   plannedEndDate: string;
   businessDays: number,
