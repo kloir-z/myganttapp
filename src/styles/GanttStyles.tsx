@@ -1,6 +1,7 @@
 //GridStyles.ts
 import styled from 'styled-components';
 import { ChartBarColor } from '../types/colorAliasMapping';
+import { css, keyframes } from 'styled-components';
 
 export const GanttRow = styled.div`
   box-sizing: border-box;
@@ -65,5 +66,59 @@ export const Cell = styled.div<CellProps>`
   &:hover {
     border: ${props => ((props.$isPlanned || props.$isActual) ? '1px solid #001aff83' : '1px solid transparent')};
     border-left: ${props => ((props.$isPlanned || props.$isActual) ? '1px solid #001aff83' : '1px solid #00000016')};
+  }
+`;
+
+const createFadeAnimation = (fromOpacity: number, toOpacity: number) => keyframes`
+  from { opacity: ${fromOpacity}};
+  to { opacity: ${toOpacity}};
+`;
+
+const fadeAnimation = (fromOpacity: number, toOpacity: number) => css`
+  animation: ${createFadeAnimation(fromOpacity, toOpacity)} 0.2s ease-out forwards;
+`;
+
+export const Overlay = styled.div<{ fadeStatus: 'in' | 'out' }>`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.659);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  ${props => props.fadeStatus === 'out' ? fadeAnimation(1, 0) : fadeAnimation(0, 1)}
+  border: none;
+  color: #ebebeb;
+`;
+
+export const ModalContainer = styled.div<{ fadeStatus: 'in' | 'out' }>`
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  margin: 25px;
+  background: #f7f7f7;
+  padding: 20px;
+  border: solid 1px rgb(83 87 97);
+  border-radius: 5px;
+  font-size: 0.8rem;
+  z-index: 15;
+  ${props => props.fadeStatus === 'out' ? fadeAnimation(1, 0) : fadeAnimation(0, 1)}
+  color: #1b1b1b;
+`;
+
+export const CloseButton = styled.button`
+  position: absolute;
+  top: 0px;
+  right: 1px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: #252525;
+  border: none;
+  background: transparent;
+  &:hover {
+    color: #9b9b9b;
   }
 `;

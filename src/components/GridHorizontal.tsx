@@ -7,17 +7,19 @@ import { formatDate, adjustToLocalMidnight } from '../utils/chartHelpers';
 import { addBusinessDays } from '../utils/CalendarUtil';
 import ChartBar from './ChartBar';
 import { convertAliasToChartBarColor } from '../types/colorAliasMapping';
+import { AliasMapping } from "../types/colorAliasMapping";
 
 interface ChartRowProps {
   entry: ChartRow;
   dateArray: Date[];
   gridRef: React.RefObject<HTMLDivElement>;
   setCanDrag: (canDrag: boolean) => void;
+  aliasMapping: AliasMapping;
 }
 
-const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRef, setCanDrag }) => {
+const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRef, setCanDrag, aliasMapping }) => {
   const dispatch = useDispatch();
-  const chartBarColor = convertAliasToChartBarColor(entry.color) || 'green';
+  const chartBarColor = convertAliasToChartBarColor(entry.color, aliasMapping) || 'green';
   const businessDays = entry.businessDays;
   const [localPlannedStartDate, setLocalPlannedStartDate] = useState(entry.plannedStartDate ? new Date(entry.plannedStartDate) : null);
   const [localPlannedEndDate, setLocalPlannedEndDate] = useState(entry.plannedEndDate ? new Date(entry.plannedEndDate) : null);

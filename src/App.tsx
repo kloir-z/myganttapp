@@ -3,8 +3,6 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import Calendar from './components/Calendar';
 import { ChartRow  } from './types/DataTypes';
 import { GanttRow } from './styles/GanttStyles';
-import "react-datepicker/dist/react-datepicker.css"; 
-import './css/DatePicker.css'
 import WBSInfo from './components/WBSInfo';
 import GridHorizontal from './components/GridHorizontal';
 import { useSelector } from 'react-redux';
@@ -15,15 +13,20 @@ import ResizeBar from './components/WbsWidthResizer';
 import "./css/ReactGrid.css";
 import "./css/HiddenScrollBar.css";
 import SettingButton from './components/SettingButton';
+import SettingsModal from './components/SettingsModal';
+import { ChartBarColor } from "./types/colorAliasMapping";
 
 function App() {
   const data = useSelector((state: RootState) => state.wbsData);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+
   const [wbsWidth, setWbsWidth] = useState(550);
   const [dateRange, setDateRange] = useState({
     startDate: new Date('2023-09-01'),
     endDate: new Date('2025-10-05'),
   });
   const [dateArray, setDateArray] = useState(generateDates(dateRange.startDate, dateRange.endDate));
+  const [aliasMapping, setAliasMapping] = useState<{ [color in ChartBarColor]?: string }>({});
   const [isDragging, setIsDragging] = useState(false);
   const [canDrag, setCanDrag] = useState(false);
   const [startX, setStartX] = useState(0);
@@ -121,12 +124,29 @@ function App() {
       };
     }
   }, [handleMouseDown, handleMouseMove, handleMouseUp]);
+  
+    const openSettingsModal = () => {
+      setIsSettingsModalOpen(true);
+    };
+  
+    const closeSettingsModal = () => {
+      setIsSettingsModalOpen(false);
+    };
 
   return (
     <div style={{position: 'fixed'}}>
     <div style={{position: 'relative'}}>
       <div style={{position: 'absolute', left: '5px', width: '50px', overflow: 'hidden'}} ref={calendarRef}>
-        <SettingButton />
+        <SettingButton onClick={openSettingsModal} />
+        <SettingsModal
+        show={isSettingsModalOpen}
+        onClose={closeSettingsModal}
+        dateArray={dateArray}
+        setDateRange={setDateRange}
+        aliasMapping={aliasMapping}
+        setAliasMapping={setAliasMapping}
+        // 他の必要なプロパティ
+      />
       </div>
       <div style={{position: 'absolute', left: `${wbsWidth}px`, width: `calc(100vw - ${wbsWidth}px)`, height: '100vh', overflow: 'hidden'}} ref={calendarRef}>
         <Calendar
@@ -157,6 +177,7 @@ function App() {
                   dateArray={dateArray}
                   gridRef={gridRef}
                   setCanDrag={setCanDrag}
+                  aliasMapping={aliasMapping}
                 />
               </GanttRow>
             );

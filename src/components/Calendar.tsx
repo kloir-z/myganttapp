@@ -19,7 +19,14 @@ const Calendar: React.FC<CalendarProps> = memo(({ dateArray, setDateRange }) => 
 
   useEffect(() => {
     if (startDate instanceof Date && endDate instanceof Date) {
-      setDateRange({ startDate: startDate, endDate: endDate });
+      const maxEndDate = new Date(startDate);
+      maxEndDate.setFullYear(maxEndDate.getFullYear() + 5);
+
+      if (endDate > maxEndDate) {
+        setEndDate(maxEndDate);
+      } else {
+        setDateRange({ startDate, endDate });
+      }
     }
   }, [startDate, endDate, setDateRange]);
 

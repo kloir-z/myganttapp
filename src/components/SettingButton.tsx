@@ -37,9 +37,13 @@ export const StyledSettingButton = styled.button`
   opacity: 0.8;
 `;
 
-const SettingButton = () => {
+type SettingButtonProps = {
+  onClick: () => void;
+};
+
+const SettingButton: React.FC<SettingButtonProps> = ({ onClick }) => {
   return (
-    <StyledSettingButton>
+    <StyledSettingButton onClick={onClick}>
       <AnimatedCog />
       <span style={{ position: 'absolute', left: '-9999px' }}>設定</span>
     </StyledSettingButton>
