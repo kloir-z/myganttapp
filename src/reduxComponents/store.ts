@@ -32,19 +32,49 @@ const updateDependentRows = (
   if (visited.has(currentId)) {
     if (state[currentId] && state[currentId].rowType === 'Chart') {
       const chartRow = state[currentId] as ChartRow;
-      chartRow.chain = '';
+      chartRow.dependentId = '';
     }
     return;
   }
   visited.add(currentId);
   Object.values(state).forEach((row: WBSData) => {
-    if (row.rowType === 'Chart' && (row as ChartRow).chain === currentId) {
-      const dependentRow = row as ChartRow;
-      const newStartDate = addBusinessDays(newEndDate, 1, false);
-      dependentRow.plannedStartDate = toLocalISOString(newStartDate);
-      const dependentEndDate = addBusinessDays(newStartDate, dependentRow.businessDays);
-      dependentRow.plannedEndDate = toLocalISOString(dependentEndDate);
-      updateDependentRows(state, dependentRow.id, dependentEndDate, visited);
+    if (row.rowType === 'Chart') {
+      const chartRow = row as ChartRow;
+      if (chartRow.dependentId === currentId) {
+        const dependency = chartRow.dependency.toLowerCase();
+        if (!chartRow.dependency) {
+          return;
+        }
+        const dependencyParts = dependency.split(',');
+
+        let newStartDate;
+        switch (dependencyParts[0]) {
+          case 'after':
+            // オフセット日数を取得し、依存元の終了日に加算
+            let offsetDays = parseInt(dependencyParts[2], 10);
+            // offsetDays が NaN または 0 以下の場合、1 に設定
+            if (isNaN(offsetDays) || offsetDays <= 0) {
+              offsetDays = 1;
+            }
+            newStartDate = addBusinessDays(newEndDate, offsetDays, false);
+            break;
+          case 'sameas':
+            // 依存元の開始日と一致させる
+            const dependentRow = state[currentId] as ChartRow;
+            newStartDate = new Date(dependentRow.plannedStartDate);
+            break;
+          default:
+            // 未知の依存関係タイプの場合は何もしない
+            return;
+        }
+
+        chartRow.plannedStartDate = toLocalISOString(newStartDate);
+        const dependentEndDate = addBusinessDays(newStartDate, chartRow.businessDays);
+        chartRow.plannedEndDate = toLocalISOString(dependentEndDate);
+
+        // 依存関係の更新を再帰的に行う
+        updateDependentRows(state, chartRow.id, dependentEndDate, visited);
+      }
     }
   });
 };
@@ -55,22 +85,7 @@ export const wbsDataSlice = createSlice({
   reducers: {
     simpleSetData: (state, action: PayloadAction<{ [id: string]: WBSData }>) => {
       const data = action.payload;
-      const idToNoMapping: { [id: string]: number } = {};
-      Object.values(data).forEach(row => {
-        if ('id' in row) {
-          idToNoMapping[row.id] = row.no;
-        }
-      });
-      const newData = Object.fromEntries(
-        Object.entries(data).map(([id, row]) => {
-          if (row.rowType === "Chart") {
-            const chainNo = row.chain in idToNoMapping ? idToNoMapping[row.chain].toString() : '';
-            return [id, { ...row, chainNo }];
-          }
-          return [id, row];
-        })
-      );
-      return newData;
+      return data;
     },
     setData: (state, action: PayloadAction<{ [id: string]: WBSData }>) => {
       const newData = action.payload;
@@ -156,25 +171,50 @@ export const wbsDataSlice = createSlice({
     },
     setBusinessDays: (state, action: PayloadAction<{ id: string; days: number }>) => {
       const { id, days } = action.payload;
+    
       const updateDependentRows = (currentId: string, newEndDate: Date) => {
         Object.values(state).forEach(row => {
-          if (row.rowType === 'Chart' && (row as ChartRow).chain === currentId) {
-            const dependentRow = row as ChartRow;
-            const newStartDate = addBusinessDays(newEndDate, 1, false);
-            dependentRow.plannedStartDate = toLocalISOString(newStartDate);
-            const dependentEndDate = addBusinessDays(newStartDate, dependentRow.businessDays);
-            dependentRow.plannedEndDate = toLocalISOString(dependentEndDate);
-            updateDependentRows(dependentRow.id, dependentEndDate);
+          if (row.rowType === 'Chart') {
+            const chartRow = row as ChartRow;
+            if (chartRow.dependentId === currentId) {
+              const dependency = chartRow.dependency?.toLowerCase();
+              if (!dependency) return;
+    
+              const dependencyParts = dependency.split(',');
+              let newStartDate;
+    
+              switch (dependencyParts[0]) {
+                case 'after':
+                  let offsetDays = parseInt(dependencyParts[2], 10);
+                  if (isNaN(offsetDays) || offsetDays <= 0) {
+                    offsetDays = 1;
+                  }
+                  newStartDate = addBusinessDays(newEndDate, offsetDays, false);
+                  break;
+                case 'sameas':
+                  const dependentRow = state[currentId] as ChartRow;
+                  newStartDate = new Date(dependentRow.plannedStartDate);
+                  break;
+                default:
+                  return;
+              }
+    
+              chartRow.plannedStartDate = toLocalISOString(newStartDate);
+              const dependentEndDate = addBusinessDays(newStartDate, chartRow.businessDays);
+              chartRow.plannedEndDate = toLocalISOString(dependentEndDate);
+    
+              updateDependentRows(chartRow.id, dependentEndDate);
+            }
           }
         });
       };
+    
       if (state[id] && state[id].rowType === 'Chart') {
         const chartRow = state[id] as ChartRow;
         chartRow.businessDays = days;
         if (chartRow.plannedStartDate && days) {
           const startDate = new Date(chartRow.plannedStartDate);
-          const businessDays = days;
-          const endDate = addBusinessDays(startDate, businessDays);
+          const endDate = addBusinessDays(startDate, days);
           updateDependentRows(id, new Date(endDate));
         }
       }

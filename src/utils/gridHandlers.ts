@@ -30,33 +30,63 @@ export const handleGridChanges = (dispatch: Dispatch, data: { [id: string]: WBSD
       const fieldName = change.columnId as keyof ChartRow; 
       const newCell = change.newCell;
       useSimpleSetData = false;
+    
       if (newCell.type === 'customDate') {
         const customDateCell = newCell as CustomDateCell;
         updatedData[rowId] = {
           ...rowData,
           [fieldName]: customDateCell.text
         };
-      } else if (fieldName === 'chainNo' && newCell.type === 'customText') {
-        const newChainNoText = (newCell as CustomTextCell).text;
-
-        if (newChainNoText) {
-          const newChainNo = parseInt(newChainNoText);
-          const chainRowId = Object.keys(data).find(key => {
-            const keyRowData = data[key];
-            return keyRowData.rowType === 'Chart' && (keyRowData as ChartRow).no === newChainNo;
-          });
-          if (chainRowId) {
-            updatedData[rowId] = {
-              ...rowData,
-              chain: chainRowId,
-              chainNo: newChainNo
-            };
+      } else if (fieldName === 'dependency' && newCell.type === 'customText') {
+        const customText = (newCell as CustomTextCell).text;
+    
+        if (customText) {
+          const parts = customText.split(','); // 'after,15,1' のような文字列を分割
+          if (parts.length >= 2) { // 書式が適切かどうかの確認
+            let refRowNo = parts[1].trim(); // '15' または '-1' などの参照行
+      
+            let refRowId: string | undefined;
+            if (refRowNo.startsWith('+') || refRowNo.startsWith('-')) {
+              // 相対参照の場合
+              const offset = parseInt(refRowNo, 10);
+              let currentIndex = Object.keys(data).indexOf(rowId);
+              let steps = Math.abs(offset);
+      
+              while (steps > 0 && currentIndex >= 0 && currentIndex < Object.keys(data).length) {
+                currentIndex += (offset / Math.abs(offset)); // 正または負の方向に移動
+                if (currentIndex < 0 || currentIndex >= Object.keys(data).length) {
+                  break;
+                }
+                if (data[Object.keys(data)[currentIndex]].rowType === 'Chart') {
+                  steps--;
+                }
+              }
+      
+              if (currentIndex >= 0 && currentIndex < Object.keys(data).length) {
+                refRowId = Object.keys(data)[currentIndex];
+              }
+            } else {
+              // 絶対参照の場合
+              const targetNo = parseInt(refRowNo, 10);
+              refRowId = Object.keys(data).find(key => {
+                const keyRowData = data[key];
+                return keyRowData.rowType === 'Chart' && (keyRowData as ChartRow).no === targetNo;
+              });
+            }
+      
+            if (refRowId) {
+              updatedData[rowId] = {
+                ...rowData,
+                dependentId: refRowId,
+                dependency: customText
+              };
+            }
           }
         } else {
           updatedData[rowId] = {
             ...rowData,
-            chain: '',
-            chainNo: null
+            dependentId: '',
+            dependency: ''
           };
         }
       } else if (newCell.type === 'customText') {
@@ -66,8 +96,10 @@ export const handleGridChanges = (dispatch: Dispatch, data: { [id: string]: WBSD
           [fieldName]: customTextCell.text
         };
       }
-    }
+    }    
   });
+
+  console.log(useSimpleSetData)
 
   if (useSimpleSetData) {
     dispatch(simpleSetData(updatedData));

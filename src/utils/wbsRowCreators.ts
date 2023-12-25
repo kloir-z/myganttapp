@@ -22,7 +22,7 @@ export const createChartRow = (chartRow: ChartRow, columns: Column[]): Row<Defau
   const rowCells = columns.map(column => {
     const columnId = column.columnId as string;
     let cellValue = (chartRow as any)[columnId];
-    if ((columnId === 'chain' || columnId === 'chainNo') && (cellValue === null || cellValue === undefined)) {
+    if ((columnId === 'dependentId' || columnId === 'dependency') && (cellValue === null || cellValue === undefined)) {
       cellValue = '';
     }
     if (["plannedStartDate", "plannedEndDate", "actualStartDate", "actualEndDate"].includes(columnId)) {

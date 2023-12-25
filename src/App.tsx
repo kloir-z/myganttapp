@@ -15,12 +15,15 @@ import "./css/HiddenScrollBar.css";
 import SettingButton from './components/SettingButton';
 import SettingsModal from './components/SettingsModal';
 import { ChartBarColor } from "./types/colorAliasMapping";
+import { useWBSData } from './hooks/useWBSData';
 
 function App() {
   const data = useSelector((state: RootState) => state.wbsData);
+  const { headerRow, columns, setColumns } = useWBSData();
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
   const [wbsWidth, setWbsWidth] = useState(550);
+  const [maxWbsWidth, setMaxWbsWidth] = useState(900);
   const [dateRange, setDateRange] = useState({
     startDate: new Date('2023-09-01'),
     endDate: new Date('2025-10-05'),
@@ -79,9 +82,10 @@ function App() {
     };
   }, []);
 
-  const handleResize = (newWidth: number) => {
-    setWbsWidth(newWidth);
-  };
+  const handleResize = useCallback((newWidth: number) => {
+    const adjustedWidth = Math.max(5, Math.min(newWidth, maxWbsWidth));
+    setWbsWidth(adjustedWidth);
+  }, [maxWbsWidth]);
 
   const calculateGridHeight = () => {
     const rowCount = Object.keys(data).length;
@@ -135,83 +139,90 @@ function App() {
 
   return (
     <div style={{position: 'fixed'}}>
-    <div style={{position: 'relative'}}>
-      <div style={{position: 'absolute', left: '5px', width: '50px', overflow: 'hidden'}} ref={calendarRef}>
-        <SettingButton onClick={openSettingsModal} />
-        <SettingsModal
-        show={isSettingsModalOpen}
-        onClose={closeSettingsModal}
-        dateArray={dateArray}
-        setDateRange={setDateRange}
-        aliasMapping={aliasMapping}
-        setAliasMapping={setAliasMapping}
-        // 他の必要なプロパティ
-      />
-      </div>
-      <div style={{position: 'absolute', left: `${wbsWidth}px`, width: `calc(100vw - ${wbsWidth}px)`, height: '100vh', overflow: 'hidden'}} ref={calendarRef}>
-        <Calendar
-          dateArray={dateArray}
+      <div style={{position: 'relative'}}>
+        <div style={{position: 'absolute', left: '5px', width: '50px', overflow: 'hidden'}} ref={calendarRef}>
+          <SettingButton onClick={openSettingsModal} />
+          <SettingsModal
+          show={isSettingsModalOpen}
+          onClose={closeSettingsModal}
+          dateRange={dateRange}
           setDateRange={setDateRange}
+          aliasMapping={aliasMapping}
+          setAliasMapping={setAliasMapping}
+          headerRow={headerRow}
+          columns={columns}
+          setColumns={setColumns}
+          // 他の必要なプロパティ
         />
-        <GridVertical dateArray={dateArray} gridHeight={calculateGridHeight()} />
-      </div>
-      <div className="hiddenScrollbar" style={{position: 'absolute', top: '21px', width: `${wbsWidth}px`, height: `calc(100vh - 21px)`, overflowX: 'scroll' }} ref={wbsRef}>
-        <WBSInfo />
-      </div>
-      <ResizeBar onDrag={handleResize} initialWidth={wbsWidth} />
-      <div style={{position: 'absolute',top: '42px', left: `${wbsWidth}px`, width: `calc(100vw - ${wbsWidth}px)`, height: `calc(100vh - 41px)`, overflow: 'scroll'}} ref={gridRef}>
-        {Object.entries(data).map(([id, entry], index) => {
-          const topPosition = index * 21;
-          if (entry.rowType === 'Chart') {
-            return (
-              <GanttRow
-                key={id}
-                style={{
-                  position: 'absolute',
-                  top: `${topPosition}px`,
-                  width: `${calendarWidth}px`
-                }}
-              >
-                <GridHorizontal
-                  entry={entry as ChartRow}
-                  dateArray={dateArray}
-                  gridRef={gridRef}
-                  setCanDrag={setCanDrag}
-                  aliasMapping={aliasMapping}
-                />
-              </GanttRow>
-            );
-          } else if (entry.rowType === 'Separator') {
-            return (
-              <div
-                key={id}
-                style={{
-                  backgroundColor: '#ddedff',
-                  position: 'absolute',
-                  top: `${topPosition}px`,
-                }}
-              >
-                <GanttRow key={id} style={{ backgroundColor: '#ddedff', borderBottom: 'solid 1px #e8e8e8', width: `${calendarWidth}px`}}/>
-              </div>
-            );
-          } else if (entry.rowType === 'Event') {
-            return (
-              <div
-                key={id}
-                style={{
-                  position: 'absolute',
-                  top: `${topPosition}px`,
-                }}
-              >
-                <GanttRow key={index} style={{ width: `${calendarWidth}px`}}>
+        </div>
+        <div style={{position: 'absolute', left: `${wbsWidth}px`, width: `calc(100vw - ${wbsWidth}px)`, height: '100vh', overflow: 'hidden'}} ref={calendarRef}>
+          <Calendar
+            dateArray={dateArray}
+            setDateRange={setDateRange}
+          />
+          <GridVertical dateArray={dateArray} gridHeight={calculateGridHeight()} />
+        </div>
+        <div className="hiddenScrollbar" style={{position: 'absolute', top: '21px', width: `${wbsWidth}px`, height: `calc(100vh - 21px)`, overflowX: 'scroll' }} ref={wbsRef}>
+          <WBSInfo
+            headerRow={headerRow}
+            columns={columns}
+            setColumns={setColumns}
+          />
+        </div>
+        <ResizeBar onDrag={handleResize} initialWidth={wbsWidth} />
+        <div style={{position: 'absolute',top: '42px', left: `${wbsWidth}px`, width: `calc(100vw - ${wbsWidth}px)`, height: `calc(100vh - 41px)`, overflow: 'scroll'}} ref={gridRef}>
+          {Object.entries(data).map(([id, entry], index) => {
+            const topPosition = index * 21;
+            if (entry.rowType === 'Chart') {
+              return (
+                <GanttRow
+                  key={id}
+                  style={{
+                    position: 'absolute',
+                    top: `${topPosition}px`,
+                    width: `${calendarWidth}px`
+                  }}
+                >
+                  <GridHorizontal
+                    entry={entry as ChartRow}
+                    dateArray={dateArray}
+                    gridRef={gridRef}
+                    setCanDrag={setCanDrag}
+                    aliasMapping={aliasMapping}
+                  />
                 </GanttRow>
-              </div>
-            );
-          }
-          return null;
-        })}
+              );
+            } else if (entry.rowType === 'Separator') {
+              return (
+                <div
+                  key={id}
+                  style={{
+                    backgroundColor: '#ddedff',
+                    position: 'absolute',
+                    top: `${topPosition}px`,
+                  }}
+                >
+                  <GanttRow key={id} style={{ backgroundColor: '#ddedff', borderBottom: 'solid 1px #e8e8e8', width: `${calendarWidth}px`}}/>
+                </div>
+              );
+            } else if (entry.rowType === 'Event') {
+              return (
+                <div
+                  key={id}
+                  style={{
+                    position: 'absolute',
+                    top: `${topPosition}px`,
+                  }}
+                >
+                  <GanttRow key={index} style={{ width: `${calendarWidth}px`}}>
+                  </GanttRow>
+                </div>
+              );
+            }
+            return null;
+          })}
+        </div>
       </div>
-    </div>
     </div>
   );
 }

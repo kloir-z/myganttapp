@@ -15,7 +15,9 @@ interface ColumnMap {
   actualStartDate: 'ActS';
   actualEndDate: 'ActE';
   displayName: 'DisplayName';
-  chainNo: 'Cn'
+  dependency: 'Dep';
+  dependentId: 'DepId';
+  id: 'id'
 }
 
 const columnMap: ColumnMap = {
@@ -31,7 +33,9 @@ const columnMap: ColumnMap = {
   actualStartDate: 'ActS',
   actualEndDate: 'ActE',
   displayName: 'DisplayName',
-  chainNo: 'Cn'
+  dependency: 'Dep',
+  dependentId: 'DepId',
+  id: 'id'
 };
 
 export const useWBSData = () => {
@@ -48,7 +52,9 @@ export const useWBSData = () => {
     { columnId: "businessDays", width: 30, resizable: true, reorderable: true },
     { columnId: "actualStartDate", width: 40, resizable: true, reorderable: true },
     { columnId: "actualEndDate", width: 40, resizable: true, reorderable: true },
-    { columnId: "chainNo", width: 40, resizable: true, reorderable: true },
+    { columnId: "dependency", width: 40, resizable: true, reorderable: true },
+    { columnId: "dependentId", width: 40, resizable: true, reorderable: true },
+    { columnId: "id", width: 40, resizable: true, reorderable: true },
   ]);
 
   const getHeaderRow = (columns: Column[], columnMap: ColumnMap): Row<DefaultCellTypes> => {

@@ -1,9 +1,8 @@
 // WBSInfo.tsx
-import React, { useCallback, memo } from 'react';
+import React, { useCallback, memo, Dispatch, SetStateAction } from 'react';
 import { WBSData, ChartRow, SeparatorRow, EventRow  } from '../types/DataTypes';
-import { ReactGrid, Row, DefaultCellTypes, Id, MenuOption, SelectionMode } from "@silevis/reactgrid";
+import { ReactGrid, Row, DefaultCellTypes, Id, MenuOption, SelectionMode, Column } from "@silevis/reactgrid";
 import "@silevis/reactgrid/styles.css";
-import { useWBSData } from '../hooks/useWBSData';
 import { handleAddChartRowBelow, handleAddSeparatorRowBelow, handleRemoveSelectedRow } from '../utils/contextMenuHandlers';
 import { createChartRow, createSeparatorRow, createEventRow } from '../utils/wbsRowCreators';
 import { handleGridChanges } from '../utils/gridHandlers';
@@ -14,10 +13,15 @@ import { CustomDateCell, CustomDateCellTemplate } from '../utils/CustomDateCell'
 import { CustomTextCell, CustomTextCellTemplate } from '../utils/CustomTextCell';
 import { assignIds, reorderArray } from '../utils/wbsHelpers';
 
-const WBSInfo: React.FC = memo(() => {
+type WBSInfoProps = {
+  headerRow: Row<DefaultCellTypes>;
+  columns: Column[];
+  setColumns: Dispatch<SetStateAction<Column[]>>; 
+};
+
+const WBSInfo: React.FC<WBSInfoProps> = ({ headerRow, columns, setColumns }) => {
   const dispatch = useDispatch();
   const data = useSelector((state: RootState) => state.wbsData);
-  const { headerRow, columns, setColumns } = useWBSData();
   const handleColumnResize = useColumnResizer(setColumns);
   const dataArray = Object.values(data);
   const customDateCellTemplate = new CustomDateCellTemplate();
@@ -110,13 +114,12 @@ const WBSInfo: React.FC = memo(() => {
       enableRangeSelection
       enableColumnSelection
       enableRowSelection
-      enableFillHandle
       onRowsReordered={handleRowsReorder}
       onColumnsReordered={handleColumnsReorder}
       canReorderRows={handleCanReorderRows}
       customCellTemplates={{ customDate: customDateCellTemplate, customText: customTextCellTemplate }}
     />
   );
-});
+};
 
 export default memo(WBSInfo);
