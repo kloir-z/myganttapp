@@ -158,7 +158,6 @@ function App() {
         <div style={{position: 'absolute', left: `${wbsWidth}px`, width: `calc(100vw - ${wbsWidth}px)`, height: '100vh', overflow: 'hidden'}} ref={calendarRef}>
           <Calendar
             dateArray={dateArray}
-            setDateRange={setDateRange}
           />
           <GridVertical dateArray={dateArray} gridHeight={calculateGridHeight()} />
         </div>
