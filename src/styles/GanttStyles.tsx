@@ -97,7 +97,6 @@ export const Overlay = styled.div<{ fadeStatus: 'in' | 'out' }>`
 export const ModalContainer = styled.div<{ fadeStatus: 'in' | 'out' }>`
   display: flex;
   flex-direction: column;
-  position: relative;
   margin: 25px;
   background: #f7f7f7;
   padding: 20px;

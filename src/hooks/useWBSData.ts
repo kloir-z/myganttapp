@@ -2,12 +2,12 @@
 import { useState, useEffect } from 'react';
 import { Column, Row, DefaultCellTypes, HeaderCell } from "@silevis/reactgrid";
 
-interface ColumnMap {
+export interface ColumnMap {
   no: 'No';
-  majorCategory: 'C1';
-  middleCategory: 'C2';
-  subCategory: 'C3';
-  task: 'C4';
+  textColumn1: 'C1';
+  textColumn2: 'C2';
+  textColumn3: 'C3';
+  textColumn4: 'C4';
   color: 'Color';
   plannedStartDate: 'PlanS';
   plannedEndDate: 'PlanE';
@@ -20,12 +20,12 @@ interface ColumnMap {
   id: 'id'
 }
 
-const columnMap: ColumnMap = {
+export const columnMap: ColumnMap = {
   no: 'No',
-  majorCategory: 'C1',
-  middleCategory: 'C2',
-  subCategory: 'C3',
-  task: 'C4',
+  textColumn1: 'C1',
+  textColumn2: 'C2',
+  textColumn3: 'C3',
+  textColumn4: 'C4',
   color: 'Color',
   plannedStartDate: 'PlanS',
   plannedEndDate: 'PlanE',
@@ -39,13 +39,13 @@ const columnMap: ColumnMap = {
 };
 
 export const useWBSData = () => {
-  const [columns, setColumns] = useState<Column[]>([
-    { columnId: "no", width: 15, resizable: false },
+  const initialColumns: Column[] = [
+    { columnId: "no", width: 30, resizable: false },
     { columnId: "displayName", width: 100, resizable: true, reorderable: true },
-    { columnId: "majorCategory", width: 50, resizable: true, reorderable: true },
-    { columnId: "middleCategory", width: 50, resizable: true, reorderable: true },
-    { columnId: "subCategory", width: 50, resizable: true, reorderable: true },
-    { columnId: "task", width: 50, resizable: true, reorderable: true },
+    { columnId: "textColumn1", width: 50, resizable: true, reorderable: true },
+    { columnId: "textColumn2", width: 50, resizable: true, reorderable: true },
+    { columnId: "textColumn3", width: 50, resizable: true, reorderable: true },
+    { columnId: "textColumn4", width: 50, resizable: true, reorderable: true },
     { columnId: "color", width: 50, resizable: true, reorderable: true },
     { columnId: "plannedStartDate", width: 40, resizable: true, reorderable: true },
     { columnId: "plannedEndDate", width: 40, resizable: true, reorderable: true },
@@ -53,9 +53,9 @@ export const useWBSData = () => {
     { columnId: "actualStartDate", width: 40, resizable: true, reorderable: true },
     { columnId: "actualEndDate", width: 40, resizable: true, reorderable: true },
     { columnId: "dependency", width: 40, resizable: true, reorderable: true },
-    { columnId: "dependentId", width: 40, resizable: true, reorderable: true },
-    { columnId: "id", width: 40, resizable: true, reorderable: true },
-  ]);
+  ];
+  const [originalColumns, setOriginalColumns] = useState<Column[]>(initialColumns);
+  const [columns, setColumns] = useState<Column[]>(initialColumns);
 
   const getHeaderRow = (columns: Column[], columnMap: ColumnMap): Row<DefaultCellTypes> => {
     const cells = columns.map(column => {
@@ -75,6 +75,24 @@ export const useWBSData = () => {
   useEffect(() => {
     setHeaderRow(getHeaderRow(columns, columnMap));
   }, [columns]);
-  
-  return { columns, setColumns, headerRow };
-};
+
+  const [columnVisibility, setColumnVisibility] = useState<{ [key: string]: boolean }>(
+    initialColumns.reduce((acc, column) => ({ ...acc, [column.columnId]: true }), {})
+  );
+
+  const toggleColumnVisibility = (columnId: string | number) => {
+    setColumnVisibility(prev => {
+      const newVisibility = { ...prev, [columnId]: !prev[columnId] };
+      const newColumns = originalColumns.filter(column => newVisibility[column.columnId]);
+      setColumns(newColumns);
+      return newVisibility;
+    });
+  };
+
+  useEffect(() => {
+    const filteredColumns = originalColumns.filter(column => columnVisibility[column.columnId]);
+    setHeaderRow(getHeaderRow(filteredColumns, columnMap));
+  }, [originalColumns, columnVisibility]);
+
+  return { initialColumns, columns, setColumns, headerRow, columnVisibility, toggleColumnVisibility };
+}

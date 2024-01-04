@@ -5,9 +5,9 @@ import { simpleSetData } from '../reduxComponents/store';
 import { Id } from "@silevis/reactgrid";
 import { Dispatch } from 'redux'; 
 
-export const handleAddChartRowBelow = (dispatch: Dispatch, selectedRowIds: Id[], dataArray: WBSData[]) => {
+export const handleAddChartRow = (dispatch: Dispatch, selectedRowIds: Id[], dataArray: WBSData[]) => {
   const newDataArray = dataArray.slice();
-  const maxIndex = Math.max(...selectedRowIds.map(id => 
+  const minIndex = Math.min(...selectedRowIds.map(id => 
     newDataArray.findIndex(item => item.id === id)));
 
   for (let i = 0; i < selectedRowIds.length; i++) {
@@ -15,30 +15,29 @@ export const handleAddChartRowBelow = (dispatch: Dispatch, selectedRowIds: Id[],
       rowType: "Chart",
       no: 0,
       id: "",
-      majorCategory: "",
-      middleCategory: "",
-      subCategory: "",
-      task: "",
+      textColumn1: "",
+      textColumn2: "",
+      textColumn3: "",
+      textColumn4: "",
       color: "",
       plannedStartDate: "",
       plannedEndDate: "",
       businessDays: 1,
       actualStartDate: "",
       actualEndDate: "",
-      comment: "",
       displayName: "",
       dependentId: "",
       dependency: "",
     };
-    newDataArray.splice(maxIndex + 1 + i, 0, newDataRow);
+    newDataArray.splice(minIndex + i, 0, newDataRow);
   }
 
   dispatch(simpleSetData(assignIds(newDataArray)));
 };
 
-export const handleAddSeparatorRowBelow = (dispatch: Dispatch, selectedRowIds: Id[], dataArray: WBSData[]) => {
+export const handleAddSeparatorRow = (dispatch: Dispatch, selectedRowIds: Id[], dataArray: WBSData[]) => {
   const newDataArray = dataArray.slice();
-  const maxIndex = Math.max(...selectedRowIds.map(id => 
+  const minIndex = Math.min(...selectedRowIds.map(id => 
     newDataArray.findIndex(item => item.id === id)));
 
   for (let i = 0; i < selectedRowIds.length; i++) {
@@ -46,10 +45,9 @@ export const handleAddSeparatorRowBelow = (dispatch: Dispatch, selectedRowIds: I
       rowType: "Separator",
       no: 0,
       id: "",
-      comment: "",
       displayName: ""
     };
-    newDataArray.splice(maxIndex + 1 + i, 0, newDataRow);
+    newDataArray.splice(minIndex + i, 0, newDataRow);
   }
 
   dispatch(simpleSetData(assignIds(newDataArray)));

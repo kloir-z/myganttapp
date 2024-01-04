@@ -1,10 +1,18 @@
 import React, { useState, useEffect, useRef, Dispatch, SetStateAction } from "react";
 import { Overlay, ModalContainer, CloseButton } from "../styles/GanttStyles";
-import { toLocalISOString } from "../utils/CalendarUtil";
 import { ChartBarColor, AliasMapping } from "../types/colorAliasMapping";
 import { Column, Row, DefaultCellTypes } from "@silevis/reactgrid";
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, simpleSetData } from '../reduxComponents/store';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import dayjs, { Dayjs } from 'dayjs';
+import 'dayjs/locale/en-ca';
+import 'dayjs/locale/en-in';
+import 'dayjs/locale/en';
+import { useWBSData } from '../hooks/useWBSData';
+import { ColumnMap, columnMap } from "../hooks/useWBSData";
 
 type SettingsModalProps = {
   show: boolean;
@@ -16,17 +24,29 @@ type SettingsModalProps = {
   headerRow: Row<DefaultCellTypes>;
   columns: Column[];
   setColumns: Dispatch<SetStateAction<Column[]>>;
+  columnVisibility: { [key: string]: boolean };
+  toggleColumnVisibility: (columnId: string | number) => void;
 };
 
-const SettingsModal: React.FC<SettingsModalProps> = ({ show, onClose, dateRange, setDateRange, aliasMapping, setAliasMapping, columns, setColumns }) => {
+const SettingsModal: React.FC<SettingsModalProps> = ({ show, onClose, dateRange, setDateRange, aliasMapping, setAliasMapping, columns, setColumns, columnVisibility, toggleColumnVisibility }) => {
   const [fadeStatus, setFadeStatus] = useState<'in' | 'out'>('in');
-  const [startDate, setStartDate] = useState<Date | null>(dateRange.startDate);
-  const [endDate, setEndDate] = useState<Date | null>(dateRange.endDate);
+  const [startDate, setStartDate] = useState<Dayjs | null>(dayjs(dateRange.startDate));
+  const [endDate, setEndDate] = useState<Dayjs | null>(dayjs(dateRange.endDate));
   const data = useSelector((state: RootState) => state.wbsData);
   const dispatch = useDispatch();
   const colors: ChartBarColor[] = ['lightblue', 'blue', 'purple', 'pink', 'red', 'yellow', 'green'];
-  const [fileName, setFileName] = useState("settings");
+  const [fileName, setFileName] = useState("filename");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { initialColumns } = useWBSData();
+  const browserLocale = navigator.language;
+  let locale;
+  if (["ja", "zh", "ko", "hu"].includes(browserLocale)) {
+    locale = 'en-ca';
+  } else if (["in", "sa", "eu", "au"].includes(browserLocale)) {
+    locale = 'en-in';
+  } else {
+    locale = 'en';
+  }
 
   const handleExport = () => {
     const settingsData = {
@@ -44,7 +64,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ show, onClose, dateRange,
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'settings.json';
+    link.download = `${fileName}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -53,6 +73,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ show, onClose, dateRange,
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      setFileName(file.name.replace('.json', ''));
       const reader = new FileReader();
       reader.onload = (e) => {
         const text = e.target?.result;
@@ -111,33 +132,46 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ show, onClose, dateRange,
     });
   };
 
-  useEffect(() => {
-    if (startDate && endDate) {
-      const maxEndDate = new Date(startDate);
-      maxEndDate.setFullYear(maxEndDate.getFullYear() + 5);
+  const isValidDateRange = (date: Dayjs) => {
+    const earliestDate = dayjs('1900-01-01');
+    const latestDate = dayjs();
+    return date.isAfter(earliestDate) && date.isBefore(latestDate);
+  };
 
-      if (endDate > maxEndDate) {
+  useEffect(() => {
+    if (startDate && endDate && startDate.isValid() && endDate.isValid()) {
+      if (!isValidDateRange(startDate)) {
+        setStartDate(dayjs());
+        return;
+      }
+
+      const maxEndDate = dayjs(startDate).add(5, 'year');
+      if (endDate.isAfter(maxEndDate)) {
         setEndDate(maxEndDate);
       } else {
-        setDateRange({ startDate, endDate });
+        setDateRange({ startDate: startDate.toDate(), endDate: endDate.toDate() });
       }
     }
   }, [startDate, endDate, setDateRange]);
 
-  const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newStartDate = e.target.value ? new Date(e.target.value) : null;
-    if (newStartDate && endDate && newStartDate > endDate) {
-      setEndDate(newStartDate);
+  const handleStartDateChange = (date: Dayjs | null) => {
+    if (!date || !isValidDateRange(date)) {
+      return;
     }
-    setStartDate(newStartDate);
+    setStartDate(date);
+  
+    if (!endDate || date.isAfter(endDate)) {
+      const newMaxEndDate = dayjs(date).add(3, 'month');
+      setEndDate(newMaxEndDate);
+    }
   };
+  
 
-  const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newEndDate = e.target.value ? new Date(e.target.value) : null;
-    if (startDate && newEndDate && startDate > newEndDate) {
-      return
+  const handleEndDateChange = (date: Dayjs | null) => {
+    if (!date || !isValidDateRange(date) || (startDate && startDate.isAfter(date))) {
+      return;
     }
-    setEndDate(newEndDate);
+    setEndDate(date);
   };
 
   const handleClose = () => {
@@ -152,39 +186,102 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ show, onClose, dateRange,
     show ? 
     <Overlay fadeStatus={fadeStatus} onMouseDown={handleClose}>
       <ModalContainer fadeStatus={fadeStatus} onMouseDown={e => e.stopPropagation()}>
-        <CloseButton onClick={handleClose}>×</CloseButton>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
-          <input 
-            type='date' 
-            value={dateRange.startDate ? toLocalISOString(dateRange.startDate) : ''} 
-            onChange={handleStartDateChange}
-          />
-          <input 
-            type='date' 
-            value={dateRange.endDate ? toLocalISOString(dateRange.endDate) : ''} 
-            onChange={handleEndDateChange}
-          />
-        </div>
-        {colors.map(color => (
-          <div key={color}>
-            <label>{color}: </label>
-            <input
-              type="text"
-              value={aliasMapping[color] || ''}
-              onChange={(e) => handleAliasChange(color, e.target.value)}
-            />
+        <h3>Chart Date Range:</h3>
+        <div style={{ marginLeft: '10px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', position: 'relative' }}>
+            <LocalizationProvider
+              dateFormats={locale === 'en-ca' ? { monthAndYear: 'YYYY / MM' } : undefined}
+              dateAdapter={AdapterDayjs}
+              adapterLocale={locale}
+            >
+              <DatePicker
+                label="Clendar Start"
+                value={startDate}
+                onChange={handleStartDateChange}
+                sx={{
+                  '& .MuiInputBase-root': {
+                    borderRadius: '4px',
+                    padding: '0px'
+                  },
+                  '& .MuiInputBase-input': {
+                    fontSize: '0.8rem',
+                    padding: '5px',
+                    width: '7rem',
+                  },
+                  '& .MuiButtonBase-root': {
+                    fontSize: '0.8rem',
+                    padding: '3px',
+                    margin: '0px'
+                  },
+                }}
+              />
+              <DatePicker
+                label="Calendar End"
+                value={endDate}
+                onChange={handleEndDateChange}
+                sx={{
+                  '& .MuiInputBase-root': {
+                    borderRadius: '4px',
+                    padding: '0px'
+                  },
+                  '& .MuiInputBase-input': {
+                    fontSize: '0.8rem',
+                    padding: '5px',
+                    width: '7rem'
+                  },
+                  '& .MuiButtonBase-root': {
+                    padding: '3px',
+                    margin: '0px'
+                  },
+                }}
+              />
+            </LocalizationProvider>
           </div>
-        ))}
-        <label>Save Filename(.json): </label>
-        <input
-          type="text"
-          value={fileName}
-          onChange={(e) => setFileName(e.target.value)}
-          placeholder="Enter file name"
-        />
-        <button onClick={handleExport}>Export</button>
-        <button onClick={() => fileInputRef.current?.click()}>Import</button>
-        <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleImport} accept=".json" />
+        </div>
+        <h3>Chart Color:</h3>
+        <div style={{ marginLeft: '10px' }}>
+          {colors.map(color => (
+            <div key={color}>
+              <label>{color}: </label>
+              <input
+                type="text"
+                value={aliasMapping[color] || ''}
+                onChange={(e) => handleAliasChange(color, e.target.value)}
+              />
+            </div>
+          ))}
+        </div>
+        <h3>Export File(.json):</h3>
+        <div style={{ marginLeft: '10px' }}>
+          <input
+            type="text"
+            value={fileName}
+            
+            onChange={(e) => setFileName(e.target.value)}
+            placeholder="Enter file name"
+          />
+          <button onClick={handleExport}>Export</button>
+        </div>
+        <h3>Import File(.json):</h3>
+        <div style={{ marginLeft: '10px' }}>
+          <button onClick={() => fileInputRef.current?.click()}>Import</button>
+          <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleImport} accept=".json" />
+        </div>
+        <h3>Column Visibility</h3>
+        <div style={{ marginLeft: '10px' }}>
+          {initialColumns.map(column => (
+            <div key={column.columnId}>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={columnVisibility[column.columnId]}
+                  onChange={() => toggleColumnVisibility(column.columnId)}
+                />
+                {columnMap[column.columnId as keyof ColumnMap]}
+              </label>
+            </div>
+          ))}
+        </div>
       </ModalContainer>
     </Overlay>
     : null

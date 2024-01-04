@@ -10,6 +10,13 @@ interface CalendarProps {
 const Calendar: React.FC<CalendarProps> = memo(({ dateArray }) => {
   let previousMonth = dateArray[0].getMonth();
   const calendarWidth = dateArray.length * 21;
+  const browserLocale = navigator.language.split('-')[0];
+  let dateFormat: string;
+  if (["ja", "zh", "ko", "hu"].includes(browserLocale)) {
+    dateFormat = 'YYYY/MM';
+  } else {
+    dateFormat = 'MM/YYYY';
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: `${calendarWidth}px` }}>
@@ -19,6 +26,9 @@ const Calendar: React.FC<CalendarProps> = memo(({ dateArray }) => {
           if (month !== previousMonth || index === 0) {
             previousMonth = month;
             const left = 21 * index;
+            const displayDate = dateFormat === 'YYYY/MM' ? 
+            `${date.getFullYear()}/${String(month + 1).padStart(2, '0')}` : 
+            `${String(month + 1).padStart(2, '0')}/${date.getFullYear()}`;
             return (
               <Cell 
                 key={index} 
@@ -28,7 +38,7 @@ const Calendar: React.FC<CalendarProps> = memo(({ dateArray }) => {
                   left: `${left}px`
                 }}
               >
-                {date.getFullYear()}/{String(month + 1).padStart(2, '0')}
+                {displayDate}
               </Cell>
             );
           }

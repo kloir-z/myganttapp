@@ -3,7 +3,7 @@ import React, { useCallback, memo, Dispatch, SetStateAction } from 'react';
 import { WBSData, ChartRow, SeparatorRow, EventRow  } from '../types/DataTypes';
 import { ReactGrid, Row, DefaultCellTypes, Id, MenuOption, SelectionMode, Column } from "@silevis/reactgrid";
 import "@silevis/reactgrid/styles.css";
-import { handleAddChartRowBelow, handleAddSeparatorRowBelow, handleRemoveSelectedRow } from '../utils/contextMenuHandlers';
+import { handleAddChartRow, handleAddSeparatorRow, handleRemoveSelectedRow } from '../utils/contextMenuHandlers';
 import { createChartRow, createSeparatorRow, createEventRow } from '../utils/wbsRowCreators';
 import { handleGridChanges } from '../utils/gridHandlers';
 import { useColumnResizer } from '../hooks/useColumnResizer';
@@ -16,10 +16,12 @@ import { assignIds, reorderArray } from '../utils/wbsHelpers';
 type WBSInfoProps = {
   headerRow: Row<DefaultCellTypes>;
   columns: Column[];
-  setColumns: Dispatch<SetStateAction<Column[]>>; 
+  setColumns: Dispatch<SetStateAction<Column[]>>;
+  columnVisibility: { [key: string]: boolean };
+  toggleColumnVisibility: (columnId: string | number) => void;
 };
 
-const WBSInfo: React.FC<WBSInfoProps> = ({ headerRow, columns, setColumns }) => {
+const WBSInfo: React.FC<WBSInfoProps> = ({ headerRow, columns, setColumns, columnVisibility, toggleColumnVisibility }) => {
   const dispatch = useDispatch();
   const data = useSelector((state: RootState) => state.wbsData);
   const handleColumnResize = useColumnResizer(setColumns);
@@ -28,23 +30,22 @@ const WBSInfo: React.FC<WBSInfoProps> = ({ headerRow, columns, setColumns }) => 
   const customTextCellTemplate = new CustomTextCellTemplate();  
 
   const getRows = useCallback((data: WBSData[]): Row<DefaultCellTypes | CustomDateCell | CustomTextCell>[] => {
-    const columnCount = columns.length;
     return [
       headerRow,
       ...data.map((item) => {
         switch (item.rowType) {
           case 'Chart':
-            return createChartRow(item as ChartRow, columns);
+            return createChartRow(item as ChartRow, columns.filter(col => columnVisibility[col.columnId]));
           case 'Separator':
-            return createSeparatorRow(item as SeparatorRow, columnCount);
+            return createSeparatorRow(item as SeparatorRow, columns.filter(col => columnVisibility[col.columnId]).length);
           case 'Event':
-            return createEventRow(item as EventRow, columnCount);
+            return createEventRow(item as EventRow, columns.filter(col => columnVisibility[col.columnId]).length);
           default:
             return { rowId: 'empty', height: 21, cells: [{ type: "customText", text: '' } as CustomTextCell], reorderable: true };
         }
       })
     ];
-  }, [columns, headerRow]);
+  }, [columns, headerRow, columnVisibility]);
 
   const rows = getRows(dataArray);
 
@@ -52,27 +53,36 @@ const WBSInfo: React.FC<WBSInfoProps> = ({ headerRow, columns, setColumns }) => 
     selectedRowIds: Id[],
     selectedColIds: Id[],
     selectionMode: SelectionMode,
-    menuOptions: MenuOption[]
+    menuOptions: MenuOption[],
   ): MenuOption[] => {
-    return [
-      ...menuOptions,
-      {
-        id: "addChartRowBelow",
-        label: "Add Chart Row Below",
-        handler: () => handleAddChartRowBelow(dispatch, selectedRowIds, dataArray)
-      },
-      {
-        id: "addSeparatorRowBelow",
-        label: "Add Separator Row Below",
-        handler: () => handleAddSeparatorRowBelow(dispatch, selectedRowIds, dataArray)
-      },
-      {
-        id: "removeSelectedRow",
-        label: "Remove Selected Row",
-        handler: () => handleRemoveSelectedRow(dispatch, selectedRowIds, dataArray)
-      }
-    ];
-  }, [dispatch, dataArray]);
+    if (selectionMode === 'column') {
+      menuOptions.push({
+        id: "hideColumn",
+        label: "Hide Column",
+        handler: () => selectedColIds.forEach(colId => toggleColumnVisibility(colId))
+      });
+    }
+    if (selectionMode === 'row') {
+      menuOptions.push(
+        {
+          id: "addChartRow",
+          label: "Add Chart Row",
+          handler: () => handleAddChartRow(dispatch, selectedRowIds, dataArray)
+        },
+        {
+          id: "addSeparatorRow",
+          label: "Add Separator Row",
+          handler: () => handleAddSeparatorRow(dispatch, selectedRowIds, dataArray)
+        },
+        {
+          id: "removeSelectedRow",
+          label: "Remove Selected Row",
+          handler: () => handleRemoveSelectedRow(dispatch, selectedRowIds, dataArray)
+        }
+      );
+    }
+    return menuOptions;
+  }, [dispatch, dataArray, toggleColumnVisibility]);
 
   const handleRowsReorder = useCallback((targetRowId: Id, rowIds: Id[]) => {
     const targetIndex = dataArray.findIndex(data => data.id === targetRowId);
@@ -102,6 +112,7 @@ const WBSInfo: React.FC<WBSInfoProps> = ({ headerRow, columns, setColumns }) => 
     return targetRowId !== 'header';
   }
 
+
   return (
     <ReactGrid
       rows={rows}
@@ -118,6 +129,7 @@ const WBSInfo: React.FC<WBSInfoProps> = ({ headerRow, columns, setColumns }) => 
       onColumnsReordered={handleColumnsReorder}
       canReorderRows={handleCanReorderRows}
       customCellTemplates={{ customDate: customDateCellTemplate, customText: customTextCellTemplate }}
+      minColumnWidth={10}
     />
   );
 };

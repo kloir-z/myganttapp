@@ -10,24 +10,22 @@ export interface BaseRow {
 
 export interface ChartRow extends BaseRow {
   rowType: "Chart";
-  majorCategory: string;
-  middleCategory: string;
-  subCategory: string;
-  task: string;
+  textColumn1: string;
+  textColumn2: string;
+  textColumn3: string;
+  textColumn4: string;
   color: string;
   plannedStartDate: string;
   plannedEndDate: string;
   businessDays: number,
   actualStartDate: string;
   actualEndDate: string;
-  comment: string;
   dependentId: string;
   dependency: string;
 }
 
 export interface SeparatorRow extends BaseRow {
   rowType: "Separator";
-  comment: string;
 }
 
 export interface EventData {
@@ -37,7 +35,6 @@ export interface EventData {
   businessDays: 5,
   actualStartDate: string;
   actualEndDate: string;
-  comment: string;
 }
 
 export interface EventRow extends BaseRow {

@@ -41,19 +41,18 @@ export const handleGridChanges = (dispatch: Dispatch, data: { [id: string]: WBSD
         const customText = (newCell as CustomTextCell).text;
     
         if (customText) {
-          const parts = customText.split(','); // 'after,15,1' のような文字列を分割
-          if (parts.length >= 2) { // 書式が適切かどうかの確認
-            let refRowNo = parts[1].trim(); // '15' または '-1' などの参照行
+          const parts = customText.split(',');
+          if (parts.length >= 2) {
+            let refRowNo = parts[1].trim();
       
             let refRowId: string | undefined;
             if (refRowNo.startsWith('+') || refRowNo.startsWith('-')) {
-              // 相対参照の場合
               const offset = parseInt(refRowNo, 10);
               let currentIndex = Object.keys(data).indexOf(rowId);
               let steps = Math.abs(offset);
       
               while (steps > 0 && currentIndex >= 0 && currentIndex < Object.keys(data).length) {
-                currentIndex += (offset / Math.abs(offset)); // 正または負の方向に移動
+                currentIndex += (offset / Math.abs(offset));
                 if (currentIndex < 0 || currentIndex >= Object.keys(data).length) {
                   break;
                 }
@@ -66,7 +65,6 @@ export const handleGridChanges = (dispatch: Dispatch, data: { [id: string]: WBSD
                 refRowId = Object.keys(data)[currentIndex];
               }
             } else {
-              // 絶対参照の場合
               const targetNo = parseInt(refRowNo, 10);
               refRowId = Object.keys(data).find(key => {
                 const keyRowData = data[key];
@@ -98,8 +96,6 @@ export const handleGridChanges = (dispatch: Dispatch, data: { [id: string]: WBSD
       }
     }    
   });
-
-  console.log(useSimpleSetData)
 
   if (useSimpleSetData) {
     dispatch(simpleSetData(updatedData));

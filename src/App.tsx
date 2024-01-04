@@ -19,11 +19,11 @@ import { useWBSData } from './hooks/useWBSData';
 
 function App() {
   const data = useSelector((state: RootState) => state.wbsData);
-  const { headerRow, columns, setColumns } = useWBSData();
+  const { headerRow, columns, setColumns, columnVisibility, toggleColumnVisibility } = useWBSData();
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
   const [wbsWidth, setWbsWidth] = useState(550);
-  const [maxWbsWidth, setMaxWbsWidth] = useState(900);
+  const [maxWbsWidth, setMaxWbsWidth] = useState(1500);
   const [dateRange, setDateRange] = useState({
     startDate: new Date('2023-09-01'),
     endDate: new Date('2025-10-05'),
@@ -152,6 +152,8 @@ function App() {
           headerRow={headerRow}
           columns={columns}
           setColumns={setColumns}
+          columnVisibility={columnVisibility}
+          toggleColumnVisibility={toggleColumnVisibility}
           // 他の必要なプロパティ
         />
         </div>
@@ -166,6 +168,8 @@ function App() {
             headerRow={headerRow}
             columns={columns}
             setColumns={setColumns}
+            columnVisibility={columnVisibility}
+            toggleColumnVisibility={toggleColumnVisibility}
           />
         </div>
         <ResizeBar onDrag={handleResize} initialWidth={wbsWidth} />

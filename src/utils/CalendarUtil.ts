@@ -47,7 +47,12 @@ const holidayDates = holidays.map(holiday => {
   return new Date(year, month - 1, day);
 });
 
-export const isHoliday = (date: Date) => {
+export const isHoliday = (date: Date): boolean => {
+  if (isNaN(date.getTime())) {
+    console.error('Invalid date provided to isHoliday');
+    return false;
+  }
+
   return holidayDates.some(holiday =>
     holiday.getFullYear() === date.getFullYear() &&
     holiday.getMonth() === date.getMonth() &&
@@ -55,7 +60,12 @@ export const isHoliday = (date: Date) => {
   );
 };
 
-export const generateDates = (start: Date, end: Date) => {
+export const generateDates = (start: Date, end: Date): Date[] => {
+  if (isNaN(start.getTime()) || isNaN(end.getTime()) || start > end) {
+    console.error('Invalid start or end date provided to generateDates');
+    return [];
+  }
+
   const dateArray: Date[] = [];
   let currentDate = new Date(start);
 
@@ -74,6 +84,10 @@ const getStartOfDay = (date: Date) => {
 };
 
 export const calculateBusinessDays = (start: Date, end: Date): number => {
+  if (isNaN(start.getTime()) || isNaN(end.getTime()) || start > end) {
+    console.error('Invalid start or end date provided to calculateBusinessDays');
+    return 0;
+  }
   let count = 0;
   let currentDate = new Date(getStartOfDay(start));
 
@@ -89,6 +103,10 @@ export const calculateBusinessDays = (start: Date, end: Date): number => {
 };
 
 export const addBusinessDays = (start: Date, days: number, includeStartDay: boolean = true): Date => {
+  if (isNaN(start.getTime()) || days < 0) {
+    console.error('Invalid start date or negative days provided to addBusinessDays');
+    return new Date(NaN);
+  }
   let currentDate = new Date(start);
   let addedDays = 0;
 
@@ -112,7 +130,12 @@ export const addBusinessDays = (start: Date, days: number, includeStartDay: bool
 };
 
 export const toLocalISOString = (date: Date): string => {
+  if (isNaN(date.getTime())) {
+    return '';
+  }
+
   const offset = date.getTimezoneOffset();
   const adjustedDate = new Date(date.getTime() - offset * 60 * 1000);
+
   return adjustedDate.toISOString().split('T')[0];
 };
