@@ -5,8 +5,8 @@ import { ChartRow  } from './types/DataTypes';
 import { GanttRow } from './styles/GanttStyles';
 import WBSInfo from './components/WBSInfo';
 import GridHorizontal from './components/GridHorizontal';
-import { useSelector } from 'react-redux';
-import { RootState } from './reduxComponents/store';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, setHolidays } from './reduxComponents/store';
 import { generateDates } from './utils/CalendarUtil';
 import GridVertical from './components/GridVertical';
 import ResizeBar from './components/WbsWidthResizer';
@@ -16,12 +16,13 @@ import SettingButton from './components/SettingButton';
 import SettingsModal from './components/SettingsModal';
 import { ChartBarColor } from "./types/colorAliasMapping";
 import { useWBSData } from './hooks/useWBSData';
+import defaultHolidays from "./utils/defaultHolidays";
 
 function App() {
-  const data = useSelector((state: RootState) => state.wbsData);
+  const dispatch = useDispatch();
+  const data = useSelector((state: RootState) => state.wbsData.data); 
   const { headerRow, columns, setColumns, columnVisibility, toggleColumnVisibility } = useWBSData();
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-
   const [wbsWidth, setWbsWidth] = useState(550);
   const [maxWbsWidth, setMaxWbsWidth] = useState(1500);
   const [dateRange, setDateRange] = useState({
@@ -38,7 +39,11 @@ function App() {
   const calendarRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const calendarWidth = dateArray.length * 21;
-  
+
+  useEffect(() => {
+    dispatch(setHolidays(defaultHolidays));
+  }, [dispatch]);
+
   useEffect(() => {
     setDateArray(generateDates(dateRange.startDate, dateRange.endDate));
   }, [dateRange]);

@@ -23,7 +23,7 @@ type WBSInfoProps = {
 
 const WBSInfo: React.FC<WBSInfoProps> = ({ headerRow, columns, setColumns, columnVisibility, toggleColumnVisibility }) => {
   const dispatch = useDispatch();
-  const data = useSelector((state: RootState) => state.wbsData);
+  const data = useSelector((state: RootState) => state.wbsData.data);
   const handleColumnResize = useColumnResizer(setColumns);
   const dataArray = Object.values(data);
   const customDateCellTemplate = new CustomDateCellTemplate();

@@ -1,53 +1,15 @@
 // CalendarUtils.ts
 
-// 2023年と2024年の祝日
-const holidays = [
-  "2023-01-01",
-  "2023-01-02",
-  "2023-01-09",
-  "2023-02-11",
-  "2023-02-23",
-  "2023-03-21",
-  "2023-04-29",
-  "2023-05-03",
-  "2023-05-04",
-  "2023-05-05",
-  "2023-07-17",
-  "2023-08-11",
-  "2023-09-18",
-  "2023-09-23",
-  "2023-10-09",
-  "2023-11-03",
-  "2023-11-23",
-  "2024-01-01",
-  "2024-01-08",
-  "2024-02-11",
-  "2024-02-12",
-  "2024-02-23",
-  "2024-03-20",
-  "2024-04-29",
-  "2024-05-03",
-  "2024-05-04",
-  "2024-05-05",
-  "2024-05-06",
-  "2024-07-15",
-  "2024-08-11",
-  "2024-08-12",
-  "2024-09-16",
-  "2024-09-22",
-  "2024-09-23",
-  "2024-10-14",
-  "2024-11-03",
-  "2024-11-04",
-  "2024-11-23",
-];
+const parseHolidays = (holidays: string[]): Date[] => {
+  return holidays.map(holiday => {
+    const [year, month, day] = holiday.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  });
+};
 
-const holidayDates = holidays.map(holiday => {
-  const [year, month, day] = holiday.split('-').map(Number);
-  return new Date(year, month - 1, day);
-});
+export const isHoliday = (date: Date, holidays: string[]): boolean => {
+  const holidayDates = parseHolidays(holidays);
 
-export const isHoliday = (date: Date): boolean => {
   if (isNaN(date.getTime())) {
     console.error('Invalid date provided to isHoliday');
     return false;
@@ -83,7 +45,7 @@ const getStartOfDay = (date: Date) => {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 };
 
-export const calculateBusinessDays = (start: Date, end: Date): number => {
+export const calculateBusinessDays = (start: Date, end: Date, holidays: string[]): number => {
   if (isNaN(start.getTime()) || isNaN(end.getTime()) || start > end) {
     console.error('Invalid start or end date provided to calculateBusinessDays');
     return 0;
@@ -93,7 +55,7 @@ export const calculateBusinessDays = (start: Date, end: Date): number => {
 
   while (currentDate <= getStartOfDay(end)) {
     const dayOfWeek = currentDate.getDay();
-    if (dayOfWeek !== 0 && dayOfWeek !== 6 && !isHoliday(currentDate)) {
+    if (dayOfWeek !== 0 && dayOfWeek !== 6 && !isHoliday(currentDate, holidays)) {
       count++;
     }
     currentDate.setDate(currentDate.getDate() + 1);
@@ -102,7 +64,7 @@ export const calculateBusinessDays = (start: Date, end: Date): number => {
   return count;
 };
 
-export const addBusinessDays = (start: Date, days: number, includeStartDay: boolean = true): Date => {
+export const addBusinessDays = (start: Date, days: number, holidays: string[], includeStartDay: boolean = true): Date => {
   if (isNaN(start.getTime()) || days < 0) {
     console.error('Invalid start date or negative days provided to addBusinessDays');
     return new Date(NaN);
@@ -113,7 +75,7 @@ export const addBusinessDays = (start: Date, days: number, includeStartDay: bool
   const startDayOfWeek = currentDate.getDay();
 
   if (includeStartDay) {
-    if (startDayOfWeek !== 0 && startDayOfWeek !== 6 && !isHoliday(currentDate)) {
+    if (startDayOfWeek !== 0 && startDayOfWeek !== 6 && !isHoliday(currentDate, holidays)) {
       addedDays = 1;
     }
   }
@@ -121,7 +83,7 @@ export const addBusinessDays = (start: Date, days: number, includeStartDay: bool
   while (addedDays < days) {
     currentDate.setDate(currentDate.getDate() + 1);
     const dayOfWeek = currentDate.getDay();
-    if (dayOfWeek !== 0 && dayOfWeek !== 6 && !isHoliday(currentDate)) {
+    if (dayOfWeek !== 0 && dayOfWeek !== 6 && !isHoliday(currentDate, holidays)) {
       addedDays++;
     }
   }

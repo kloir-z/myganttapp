@@ -2,6 +2,8 @@
 import React, { memo } from 'react';
 import { isHoliday } from '../utils/CalendarUtil';
 import { GanttRow, Cell } from '../styles/GanttStyles';
+import { useSelector } from 'react-redux';
+import { RootState } from '../reduxComponents/store';
 
 interface CalendarProps {
   dateArray: Date[];
@@ -9,6 +11,7 @@ interface CalendarProps {
 
 const Calendar: React.FC<CalendarProps> = memo(({ dateArray }) => {
   let previousMonth = dateArray[0].getMonth();
+  const holidays = useSelector((state: RootState) => state.wbsData.holidays);
   const calendarWidth = dateArray.length * 21;
   const browserLocale = navigator.language.split('-')[0];
   let dateFormat: string;
@@ -49,7 +52,7 @@ const Calendar: React.FC<CalendarProps> = memo(({ dateArray }) => {
         {dateArray.map((date, index) => {
           let type = 'weekday';
           if (date.getDay() === 6) type = 'saturday';
-          if (date.getDay() === 0 || isHoliday(date)) type = 'sundayOrHoliday';
+          if (date.getDay() === 0 || isHoliday(date, holidays)) type = 'sundayOrHoliday';
           const left = 21 * index;
 
           return (

@@ -3,7 +3,7 @@ import { Overlay, ModalContainer, CloseButton } from "../styles/GanttStyles";
 import { ChartBarColor, AliasMapping } from "../types/colorAliasMapping";
 import { Column, Row, DefaultCellTypes } from "@silevis/reactgrid";
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState, simpleSetData } from '../reduxComponents/store';
+import { RootState, simpleSetData, setHolidays } from '../reduxComponents/store';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -32,7 +32,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ show, onClose, dateRange,
   const [fadeStatus, setFadeStatus] = useState<'in' | 'out'>('in');
   const [startDate, setStartDate] = useState<Dayjs | null>(dayjs(dateRange.startDate));
   const [endDate, setEndDate] = useState<Dayjs | null>(dayjs(dateRange.endDate));
-  const data = useSelector((state: RootState) => state.wbsData);
+  const data = useSelector((state: RootState) => state.wbsData.data);
+  const holidays = useSelector((state: RootState) => state.wbsData.holidays) as string[];
+  const [holidayInput, setHolidayInput] = useState(holidays.join("\n"));
   const dispatch = useDispatch();
   const colors: ChartBarColor[] = ['lightblue', 'blue', 'purple', 'pink', 'red', 'yellow', 'green'];
   const [fileName, setFileName] = useState("filename");
@@ -47,6 +49,15 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ show, onClose, dateRange,
   } else {
     locale = 'en';
   }
+
+  const updateHolidays = () => {
+    // テキストエリアからの入力を行ごとに分割し、不正な行をフィルタリング
+    const newHolidays = holidayInput.split("\n").filter(holiday => {
+      // 正しい日付フォーマットのみを許可するような検証ロジックをここに追加
+      return holiday.match(/^\d{4}-\d{2}-\d{2}$/);
+    });
+    dispatch(setHolidays(newHolidays)); // 更新された祝日リストでアクションをディスパッチ
+  };
 
   const handleExport = () => {
     const settingsData = {
@@ -134,7 +145,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ show, onClose, dateRange,
 
   const isValidDateRange = (date: Dayjs) => {
     const earliestDate = dayjs('1900-01-01');
-    const latestDate = dayjs();
+    const latestDate = dayjs('2099-12-31');
     return date.isAfter(earliestDate) && date.isBefore(latestDate);
   };
 
@@ -161,7 +172,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ show, onClose, dateRange,
     setStartDate(date);
   
     if (!endDate || date.isAfter(endDate)) {
-      const newMaxEndDate = dayjs(date).add(3, 'month');
+      const newMaxEndDate = dayjs(date).add(7, 'day');
       setEndDate(newMaxEndDate);
     }
   };
@@ -186,101 +197,114 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ show, onClose, dateRange,
     show ? 
     <Overlay fadeStatus={fadeStatus} onMouseDown={handleClose}>
       <ModalContainer fadeStatus={fadeStatus} onMouseDown={e => e.stopPropagation()}>
-        <h3>Chart Date Range:</h3>
-        <div style={{ marginLeft: '10px' }}>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', position: 'relative' }}>
-            <LocalizationProvider
-              dateFormats={locale === 'en-ca' ? { monthAndYear: 'YYYY / MM' } : undefined}
-              dateAdapter={AdapterDayjs}
-              adapterLocale={locale}
-            >
-              <DatePicker
-                label="Clendar Start"
-                value={startDate}
-                onChange={handleStartDateChange}
-                sx={{
-                  '& .MuiInputBase-root': {
-                    borderRadius: '4px',
-                    padding: '0px'
-                  },
-                  '& .MuiInputBase-input': {
-                    fontSize: '0.8rem',
-                    padding: '5px',
-                    width: '7rem',
-                  },
-                  '& .MuiButtonBase-root': {
-                    fontSize: '0.8rem',
-                    padding: '3px',
-                    margin: '0px'
-                  },
-                }}
-              />
-              <DatePicker
-                label="Calendar End"
-                value={endDate}
-                onChange={handleEndDateChange}
-                sx={{
-                  '& .MuiInputBase-root': {
-                    borderRadius: '4px',
-                    padding: '0px'
-                  },
-                  '& .MuiInputBase-input': {
-                    fontSize: '0.8rem',
-                    padding: '5px',
-                    width: '7rem'
-                  },
-                  '& .MuiButtonBase-root': {
-                    padding: '3px',
-                    margin: '0px'
-                  },
-                }}
-              />
-            </LocalizationProvider>
-          </div>
-        </div>
-        <h3>Chart Color:</h3>
-        <div style={{ marginLeft: '10px' }}>
-          {colors.map(color => (
-            <div key={color}>
-              <label>{color}: </label>
+        <div style={{ display: 'flex', flexDirection: 'row' }}>
+          <div style={{ border: '1px solid #AAA',borderRadius: '4px', padding: '10px 10px', margin: '0px 10px'}}>
+            <h3>Chart Date Range</h3>
+            <div style={{ marginLeft: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', position: 'relative' }}>
+                <LocalizationProvider
+                  dateFormats={locale === 'en-ca' ? { monthAndYear: 'YYYY / MM' } : undefined}
+                  dateAdapter={AdapterDayjs}
+                  adapterLocale={locale}
+                >
+                  <DatePicker
+                    label="Clendar Start"
+                    value={startDate}
+                    onChange={handleStartDateChange}
+                    sx={{
+                      '& .MuiInputBase-root': {
+                        borderRadius: '4px',
+                        padding: '0px'
+                      },
+                      '& .MuiInputBase-input': {
+                        fontSize: '0.8rem',
+                        padding: '5px',
+                        width: '7rem',
+                      },
+                      '& .MuiButtonBase-root': {
+                        fontSize: '0.8rem',
+                        padding: '3px',
+                        margin: '0px'
+                      },
+                    }}
+                  />
+                  <DatePicker
+                    label="Calendar End"
+                    value={endDate}
+                    onChange={handleEndDateChange}
+                    sx={{
+                      '& .MuiInputBase-root': {
+                        borderRadius: '4px',
+                        padding: '0px'
+                      },
+                      '& .MuiInputBase-input': {
+                        fontSize: '0.8rem',
+                        padding: '5px',
+                        width: '7rem'
+                      },
+                      '& .MuiButtonBase-root': {
+                        padding: '3px',
+                        margin: '0px'
+                      },
+                    }}
+                  />
+                </LocalizationProvider>
+              </div>
+            </div>
+            <h3>Chart Color</h3>
+            <div style={{ marginLeft: '10px' }}>
+              {colors.map(color => (
+                <div key={color}>
+                  <label>{color}: </label>
+                  <input
+                    type="text"
+                    value={aliasMapping[color] || ''}
+                    onChange={(e) => handleAliasChange(color, e.target.value)}
+                  />
+                </div>
+              ))}
+            </div>
+            <h3>Export File(.json)</h3>
+            <div style={{ marginLeft: '10px' }}>
               <input
                 type="text"
-                value={aliasMapping[color] || ''}
-                onChange={(e) => handleAliasChange(color, e.target.value)}
+                value={fileName}
+                
+                onChange={(e) => setFileName(e.target.value)}
+                placeholder="Enter file name"
               />
+              <button onClick={handleExport}>Export</button>
             </div>
-          ))}
-        </div>
-        <h3>Export File(.json):</h3>
-        <div style={{ marginLeft: '10px' }}>
-          <input
-            type="text"
-            value={fileName}
-            
-            onChange={(e) => setFileName(e.target.value)}
-            placeholder="Enter file name"
-          />
-          <button onClick={handleExport}>Export</button>
-        </div>
-        <h3>Import File(.json):</h3>
-        <div style={{ marginLeft: '10px' }}>
-          <button onClick={() => fileInputRef.current?.click()}>Import</button>
-          <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleImport} accept=".json" />
-        </div>
-        <h3>Column Visibility</h3>
-        <div style={{ marginLeft: '10px' }}>
-          {initialColumns.map(column => (
-            <div key={column.columnId}>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={columnVisibility[column.columnId]}
-                  onChange={() => toggleColumnVisibility(column.columnId)}
-                />
-                {columnMap[column.columnId as keyof ColumnMap]}
-              </label>
+            <h3>Import File(.json)</h3>
+            <div style={{ marginLeft: '10px' }}>
+              <button onClick={() => fileInputRef.current?.click()}>Import</button>
+              <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleImport} accept=".json" />
             </div>
-          ))}
+            <h3>Column Visibility</h3>
+            <div style={{ marginLeft: '10px' }}>
+              {initialColumns.map(column => (
+                <div key={column.columnId}>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={columnVisibility[column.columnId]}
+                      onChange={() => toggleColumnVisibility(column.columnId)}
+                    />
+                    {columnMap[column.columnId as keyof ColumnMap]}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{ border: '1px solid #AAA',borderRadius: '4px', padding: '10px 10px', margin: '0px 10px'}}>
+            <h3>Holidays</h3>
+            <textarea
+              value={holidayInput}
+              onChange={(e) => setHolidayInput(e.target.value)}
+              onBlur={updateHolidays} // テキストエリアからフォーカスが外れた時に更新
+              style={{ width: '100%', minHeight: '100px' }}
+            />
+          </div>
         </div>
       </ModalContainer>
     </Overlay>

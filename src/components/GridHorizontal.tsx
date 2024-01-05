@@ -8,6 +8,8 @@ import { addBusinessDays } from '../utils/CalendarUtil';
 import ChartBar from './ChartBar';
 import { convertAliasToChartBarColor } from '../types/colorAliasMapping';
 import { AliasMapping } from "../types/colorAliasMapping";
+import { useSelector } from 'react-redux';
+import { RootState } from '../reduxComponents/store';
 
 interface ChartRowProps {
   entry: ChartRow;
@@ -21,6 +23,7 @@ const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRe
   const dispatch = useDispatch();
   const chartBarColor = convertAliasToChartBarColor(entry.color, aliasMapping) || 'green';
   const businessDays = entry.businessDays;
+  const holidays = useSelector((state: RootState) => state.wbsData.holidays);
   const [localPlannedStartDate, setLocalPlannedStartDate] = useState(entry.plannedStartDate ? new Date(entry.plannedStartDate) : null);
   const [localPlannedEndDate, setLocalPlannedEndDate] = useState(entry.plannedEndDate ? new Date(entry.plannedEndDate) : null);
   const [localActualStartDate, setLocalActualStartDate] = useState(entry.actualStartDate ? new Date(entry.actualStartDate) : null);
@@ -84,7 +87,7 @@ const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRe
       newStartDate.setDate(newStartDate.getDate() + gridSteps);
       setLocalPlannedStartDate(newStartDate);
 
-      const newEndDate = addBusinessDays(newStartDate, businessDays);
+      const newEndDate = addBusinessDays(newStartDate, businessDays, holidays);
       setLocalPlannedEndDate(newEndDate);
     } else if (isBarEndDragging && initialMouseX !== null && localPlannedStartDate && originalEndDate) {
       const currentMouseX = event.clientX;

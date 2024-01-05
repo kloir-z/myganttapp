@@ -3,8 +3,9 @@ import { WBSData, ChartRow } from '../types/DataTypes';
 import { testData } from '../testdata/testdata';
 import { v4 as uuidv4 } from 'uuid';
 import { calculateBusinessDays, addBusinessDays, toLocalISOString } from '../utils/CalendarUtil';
+import defaultHolidays from '../utils/defaultHolidays';
 
-const assignIds = (data: WBSData[]): { [id: string]: WBSData } => {
+const assignIds = (data: WBSData[], holidays: string[]): { [id: string]: WBSData } => {
   const dataWithIdsAndNos: { [id: string]: WBSData } = {};
   data.forEach((row, index) => {
     const id = uuidv4();
@@ -12,7 +13,7 @@ const assignIds = (data: WBSData[]): { [id: string]: WBSData } => {
       const chartRow = row as ChartRow;
       const startDate = new Date(chartRow.plannedStartDate);
       const endDate = new Date(chartRow.plannedEndDate);
-      const businessDays = calculateBusinessDays(startDate, endDate);
+      const businessDays = calculateBusinessDays(startDate, endDate, holidays);
       dataWithIdsAndNos[id] = { ...chartRow, id, no: index + 1, businessDays };
     } else {
       dataWithIdsAndNos[id] = { ...row, id, no: index + 1 };
@@ -21,23 +22,26 @@ const assignIds = (data: WBSData[]): { [id: string]: WBSData } => {
   return dataWithIdsAndNos;
 };
 
-const initialState: { [id: string]: WBSData } = assignIds(testData);
+const initialState: { data: { [id: string]: WBSData }, holidays: string[] } = {
+  data: assignIds(testData, []),
+  holidays: defaultHolidays
+};
 
 const updateDependentRows = (
-  state: { [id: string]: WBSData },
+  state: { data: { [id: string]: WBSData }, holidays: string[] },
   currentId: string,
   newEndDate: Date,
-  visited = new Set<string>(),
+  visited = new Set<string>()
 ) => {
   if (visited.has(currentId)) {
-    if (state[currentId] && state[currentId].rowType === 'Chart') {
-      const chartRow = state[currentId] as ChartRow;
+    if (state.data[currentId] && state.data[currentId].rowType === 'Chart') {
+      const chartRow = state.data[currentId] as ChartRow;
       chartRow.dependentId = '';
     }
     return;
   }
   visited.add(currentId);
-  Object.values(state).forEach((row: WBSData) => {
+  Object.values(state.data).forEach((row: WBSData) => {
     if (row.rowType === 'Chart') {
       const chartRow = row as ChartRow;
       if (chartRow.dependentId === currentId) {
@@ -56,11 +60,11 @@ const updateDependentRows = (
             if (isNaN(offsetDays) || offsetDays <= 0) {
               offsetDays = 1;
             }
-            newStartDate = addBusinessDays(newEndDate, offsetDays, false);
+            newStartDate = addBusinessDays(newEndDate, offsetDays, state.holidays, false); 
             break;
           case 'sameas':
             // 依存元の開始日と一致させる
-            const dependentRow = state[currentId] as ChartRow;
+            const dependentRow = state.data[currentId] as ChartRow;
             newStartDate = new Date(dependentRow.plannedStartDate);
             break;
           default:
@@ -69,7 +73,7 @@ const updateDependentRows = (
         }
 
         chartRow.plannedStartDate = toLocalISOString(newStartDate);
-        const dependentEndDate = addBusinessDays(newStartDate, chartRow.businessDays);
+        const dependentEndDate = addBusinessDays(newStartDate, chartRow.businessDays, state.holidays);
         chartRow.plannedEndDate = toLocalISOString(dependentEndDate);
 
         // 依存関係の更新を再帰的に行う
@@ -85,7 +89,7 @@ export const wbsDataSlice = createSlice({
   reducers: {
     simpleSetData: (state, action: PayloadAction<{ [id: string]: WBSData }>) => {
       const data = action.payload;
-      return data;
+      state.data = data;
     },
     setData: (state, action: PayloadAction<{ [id: string]: WBSData }>) => {
       const newData = action.payload;
@@ -94,14 +98,14 @@ export const wbsDataSlice = createSlice({
         const newRow = newData[id];
         if (newRow.rowType === 'Chart') {
           const newChartRow = newRow as ChartRow;
-          const oldChartRow = state[id] as ChartRow;
+          const oldChartRow = state.data[id] as ChartRow;
           const updatedChartRow = { ...oldChartRow, ...newChartRow };
           if (newChartRow.plannedStartDate !== oldChartRow.plannedStartDate) {
             updatedChartRow.plannedStartDate = newChartRow.plannedStartDate;
             if (newChartRow.plannedEndDate) {
               const newStartDate = new Date(newChartRow.plannedStartDate);
               const endDate = new Date(newChartRow.plannedEndDate);
-              updatedChartRow.businessDays = calculateBusinessDays(newStartDate, endDate);
+              updatedChartRow.businessDays = calculateBusinessDays(newStartDate, endDate, state.holidays);
             }
           }
           if (newChartRow.plannedEndDate !== oldChartRow.plannedEndDate) {
@@ -109,7 +113,7 @@ export const wbsDataSlice = createSlice({
             if (newChartRow.plannedStartDate) {
               const startDate = new Date(newChartRow.plannedStartDate);
               const newEndDate = new Date(newChartRow.plannedEndDate);
-              updatedChartRow.businessDays = calculateBusinessDays(startDate, newEndDate);
+              updatedChartRow.businessDays = calculateBusinessDays(startDate, newEndDate, state.holidays);
               updateDependentRows(state, id, newEndDate);
             }
           }
@@ -118,23 +122,23 @@ export const wbsDataSlice = createSlice({
             if (newChartRow.plannedStartDate && newChartRow.businessDays) {
               const startDate = new Date(newChartRow.plannedStartDate);
               const businessDays = newChartRow.businessDays;
-              const newEndDate = addBusinessDays(startDate, businessDays);
+              const newEndDate = addBusinessDays(startDate, businessDays, state.holidays);
               updatedChartRow.plannedEndDate = toLocalISOString(newEndDate);
               updateDependentRows(state, id, newEndDate);
             } else if (newChartRow.plannedStartDate) {
               const startDate = new Date(newChartRow.plannedStartDate);
               const businessDays = 1;
               updatedChartRow.businessDays = 1;
-              const newEndDate = addBusinessDays(startDate, businessDays);
+              const newEndDate = addBusinessDays(startDate, businessDays, state.holidays);
               updatedChartRow.plannedEndDate = toLocalISOString(newEndDate);
               updateDependentRows(state, id, newEndDate);
             }
           }
-          state[id] = updatedChartRow;
+          state.data[id] = updatedChartRow;
         }
       });
-      Object.keys(state).forEach(id => {
-        const row = state[id];
+      Object.keys(state.data).forEach(id => {
+        const row = state.data[id];
         if (row.rowType === 'Chart') {
           const chartRow = row as ChartRow;
           if (chartRow.plannedEndDate) {
@@ -146,25 +150,25 @@ export const wbsDataSlice = createSlice({
     },
     setPlannedStartDate: (state, action: PayloadAction<{ id: string; startDate: string }>) => {
       const { id, startDate } = action.payload;
-      if (state[id] && state[id].rowType === 'Chart') {
-        const chartRow = state[id] as ChartRow;
+      if (state.data[id] && state.data[id].rowType === 'Chart') {
+        const chartRow = state.data[id] as ChartRow;
         chartRow.plannedStartDate = startDate;
         if (chartRow.plannedEndDate) {
           const newStartDate = new Date(startDate);
           const endDate = new Date(chartRow.plannedEndDate);
-          chartRow.businessDays = calculateBusinessDays(newStartDate, endDate);
+          chartRow.businessDays = calculateBusinessDays(newStartDate, endDate, state.holidays);
         }
       }
     },
     setPlannedEndDate: (state, action: PayloadAction<{ id: string; endDate: string }>) => {
       const { id, endDate } = action.payload;
-      if (state[id] && state[id].rowType === 'Chart') {
-        const chartRow = state[id] as ChartRow;
+      if (state.data[id] && state.data[id].rowType === 'Chart') {
+        const chartRow = state.data[id] as ChartRow;
         chartRow.plannedEndDate = endDate;
         if (chartRow.plannedStartDate) {
           const startDate = new Date(chartRow.plannedStartDate);
           const newEndDate = new Date(endDate);
-          chartRow.businessDays = calculateBusinessDays(startDate, newEndDate);
+          chartRow.businessDays = calculateBusinessDays(startDate, newEndDate, state.holidays);
         }
         updateDependentRows(state, id, new Date(endDate));
       }
@@ -173,7 +177,7 @@ export const wbsDataSlice = createSlice({
       const { id, days } = action.payload;
     
       const updateDependentRows = (currentId: string, newEndDate: Date) => {
-        Object.values(state).forEach(row => {
+        Object.values(state.data).forEach(row => {
           if (row.rowType === 'Chart') {
             const chartRow = row as ChartRow;
             if (chartRow.dependentId === currentId) {
@@ -189,10 +193,10 @@ export const wbsDataSlice = createSlice({
                   if (isNaN(offsetDays) || offsetDays <= 0) {
                     offsetDays = 1;
                   }
-                  newStartDate = addBusinessDays(newEndDate, offsetDays, false);
+                  newStartDate = addBusinessDays(newEndDate, offsetDays, state.holidays, false);
                   break;
                 case 'sameas':
-                  const dependentRow = state[currentId] as ChartRow;
+                  const dependentRow = state.data[currentId] as ChartRow;
                   newStartDate = new Date(dependentRow.plannedStartDate);
                   break;
                 default:
@@ -200,7 +204,7 @@ export const wbsDataSlice = createSlice({
               }
     
               chartRow.plannedStartDate = toLocalISOString(newStartDate);
-              const dependentEndDate = addBusinessDays(newStartDate, chartRow.businessDays);
+              const dependentEndDate = addBusinessDays(newStartDate, chartRow.businessDays, state.holidays);
               chartRow.plannedEndDate = toLocalISOString(dependentEndDate);
     
               updateDependentRows(chartRow.id, dependentEndDate);
@@ -209,33 +213,37 @@ export const wbsDataSlice = createSlice({
         });
       };
     
-      if (state[id] && state[id].rowType === 'Chart') {
-        const chartRow = state[id] as ChartRow;
+      if (state.data[id] && state.data[id].rowType === 'Chart') {
+        const chartRow = state.data[id] as ChartRow;
         chartRow.businessDays = days;
         if (chartRow.plannedStartDate && days) {
           const startDate = new Date(chartRow.plannedStartDate);
-          const endDate = addBusinessDays(startDate, days);
+          const endDate = addBusinessDays(startDate, days, state.holidays);
           updateDependentRows(id, new Date(endDate));
         }
       }
     },
     setActualStartDate: (state, action: PayloadAction<{ id: string; startDate: string }>) => {
       const { id, startDate } = action.payload;
-      if (state[id] && state[id].rowType === 'Chart') {
-        (state[id] as ChartRow).actualStartDate = startDate;
+      if (state.data[id] && state.data[id].rowType === 'Chart') {
+        (state.data[id] as ChartRow).actualStartDate = startDate;
       }
     },
     setActualEndDate: (state, action: PayloadAction<{ id: string; endDate: string }>) => {
       const { id, endDate } = action.payload;
-      if (state[id] && state[id].rowType === 'Chart') {
-        (state[id] as ChartRow).actualEndDate = endDate;
+      if (state.data[id] && state.data[id].rowType === 'Chart') {
+        (state.data[id] as ChartRow).actualEndDate = endDate;
       }
     },
     setDisplayName: (state, action: PayloadAction<{ id: string; displayName: string }>) => {
       const { id, displayName } = action.payload;
-      if (state[id]) {
-        state[id].displayName = displayName;
+      if (state.data[id]) {
+        state.data[id].displayName = displayName;
       }
+    },
+    setHolidays: (state, action: PayloadAction<string[]>) => {
+      const newHolidays = action.payload;
+      state.holidays = newHolidays;
     },
   },
 });
@@ -248,7 +256,8 @@ export const {
   setBusinessDays,
   setActualStartDate, 
   setActualEndDate,
-  setDisplayName 
+  setDisplayName,
+  setHolidays
 } = wbsDataSlice.actions;
 
 export const store = configureStore({

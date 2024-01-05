@@ -57,7 +57,7 @@ interface AutoWidthInputBoxProps {
 const AutoWidthInputBox: React.FC<AutoWidthInputBoxProps> = ({
   entryId,
 }) => {
-  const storeDisplayName = useSelector((state: RootState) => state.wbsData[entryId]?.displayName);
+  const storeDisplayName = useSelector((state: RootState) => state.wbsData.data[entryId]?.displayName);
   const dispatch = useDispatch();
   const [localDisplayName, setLocalDisplayName] = useState(storeDisplayName);
   const [isEditing, setIsEditing] = useState(false);
