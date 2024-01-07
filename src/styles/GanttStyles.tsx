@@ -59,7 +59,7 @@ export const Cell = styled.div<CellProps>`
       return props.$chartBarColor ? getColorCode(props.$chartBarColor) : '#76ff7051';
     }
     if (props.$isActual) {
-      baseColor = '#00000024';
+      baseColor = '#0000003d';
     }
     return baseColor;
   }};
