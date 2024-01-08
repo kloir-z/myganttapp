@@ -1,8 +1,10 @@
+// AutoWidthInputBox.tsx
 import React, { useState, useRef, useEffect, useCallback, ChangeEvent } from 'react';
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState, setDisplayName} from '../reduxComponents/store';
+import { RootState, setDisplayName, setEventDisplayName } from '../reduxComponents/store';
 import { debounce } from 'lodash';
+import { EventRow, EventData } from '../types/DataTypes';
 
 const InputWrapper = styled.div`
   position: absolute;
@@ -52,12 +54,24 @@ const StyledInput = styled.input`
 
 interface AutoWidthInputBoxProps {
   entryId : string;
+  eventIndex?: number;
 }
 
 const AutoWidthInputBox: React.FC<AutoWidthInputBoxProps> = ({
   entryId,
+  eventIndex
 }) => {
-  const storeDisplayName = useSelector((state: RootState) => state.wbsData.data[entryId]?.displayName);
+  const storeDisplayName = useSelector((state: RootState) => {
+    const rowData = state.wbsData.data[entryId];
+    if (rowData && rowData.rowType === 'Event' && typeof eventIndex === 'number') {
+      const eventRow = rowData as EventRow;
+      if (eventRow.eventData && eventRow.eventData[eventIndex]) {
+        return eventRow.eventData[eventIndex].eachDisplayName;
+      } else {
+        return "";
+      }    }
+    return rowData?.displayName;
+  });
   const dispatch = useDispatch();
   const [localDisplayName, setLocalDisplayName] = useState(storeDisplayName);
   const [isEditing, setIsEditing] = useState(false);
@@ -88,9 +102,16 @@ const AutoWidthInputBox: React.FC<AutoWidthInputBoxProps> = ({
 
   const syncToStore = useCallback(() => {
     if (isEditing) {
-      dispatch(setDisplayName({ id: entryId, displayName: localDisplayName }));
+      // `eventIndex` が存在する場合とそうでない場合で異なるアクションをディスパッチ
+      if (typeof eventIndex === 'number') {
+        // EventRow の場合
+        dispatch(setEventDisplayName({ id: entryId, eventIndex, displayName: localDisplayName }));
+      } else {
+        // ChartRow の場合
+        dispatch(setDisplayName({ id: entryId, displayName: localDisplayName }));
+      }
     }
-  }, [entryId, localDisplayName, dispatch, isEditing]);
+  }, [entryId, eventIndex, localDisplayName, dispatch, isEditing]);
   
   const debouncedSyncToStore = debounce(syncToStore, 100);
   

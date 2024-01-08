@@ -1,4 +1,4 @@
-// GanttCell.tsx
+// ChartCell.tsx
 import React from 'react';
 import { Cell } from '../styles/GanttStyles';
 import AutoWidthInputBox from './AutoWidthInputBox';
@@ -6,6 +6,7 @@ import { ChartBarColor } from '../types/colorAliasMapping';
 
 interface MemoedChartCellProps {
   entryId? : string;
+  eventIndex? : number;
   type?: string;
   isPlanned?: boolean;
   isActual?: boolean;
@@ -15,6 +16,7 @@ interface MemoedChartCellProps {
 
 const MemoedChartCell: React.FC<MemoedChartCellProps> = ({ 
   entryId,
+  eventIndex,
   type,
   isPlanned,
   isActual,
@@ -33,6 +35,7 @@ const MemoedChartCell: React.FC<MemoedChartCellProps> = ({
       {(isPlanned && entryId) && (
         <AutoWidthInputBox 
           entryId={entryId}
+          eventIndex={eventIndex}
         />
       )}
     </Cell>

@@ -29,17 +29,19 @@ export interface SeparatorRow extends BaseRow {
 }
 
 export interface EventData {
-  displayName: string;
-  plannedStartDate: string;
-  plannedEndDate: string;
-  businessDays: 5,
-  actualStartDate: string;
-  actualEndDate: string;
+  isPlanned: boolean;
+  eachDisplayName: string;
+  startDate: string;
+  endDate: string;
 }
 
 export interface EventRow extends BaseRow {
   rowType: "Event";
-  displayName: string;
+  textColumn1: string;
+  textColumn2: string;
+  textColumn3: string;
+  textColumn4: string;
+  color: string;
   eventData: EventData[];
 }
 

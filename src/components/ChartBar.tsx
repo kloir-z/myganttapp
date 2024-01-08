@@ -1,3 +1,4 @@
+// ChartBar.tsx
 import React from 'react';
 import { ChartCell } from './ChartCell';
 import { ChartBarColor } from '../types/colorAliasMapping';
@@ -8,16 +9,18 @@ interface ChartBarProps {
   dateArray: Date[];
   isActual: boolean;
   entryId: string;
+  eventIndex?: number;
   chartBarColor: ChartBarColor;
   onBarMouseDown: (event: React.MouseEvent<HTMLDivElement>) => void; 
   onBarEndMouseDown: (event: React.MouseEvent<HTMLDivElement>) => void; 
+  onContextMenu?: (event: React.MouseEvent<HTMLDivElement>) => void; 
 }
 
 const getStartOfDay = (date: Date) => {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 };
 
-const ChartBar: React.FC<ChartBarProps> = ({ startDate, endDate, dateArray, isActual, entryId, chartBarColor, onBarMouseDown, onBarEndMouseDown }) => {
+const ChartBar: React.FC<ChartBarProps> = ({ startDate, endDate, dateArray, isActual, entryId, eventIndex, chartBarColor, onBarMouseDown, onBarEndMouseDown, onContextMenu }) => {
   if (!startDate || !endDate) {
     return null;
   }
@@ -43,10 +46,11 @@ const ChartBar: React.FC<ChartBarProps> = ({ startDate, endDate, dateArray, isAc
       <>
         <div
           style={{position: 'absolute', left: `${leftPosition}px`, width: `${width}px`}}
-          {...(isActual ? {} : { onMouseDown: onBarMouseDown })}
+          {...{ onMouseDown: onBarMouseDown, onContextMenu: onContextMenu }}
         >
           <ChartCell
             entryId={entryId}
+            eventIndex={eventIndex}
             isActual={isActual}
             isPlanned={!isActual}
             chartBarColor={chartBarColor}
@@ -55,7 +59,7 @@ const ChartBar: React.FC<ChartBarProps> = ({ startDate, endDate, dateArray, isAc
         </div>
         <div
           style={{position: 'absolute', left: `${leftPosition + width}px`, width: '8px', height: '21px', cursor: 'ew-resize', opacity: 0 }}
-          {...(isActual ? {} : { onMouseDown: onBarEndMouseDown })}
+          {...{ onMouseDown: onBarEndMouseDown }}
         ></div>
       </>
     );

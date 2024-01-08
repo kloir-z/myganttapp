@@ -7627,20 +7627,40 @@ export const testData: WBSData[] = [
     displayName: "Meetings",
     eventData: [
       {
-        displayName: "RegularMeeting1",
-        plannedStartDate: "2023/09/11",
-        plannedEndDate: "2023/09/11",
-        businessDays: 5,
-        actualStartDate: "",
-        actualEndDate: "",
+        isPlanned: true,
+        eachDisplayName: "RegularMeeting1",
+        startDate: "2023/09/11",
+        endDate: "2023/09/11",
       },
       {
-        displayName: "RegularMeeting2",
-        plannedStartDate: "2023/09/15",
-        plannedEndDate: "2023/09/15",
-        businessDays: 5,
-        actualStartDate: "",
-        actualEndDate: "",
+        isPlanned: false,
+        eachDisplayName: "RegularMeeting1",
+        startDate: "2023/09/11",
+        endDate: "2023/09/11",
+      },
+      {
+        isPlanned: true,
+        eachDisplayName: "RegularMeeting2",
+        startDate: "2023/09/15",
+        endDate: "2023/09/15",
+      },
+      {
+        isPlanned: true,
+        eachDisplayName: "RegularMeeting1",
+        startDate: "2023/10/11",
+        endDate: "2023/10/12",
+      },
+      {
+        isPlanned: false,
+        eachDisplayName: "RegularMeeting1",
+        startDate: "2023/10/11",
+        endDate: "2023/10/13",
+      },
+      {
+        isPlanned: true,
+        eachDisplayName: "RegularMeeting2",
+        startDate: "2023/10/15",
+        endDate: "2023/11/15",
       }
     ]
   } as EventRow

@@ -1,5 +1,5 @@
 import { configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { WBSData, ChartRow } from '../types/DataTypes';
+import { WBSData, ChartRow, EventRow } from '../types/DataTypes';
 import { testData } from '../testdata/testdata';
 import { v4 as uuidv4 } from 'uuid';
 import { calculateBusinessDays, addBusinessDays, toLocalISOString } from '../utils/CalendarUtil';
@@ -245,6 +245,22 @@ export const wbsDataSlice = createSlice({
       const newHolidays = action.payload;
       state.holidays = newHolidays;
     },
+    setEventDisplayName: (state, action: PayloadAction<{ id: string; eventIndex: number; displayName: string }>) => {
+      const { id, eventIndex, displayName } = action.payload;
+      const row = state.data[id];
+      if (row && row.rowType === 'Event') {
+        const eventRow = row as EventRow;
+        if (eventRow.eventData[eventIndex]) {
+          eventRow.eventData[eventIndex].eachDisplayName = displayName;
+        }
+      }
+    },
+    updateEventRow: (state, action: PayloadAction<{ id: string; updatedEventRow: EventRow }>) => {
+      const { id, updatedEventRow } = action.payload;
+      if (state.data[id] && state.data[id].rowType === 'Event') {
+        state.data[id] = updatedEventRow;
+      }
+    },
   },
 });
 
@@ -257,7 +273,9 @@ export const {
   setActualStartDate, 
   setActualEndDate,
   setDisplayName,
-  setHolidays
+  setHolidays,
+  setEventDisplayName,
+  updateEventRow,
 } = wbsDataSlice.actions;
 
 export const store = configureStore({

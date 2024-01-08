@@ -1,10 +1,11 @@
 // App.tsx
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Calendar from './components/Calendar';
-import { ChartRow  } from './types/DataTypes';
+import { ChartRow, EventRow  } from './types/DataTypes';
 import { GanttRow } from './styles/GanttStyles';
 import WBSInfo from './components/WBSInfo';
-import GridHorizontal from './components/GridHorizontal';
+import ChartRowComponent from './components/ChartRowComponent';
+import EventRowComponent from './components/EventRowComponent';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, setHolidays } from './reduxComponents/store';
 import { generateDates } from './utils/CalendarUtil';
@@ -191,7 +192,7 @@ function App() {
                     width: `${calendarWidth}px`
                   }}
                 >
-                  <GridHorizontal
+                  <ChartRowComponent
                     entry={entry as ChartRow}
                     dateArray={dateArray}
                     gridRef={gridRef}
@@ -222,8 +223,13 @@ function App() {
                     top: `${topPosition}px`,
                   }}
                 >
-                  <GanttRow key={index} style={{ width: `${calendarWidth}px`}}>
-                  </GanttRow>
+                <EventRowComponent
+                  entry={entry as EventRow}
+                  dateArray={dateArray}
+                  gridRef={gridRef}
+                  setCanDrag={setCanDrag}
+                  aliasMapping={aliasMapping}
+                />
                 </div>
               );
             }

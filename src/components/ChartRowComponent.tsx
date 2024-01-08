@@ -19,7 +19,7 @@ interface ChartRowProps {
   aliasMapping: AliasMapping;
 }
 
-const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRef, setCanDrag, aliasMapping }) => {
+const ChartRowComponent: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRef, setCanDrag, aliasMapping }) => {
   const dispatch = useDispatch();
   const chartBarColor = convertAliasToChartBarColor(entry.color, aliasMapping) || 'green';
   const businessDays = entry.businessDays;
@@ -30,24 +30,34 @@ const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRe
   const [localActualEndDate, setLocalActualEndDate] = useState(entry.actualEndDate ? new Date(entry.actualEndDate) : null);
   const [currentDate, setCurrentDate] = useState<Date | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [isBarDragging, setIsBarDragging] = useState(false);
-  const [isBarEndDragging, setIsBarEndDragging] = useState(false);
+  const [isBarDragging, setIsBarDragging] = useState<'planned' | 'actual' | null>(null);
+  const [isBarEndDragging, setIsBarEndDragging] = useState<'planned' | 'actual' | null>(null);
   const [originalStartDate, setOriginalStartDate] = useState<Date | null>(null);
   const [originalEndDate, setOriginalEndDate] = useState<Date | null>(null);
   const [initialMouseX, setInitialMouseX] = useState<number | null>(null);
   const [isShiftKeyDown, setIsShiftKeyDown] = useState(false);
 
-  const handleBarMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
-    setIsBarDragging(true);
+  const handleBarMouseDown = (event: React.MouseEvent<HTMLDivElement>, barType: 'planned' | 'actual') => {
+    setIsBarDragging(barType);
     setInitialMouseX(event.clientX);
-    setOriginalStartDate(localPlannedStartDate);
-    setOriginalEndDate(localPlannedEndDate);
+    if (barType === 'planned') {
+      setOriginalStartDate(localPlannedStartDate);
+      setOriginalEndDate(localPlannedEndDate);
+    } else { // barType === 'actual'
+      setOriginalStartDate(localActualStartDate);
+      setOriginalEndDate(localActualEndDate);
+    }
   };
   
-  const handleBarEndMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
-    setIsBarEndDragging(true);
+  const handleBarEndMouseDown = (event: React.MouseEvent<HTMLDivElement>, barType: 'planned' | 'actual') => {
+    setIsBarEndDragging(barType);
     setInitialMouseX(event.clientX);
-    setOriginalEndDate(localPlannedEndDate);
+    if (barType === 'planned') {
+      setOriginalEndDate(localPlannedEndDate);
+    } else { // barType === 'actual'
+      setOriginalStartDate(localActualStartDate);
+      setOriginalEndDate(localActualEndDate);
+    }
   };
 
   const calendarWidth = dateArray.length * 21;
@@ -85,21 +95,36 @@ const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRe
   
       const newStartDate = new Date(originalStartDate.getTime());
       newStartDate.setDate(newStartDate.getDate() + gridSteps);
-      setLocalPlannedStartDate(newStartDate);
-
-      const newEndDate = addBusinessDays(newStartDate, businessDays, holidays);
-      setLocalPlannedEndDate(newEndDate);
-    } else if (isBarEndDragging && initialMouseX !== null && localPlannedStartDate && originalEndDate) {
+      if (isBarDragging === 'planned') {
+        setLocalPlannedStartDate(newStartDate);
+        const newEndDate = addBusinessDays(newStartDate, businessDays, holidays);
+        setLocalPlannedEndDate(newEndDate);
+      } else if (isBarDragging === 'actual') {
+        setLocalActualStartDate(newStartDate);
+        const newEndDate = new Date(originalEndDate.getTime());
+        newEndDate.setDate(newEndDate.getDate() + gridSteps);
+        setLocalActualEndDate(newEndDate);
+      }
+    } else if (isBarEndDragging && initialMouseX !== null && originalEndDate) {
       const currentMouseX = event.clientX;
       const deltaX = currentMouseX - initialMouseX;
       const gridSteps = Math.floor(deltaX / 21);
 
       const newEndDate = new Date(originalEndDate.getTime());
       newEndDate.setDate(newEndDate.getDate() + gridSteps);
-      if (newEndDate < localPlannedStartDate) {
-        setLocalPlannedEndDate(new Date(localPlannedStartDate));
-      } else {
-        setLocalPlannedEndDate(newEndDate);
+
+      if (isBarEndDragging === 'planned' && localPlannedStartDate) {
+        if (newEndDate < localPlannedStartDate) {
+          setLocalPlannedEndDate(new Date(localPlannedStartDate));
+        } else {
+          setLocalPlannedEndDate(newEndDate);
+        }
+      } else if (isBarEndDragging === 'actual' && localActualStartDate) {
+        if (newEndDate < localActualStartDate) {
+          setLocalActualEndDate(new Date(localActualStartDate));
+        } else {
+          setLocalActualEndDate(newEndDate);
+        }
       }
     } else if (isEditing) {
       const gridRect = gridRef.current?.getBoundingClientRect();
@@ -147,8 +172,8 @@ const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRe
 
   const handleMouseUp = () => {
     setIsEditing(false);
-    setIsBarDragging(false);
-    setIsBarEndDragging(false);
+    setIsBarDragging(null);
+    setIsBarEndDragging(null);
     setInitialMouseX(null);
     syncToStore();
   };
@@ -178,8 +203,8 @@ const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRe
           isActual={true}
           entryId={entry.id}
           chartBarColor={chartBarColor}
-          onBarMouseDown={handleBarMouseDown}
-          onBarEndMouseDown={handleBarEndMouseDown}
+          onBarMouseDown={(e) => handleBarMouseDown(e, 'actual')}
+          onBarEndMouseDown={(e) => handleBarEndMouseDown(e, 'actual')}
         />
       )}
       {localPlannedStartDate && localPlannedEndDate && (
@@ -190,12 +215,12 @@ const GridHorizontal: React.FC<ChartRowProps> = memo(({ entry, dateArray, gridRe
           isActual={false}
           entryId={entry.id}
           chartBarColor={chartBarColor}
-          onBarMouseDown={handleBarMouseDown}
-          onBarEndMouseDown={handleBarEndMouseDown}
+          onBarMouseDown={(e) => handleBarMouseDown(e, 'planned')}
+          onBarEndMouseDown={(e) => handleBarEndMouseDown(e, 'planned')}
         />
       )}
     </div>
   );
 });
 
-export default memo(GridHorizontal);
+export default memo(ChartRowComponent);
