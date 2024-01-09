@@ -78,7 +78,7 @@ export const useWBSData = () => {
   const visibleColumns = columns.filter(column => column.visible);
 
   useEffect(() => {
-    setHeaderRow(getHeaderRow(visibleColumns, columnMap));
+    setHeaderRow(getHeaderRow(columns, columnMap));
   }, [columns]);
 
   const toggleColumnVisibility = (columnId: string | number) => {
