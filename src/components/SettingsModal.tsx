@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, Dispatch, SetStateAction } from "react";
-import { Overlay, ModalContainer, CloseButton } from "../styles/GanttStyles";
+import { Overlay, ModalContainer } from "../styles/GanttStyles";
 import { ChartBarColor, AliasMapping } from "../types/colorAliasMapping";
-import { Column, Row, DefaultCellTypes } from "@silevis/reactgrid";
+import { Row, DefaultCellTypes } from "@silevis/reactgrid";
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, simpleSetData, setHolidays } from '../reduxComponents/store';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -11,8 +11,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import 'dayjs/locale/en-ca';
 import 'dayjs/locale/en-in';
 import 'dayjs/locale/en';
-import { useWBSData } from '../hooks/useWBSData';
-import { ColumnMap, columnMap } from "../hooks/useWBSData";
+import { ExtendedColumn, ColumnMap, columnMap } from "../hooks/useWBSData";
 
 type SettingsModalProps = {
   show: boolean;
@@ -22,13 +21,12 @@ type SettingsModalProps = {
   aliasMapping: AliasMapping;
   setAliasMapping: (mapping: AliasMapping) => void;
   headerRow: Row<DefaultCellTypes>;
-  columns: Column[];
-  setColumns: Dispatch<SetStateAction<Column[]>>;
-  columnVisibility: { [key: string]: boolean };
+  columns: ExtendedColumn[];
+  setColumns: Dispatch<SetStateAction<ExtendedColumn[]>>;
   toggleColumnVisibility: (columnId: string | number) => void;
 };
 
-const SettingsModal: React.FC<SettingsModalProps> = ({ show, onClose, dateRange, setDateRange, aliasMapping, setAliasMapping, columns, setColumns, columnVisibility, toggleColumnVisibility }) => {
+const SettingsModal: React.FC<SettingsModalProps> = ({ show, onClose, dateRange, setDateRange, aliasMapping, setAliasMapping, columns, setColumns, toggleColumnVisibility }) => {
   const [fadeStatus, setFadeStatus] = useState<'in' | 'out'>('in');
   const [startDate, setStartDate] = useState<Dayjs | null>(dayjs(dateRange.startDate));
   const [endDate, setEndDate] = useState<Dayjs | null>(dayjs(dateRange.endDate));
@@ -39,7 +37,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ show, onClose, dateRange,
   const colors: ChartBarColor[] = ['lightblue', 'blue', 'purple', 'pink', 'red', 'yellow', 'green'];
   const [fileName, setFileName] = useState("filename");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { initialColumns } = useWBSData();
   const browserLocale = navigator.language;
   let locale;
   if (["ja", "zh", "ko", "hu"].includes(browserLocale)) {
@@ -283,12 +280,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ show, onClose, dateRange,
             </div>
             <h3>Column Visibility</h3>
             <div style={{ marginLeft: '10px' }}>
-              {initialColumns.map(column => (
+              {columns.map(column => (
                 <div key={column.columnId}>
                   <label>
                     <input
                       type="checkbox"
-                      checked={columnVisibility[column.columnId]}
+                      checked={column.visible}
                       onChange={() => toggleColumnVisibility(column.columnId)}
                     />
                     {columnMap[column.columnId as keyof ColumnMap]}

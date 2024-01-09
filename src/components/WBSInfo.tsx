@@ -12,16 +12,16 @@ import { RootState, simpleSetData } from '../reduxComponents/store';
 import { CustomDateCell, CustomDateCellTemplate } from '../utils/CustomDateCell';
 import { CustomTextCell, CustomTextCellTemplate } from '../utils/CustomTextCell';
 import { assignIds, reorderArray } from '../utils/wbsHelpers';
+import { ExtendedColumn } from '../hooks/useWBSData';
 
 type WBSInfoProps = {
   headerRow: Row<DefaultCellTypes>;
-  columns: Column[];
-  setColumns: Dispatch<SetStateAction<Column[]>>;
-  columnVisibility: { [key: string]: boolean };
+  visibleColumns: ExtendedColumn[];
+  setColumns: Dispatch<SetStateAction<ExtendedColumn[]>>;
   toggleColumnVisibility: (columnId: string | number) => void;
 };
 
-const WBSInfo: React.FC<WBSInfoProps> = ({ headerRow, columns, setColumns, columnVisibility, toggleColumnVisibility }) => {
+const WBSInfo: React.FC<WBSInfoProps> = ({ headerRow, visibleColumns, setColumns, toggleColumnVisibility }) => {
   const dispatch = useDispatch();
   const data = useSelector((state: RootState) => state.wbsData.data);
   const handleColumnResize = useColumnResizer(setColumns);
@@ -35,17 +35,17 @@ const WBSInfo: React.FC<WBSInfoProps> = ({ headerRow, columns, setColumns, colum
       ...data.map((item) => {
         switch (item.rowType) {
           case 'Chart':
-            return createChartRow(item as ChartRow, columns.filter(col => columnVisibility[col.columnId]));
+            return createChartRow(item as ChartRow, visibleColumns);
           case 'Separator':
-            return createSeparatorRow(item as SeparatorRow, columns.filter(col => columnVisibility[col.columnId]).length);
+            return createSeparatorRow(item as SeparatorRow, visibleColumns.length);
           case 'Event':
-            return createEventRow(item as EventRow, columns.filter(col => columnVisibility[col.columnId]).length);
+            return createEventRow(item as EventRow, visibleColumns.length);  
           default:
             return { rowId: 'empty', height: 21, cells: [{ type: "customText", text: '' } as CustomTextCell], reorderable: true };
         }
       })
     ];
-  }, [columns, headerRow, columnVisibility]);
+  }, [visibleColumns, headerRow]);
 
   const rows = getRows(dataArray);
 
@@ -94,7 +94,7 @@ const WBSInfo: React.FC<WBSInfoProps> = ({ headerRow, columns, setColumns, colum
   }, [dataArray, dispatch]);
 
   const handleColumnsReorder = useCallback((targetColumnId: Id, columnIds: Id[]) => {
-    const newColumnsOrder = [...columns];
+    const newColumnsOrder = [...visibleColumns];
     const targetIndex = newColumnsOrder.findIndex(column => column.columnId === targetColumnId);
   
     columnIds.forEach(columnId => {
@@ -106,17 +106,16 @@ const WBSInfo: React.FC<WBSInfoProps> = ({ headerRow, columns, setColumns, colum
     });
   
     setColumns(newColumnsOrder);
-  }, [columns, setColumns]);
+  }, [visibleColumns, setColumns]);
 
   const handleCanReorderRows = (targetRowId: Id, rowIds: Id[]): boolean => {
     return targetRowId !== 'header';
   }
 
-
   return (
     <ReactGrid
       rows={rows}
-      columns={columns}
+      columns={visibleColumns}
       onCellsChanged={(changes) => handleGridChanges(dispatch, data, changes)}
       onColumnResized={handleColumnResize}
       onContextMenu={simpleHandleContextMenu}

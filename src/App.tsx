@@ -22,7 +22,7 @@ import defaultHolidays from "./utils/defaultHolidays";
 function App() {
   const dispatch = useDispatch();
   const data = useSelector((state: RootState) => state.wbsData.data); 
-  const { headerRow, columns, setColumns, columnVisibility, toggleColumnVisibility } = useWBSData();
+  const { headerRow, visibleColumns, columns, setColumns, toggleColumnVisibility } = useWBSData();
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [wbsWidth, setWbsWidth] = useState(550);
   const [maxWbsWidth, setMaxWbsWidth] = useState(1500);
@@ -158,7 +158,6 @@ function App() {
           headerRow={headerRow}
           columns={columns}
           setColumns={setColumns}
-          columnVisibility={columnVisibility}
           toggleColumnVisibility={toggleColumnVisibility}
           // 他の必要なプロパティ
         />
@@ -172,9 +171,8 @@ function App() {
         <div className="hiddenScrollbar" style={{position: 'absolute', top: '21px', width: `${wbsWidth}px`, height: `calc(100vh - 21px)`, overflowX: 'scroll' }} ref={wbsRef}>
           <WBSInfo
             headerRow={headerRow}
-            columns={columns}
+            visibleColumns={visibleColumns}
             setColumns={setColumns}
-            columnVisibility={columnVisibility}
             toggleColumnVisibility={toggleColumnVisibility}
           />
         </div>
