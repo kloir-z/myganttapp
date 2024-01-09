@@ -57,6 +57,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ show, onClose, dateRange,
       return holiday.match(/^\d{4}-\d{2}-\d{2}$/);
     });
     dispatch(setHolidays(newHolidays)); // 更新された祝日リストでアクションをディスパッチ
+    dispatch(simpleSetData(data))
   };
 
   const handleExport = () => {
@@ -301,7 +302,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ show, onClose, dateRange,
             <textarea
               value={holidayInput}
               onChange={(e) => setHolidayInput(e.target.value)}
-              onBlur={updateHolidays} // テキストエリアからフォーカスが外れた時に更新
+              onBlur={updateHolidays}
               style={{ width: '100%', minHeight: '100px' }}
             />
           </div>

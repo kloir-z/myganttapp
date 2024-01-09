@@ -89,8 +89,73 @@ export const wbsDataSlice = createSlice({
   reducers: {
     simpleSetData: (state, action: PayloadAction<{ [id: string]: WBSData }>) => {
       const data = action.payload;
-      state.data = data;
+      const updatedData = Object.keys(data).reduce<{ [id: string]: WBSData }>((acc, rowId) => {
+        const rowData = data[rowId];
+
+        if (rowData.rowType === 'Chart') {
+          const chartRowData = rowData as ChartRow;
+          let updatedRowData = { ...chartRowData };
+
+          if (chartRowData.dependency) {
+            const parts = chartRowData.dependency.split(',');
+            if (parts.length >= 2) {
+              let refRowNo = parts[1].trim();
+              let refRowId: string | undefined;
+
+              if (refRowNo.startsWith('+') || refRowNo.startsWith('-')) {
+                const offset = parseInt(refRowNo, 10);
+                let currentIndex = Object.keys(data).indexOf(rowId);
+                let steps = Math.abs(offset);
+
+                while (steps > 0 && currentIndex >= 0 && currentIndex < Object.keys(data).length) {
+                  currentIndex += (offset / Math.abs(offset));
+                  if (currentIndex < 0 || currentIndex >= Object.keys(data).length) {
+                    break;
+                  }
+                  if (data[Object.keys(data)[currentIndex]].rowType === 'Chart') {
+                    steps--;
+                  }
+                }
+
+                if (currentIndex >= 0 && currentIndex < Object.keys(data).length) {
+                  refRowId = Object.keys(data)[currentIndex];
+                }
+              } else {
+                const targetNo = parseInt(refRowNo, 10);
+                refRowId = Object.keys(data).find(key => {
+                  const keyRowData = data[key];
+                  return keyRowData.rowType === 'Chart' && (keyRowData as ChartRow).no === targetNo;
+                });
+              }
+
+              if (refRowId) {
+                updatedRowData = {
+                  ...chartRowData,
+                  dependentId: refRowId,
+                  dependency: chartRowData.dependency
+                };
+              }
+            }
+          }
+          acc[rowId] = updatedRowData;
+        } else {
+          acc[rowId] = rowData;
+        }
+        return acc;
+      }, {});
+      state.data = updatedData;
+      Object.keys(state.data).forEach(id => {
+        const row = state.data[id];
+        if (row.rowType === 'Chart') {
+          const chartRow = row as ChartRow;
+          if (chartRow.plannedEndDate) {
+            const newEndDate = new Date(chartRow.plannedEndDate);
+            updateDependentRows(state, id, newEndDate);
+          }
+        }
+      });
     },
+
     setData: (state, action: PayloadAction<{ [id: string]: WBSData }>) => {
       const newData = action.payload;
     
