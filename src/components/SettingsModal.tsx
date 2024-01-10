@@ -24,9 +24,11 @@ type SettingsModalProps = {
   columns: ExtendedColumn[];
   setColumns: Dispatch<SetStateAction<ExtendedColumn[]>>;
   toggleColumnVisibility: (columnId: string | number) => void;
+  wbsWidth: number;
+  setWbsWidth: Dispatch<SetStateAction<number>>;
 };
 
-const SettingsModal: React.FC<SettingsModalProps> = ({ show, onClose, dateRange, setDateRange, aliasMapping, setAliasMapping, columns, setColumns, toggleColumnVisibility }) => {
+const SettingsModal: React.FC<SettingsModalProps> = ({ show, onClose, dateRange, setDateRange, aliasMapping, setAliasMapping, columns, setColumns, toggleColumnVisibility, wbsWidth, setWbsWidth }) => {
   const [fadeStatus, setFadeStatus] = useState<'in' | 'out'>('in');
   const [startDate, setStartDate] = useState<Dayjs | null>(dayjs(dateRange.startDate));
   const [endDate, setEndDate] = useState<Dayjs | null>(dayjs(dateRange.endDate));
@@ -47,14 +49,25 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ show, onClose, dateRange,
     locale = 'en';
   }
 
-  const updateHolidays = () => {
-    // テキストエリアからの入力を行ごとに分割し、不正な行をフィルタリング
-    const newHolidays = holidayInput.split("\n").filter(holiday => {
-      // 正しい日付フォーマットのみを許可するような検証ロジックをここに追加
-      return holiday.match(/^\d{4}-\d{2}-\d{2}$/);
-    });
-    dispatch(setHolidays(newHolidays)); // 更新された祝日リストでアクションをディスパッチ
-    dispatch(simpleSetData(data))
+  const updateHolidays = (holidayInput: string) => {
+    const newHolidays = holidayInput.split("\n").map(holiday => {
+      const match = holiday.match(/(\d{4})[/-]?(\d{1,2})[/-]?(\d{1,2})/);
+      if (match) {
+        const [, year, month, day] = match;
+        const formattedMonth = month.padStart(2, '0');
+        const formattedDay = day.padStart(2, '0');
+        return `${year}-${formattedMonth}-${formattedDay}`;
+      }
+      return null;
+    }).filter((holiday): holiday is string => holiday !== null);
+    console.log(newHolidays)
+  
+    dispatch(setHolidays(newHolidays));
+    dispatch(simpleSetData(data));
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLTextAreaElement>) => {
+    updateHolidays(holidayInput);
   };
 
   const handleExport = () => {
@@ -66,6 +79,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ show, onClose, dateRange,
       },
       columns,
       data,
+      holidayInput,
+      wbsWidth,
     };
 
     const jsonData = JSON.stringify(settingsData, null, 2);
@@ -102,10 +117,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ show, onClose, dateRange,
               importStatus.aliasMapping = true;
             }
             if (parsedData.dateRange && parsedData.dateRange.startDate && parsedData.dateRange.endDate) {
+              const newStartDate = new Date(parsedData.dateRange.startDate);
+              const newEndDate = new Date(parsedData.dateRange.endDate);
               setDateRange({
-                startDate: new Date(parsedData.dateRange.startDate),
-                endDate: new Date(parsedData.dateRange.endDate),
+                startDate: newStartDate,
+                endDate: newEndDate
               });
+              setStartDate(dayjs(newStartDate));
+              setEndDate(dayjs(newEndDate));
               importStatus.dateRange = true;
             }
             if (parsedData.columns && Array.isArray(parsedData.columns)) {
@@ -115,6 +134,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ show, onClose, dateRange,
             if (parsedData.data) {
               dispatch(simpleSetData(parsedData.data));
               importStatus.data = true;
+            }
+            if (parsedData.holidayInput) {
+              const newHolidayInput = parsedData.holidayInput;
+              setHolidayInput(newHolidayInput);
+              updateHolidays(newHolidayInput);
+            }
+            if (parsedData.wbsWidth) {
+              setWbsWidth(parsedData.wbsWidth);
             }
   
             let message = 'Import Results:\n';
@@ -174,7 +201,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ show, onClose, dateRange,
       setEndDate(newMaxEndDate);
     }
   };
-  
 
   const handleEndDateChange = (date: Dayjs | null) => {
     if (!date || !isValidDateRange(date) || (startDate && startDate.isAfter(date))) {
@@ -299,8 +325,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ show, onClose, dateRange,
             <textarea
               value={holidayInput}
               onChange={(e) => setHolidayInput(e.target.value)}
-              onBlur={updateHolidays}
-              style={{ width: '100%', minHeight: '100px' }}
+              onBlur={handleBlur}
+              style={{ padding: '10px', width: '200px', height: '700px', overflow: 'auto', resize: 'none' }}
             />
           </div>
         </div>

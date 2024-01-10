@@ -159,6 +159,8 @@ function App() {
           columns={columns}
           setColumns={setColumns}
           toggleColumnVisibility={toggleColumnVisibility}
+          wbsWidth={wbsWidth}
+          setWbsWidth={setWbsWidth}
           // 他の必要なプロパティ
         />
         </div>
