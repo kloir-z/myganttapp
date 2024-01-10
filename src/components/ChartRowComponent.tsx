@@ -143,7 +143,7 @@ const ChartRowComponent: React.FC<ChartRowProps> = memo(({ entry, dateArray, gri
         setLocalPlannedEndDate(isEndDate ? newDate : currentDate);
       }
     }
-  }, [isEditing, currentDate, isShiftKeyDown, calculateDateFromX, gridRef, isBarDragging, initialMouseX, originalStartDate, originalEndDate, isBarEndDragging, localPlannedStartDate, businessDays]);
+  }, [isBarDragging, initialMouseX, originalStartDate, originalEndDate, isBarEndDragging, isEditing, businessDays, holidays, localPlannedStartDate, localActualStartDate, gridRef, currentDate, calculateDateFromX, isShiftKeyDown]);
   
   useEffect(() => {
     if (!isEditing && !isBarDragging && !isBarEndDragging) {

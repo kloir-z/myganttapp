@@ -1,7 +1,7 @@
 // WBSInfo.tsx
 import React, { useCallback, memo, Dispatch, SetStateAction } from 'react';
 import { WBSData, ChartRow, SeparatorRow, EventRow  } from '../types/DataTypes';
-import { ReactGrid, Row, DefaultCellTypes, Id, MenuOption, SelectionMode, Column } from "@silevis/reactgrid";
+import { ReactGrid, Row, DefaultCellTypes, Id, MenuOption, SelectionMode } from "@silevis/reactgrid";
 import "@silevis/reactgrid/styles.css";
 import { handleAddChartRow, handleAddSeparatorRow, handleRemoveSelectedRow } from '../utils/contextMenuHandlers';
 import { createChartRow, createSeparatorRow, createEventRow } from '../utils/wbsRowCreators';

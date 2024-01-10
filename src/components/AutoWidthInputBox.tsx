@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, setDisplayName, setEventDisplayName } from '../reduxComponents/store';
 import { debounce } from 'lodash';
-import { EventRow, EventData } from '../types/DataTypes';
+import { EventRow } from '../types/DataTypes';
 
 const InputWrapper = styled.div`
   position: absolute;

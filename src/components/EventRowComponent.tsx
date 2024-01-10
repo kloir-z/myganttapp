@@ -35,7 +35,6 @@ const EventRowComponent: React.FC<EventRowProps> = memo(({ entry, dateArray, gri
   const [originalStartDate, setOriginalStartDate] = useState<Date | null>(null);
   const [originalEndDate, setOriginalEndDate] = useState<Date | null>(null);
   const [initialMouseX, setInitialMouseX] = useState<number | null>(null);
-  const [isShiftKeyDown, setIsShiftKeyDown] = useState(false);
   const [activeEventIndex, setActiveEventIndex] = useState<number | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number, index: number } | null>(null);
 
@@ -74,7 +73,6 @@ const EventRowComponent: React.FC<EventRowProps> = memo(({ entry, dateArray, gri
     setIsEditing(true);
     setCurrentDate(clickedDate);
     const isShiftKeyDown = event.shiftKey;
-    setIsShiftKeyDown(isShiftKeyDown);
     const newEvent = {
       startDate: clickedDate,
       endDate: clickedDate,
@@ -145,7 +143,7 @@ const EventRowComponent: React.FC<EventRowProps> = memo(({ entry, dateArray, gri
         });
       });
     }
-  }, [isBarDragging, isBarEndDragging, initialMouseX, originalStartDate, originalEndDate, activeEventIndex]);
+  }, [isBarDragging, isBarEndDragging, initialMouseX, activeEventIndex, isEditing, originalStartDate, originalEndDate, gridRef, currentDate, calculateDateFromX]);
       
   useEffect(() => {
     if (!isEditing && !isBarDragging && !isBarEndDragging) {
@@ -172,7 +170,7 @@ const EventRowComponent: React.FC<EventRowProps> = memo(({ entry, dateArray, gri
   
       dispatch(updateEventRow({ id: entry.id, updatedEventRow }));
     }
-  }, [localEvents, isEditing, isBarDragging, isBarEndDragging, dispatch]);
+  }, [isEditing, isBarDragging, isBarEndDragging, localEvents, entry, dispatch]);
   
   const debouncedSyncToStore = debounce(syncToStore, 20);
   

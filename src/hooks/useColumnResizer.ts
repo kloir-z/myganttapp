@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction } from 'react';
-import { Id, Column } from "@silevis/reactgrid";
+import { Id } from "@silevis/reactgrid";
 import { ExtendedColumn } from '../hooks/useWBSData';
 
 export const useColumnResizer = (setColumns: Dispatch<SetStateAction<ExtendedColumn[]>>) => {
