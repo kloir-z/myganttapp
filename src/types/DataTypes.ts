@@ -17,7 +17,7 @@ export interface ChartRow extends BaseRow {
   color: string;
   plannedStartDate: string;
   plannedEndDate: string;
-  businessDays: number,
+  businessDays: number | null,
   actualStartDate: string;
   actualEndDate: string;
   dependentId: string;

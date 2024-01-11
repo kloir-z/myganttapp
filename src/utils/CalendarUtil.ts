@@ -64,8 +64,8 @@ export const calculateBusinessDays = (start: Date, end: Date, holidays: string[]
   return count;
 };
 
-export const addBusinessDays = (start: Date, days: number, holidays: string[], includeStartDay: boolean = true): Date => {
-  if (isNaN(start.getTime()) || days < 0) {
+export const addBusinessDays = (start: Date, days: number | null, holidays: string[], includeStartDay: boolean = true): Date => {
+  if (isNaN(start.getTime()) || days === null || days < 0) {
     console.error('Invalid start date or negative days provided to addBusinessDays');
     return new Date(NaN);
   }

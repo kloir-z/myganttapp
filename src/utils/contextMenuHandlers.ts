@@ -22,7 +22,7 @@ export const handleAddChartRow = (dispatch: Dispatch, selectedRowIds: Id[], data
       color: "",
       plannedStartDate: "",
       plannedEndDate: "",
-      businessDays: 1,
+      businessDays: null,
       actualStartDate: "",
       actualEndDate: "",
       displayName: "",
