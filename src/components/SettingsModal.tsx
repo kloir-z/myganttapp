@@ -131,14 +131,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ show, onClose, dateRange,
               setColumns(parsedData.columns);
               importStatus.columns = true;
             }
-            if (parsedData.data) {
-              dispatch(simpleSetData(parsedData.data));
-              importStatus.data = true;
-            }
             if (parsedData.holidayInput) {
               const newHolidayInput = parsedData.holidayInput;
               setHolidayInput(newHolidayInput);
               updateHolidays(newHolidayInput);
+            }
+            if (parsedData.data) {
+              dispatch(simpleSetData(parsedData.data));
+              importStatus.data = true;
             }
             if (parsedData.wbsWidth) {
               setWbsWidth(parsedData.wbsWidth);

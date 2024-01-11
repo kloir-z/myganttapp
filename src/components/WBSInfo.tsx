@@ -17,11 +17,12 @@ import { ExtendedColumn } from '../hooks/useWBSData';
 type WBSInfoProps = {
   headerRow: Row<DefaultCellTypes>;
   visibleColumns: ExtendedColumn[];
+  columns: ExtendedColumn[];
   setColumns: Dispatch<SetStateAction<ExtendedColumn[]>>;
   toggleColumnVisibility: (columnId: string | number) => void;
 };
 
-const WBSInfo: React.FC<WBSInfoProps> = ({ headerRow, visibleColumns, setColumns, toggleColumnVisibility }) => {
+const WBSInfo: React.FC<WBSInfoProps> = ({ headerRow, visibleColumns, columns, setColumns, toggleColumnVisibility }) => {
   const dispatch = useDispatch();
   const data = useSelector((state: RootState) => state.wbsData.data);
   const handleColumnResize = useColumnResizer(setColumns);
@@ -94,7 +95,7 @@ const WBSInfo: React.FC<WBSInfoProps> = ({ headerRow, visibleColumns, setColumns
   }, [dataArray, dispatch]);
 
   const handleColumnsReorder = useCallback((targetColumnId: Id, columnIds: Id[]) => {
-    const newColumnsOrder = [...visibleColumns];
+    const newColumnsOrder = [...columns];
     const targetIndex = newColumnsOrder.findIndex(column => column.columnId === targetColumnId);
   
     columnIds.forEach(columnId => {
@@ -106,9 +107,9 @@ const WBSInfo: React.FC<WBSInfoProps> = ({ headerRow, visibleColumns, setColumns
     });
   
     setColumns(newColumnsOrder);
-  }, [visibleColumns, setColumns]);
+  }, [columns, setColumns]);
 
-  const handleCanReorderRows = (targetRowId: Id, rowIds: Id[]): boolean => {
+  const handleCanReorderRows = (targetRowId: Id): boolean => {
     return targetRowId !== 'header';
   }
 

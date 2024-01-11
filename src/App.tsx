@@ -174,6 +174,7 @@ function App() {
           <WBSInfo
             headerRow={headerRow}
             visibleColumns={visibleColumns}
+            columns={columns}
             setColumns={setColumns}
             toggleColumnVisibility={toggleColumnVisibility}
           />
