@@ -217,11 +217,12 @@ function App() {
               );
             } else if (entry.rowType === 'Event') {
               return (
-                <div
+                <GanttRow
                   key={id}
                   style={{
                     position: 'absolute',
                     top: `${topPosition}px`,
+                    width: `${calendarWidth}px`
                   }}
                 >
                 <EventRowComponent
@@ -231,7 +232,7 @@ function App() {
                   setCanDrag={setCanDrag}
                   aliasMapping={aliasMapping}
                 />
-                </div>
+                </GanttRow>
               );
             }
             return null;

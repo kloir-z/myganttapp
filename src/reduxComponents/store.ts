@@ -4,6 +4,7 @@ import { testData } from '../testdata/testdata';
 import { v4 as uuidv4 } from 'uuid';
 import { calculateBusinessDays, addBusinessDays, toLocalISOString } from '../utils/CalendarUtil';
 import defaultHolidays from '../utils/defaultHolidays';
+import copiedRowsReducer from './copiedRowsSlice';
 
 const assignIds = (data: WBSData[], holidays: string[]): { [id: string]: WBSData } => {
   const dataWithIdsAndNos: { [id: string]: WBSData } = {};
@@ -346,6 +347,7 @@ export const {
 export const store = configureStore({
   reducer: {
     wbsData: wbsDataSlice.reducer,
+    copiedRows: copiedRowsReducer,
   },
 });
 

@@ -3,7 +3,7 @@ import React, { useCallback, memo, Dispatch, SetStateAction } from 'react';
 import { WBSData, ChartRow, SeparatorRow, EventRow  } from '../types/DataTypes';
 import { ReactGrid, Row, DefaultCellTypes, Id, MenuOption, SelectionMode } from "@silevis/reactgrid";
 import "@silevis/reactgrid/styles.css";
-import { handleAddChartRow, handleAddSeparatorRow, handleRemoveSelectedRow } from '../utils/contextMenuHandlers';
+import { handleCopySelectedRow, handlePasteRows, handleCutRows, handleAddChartRow, handleAddSeparatorRow, handleAddEventRow } from '../utils/contextMenuHandlers';
 import { createChartRow, createSeparatorRow, createEventRow } from '../utils/wbsRowCreators';
 import { handleGridChanges } from '../utils/gridHandlers';
 import { useColumnResizer } from '../hooks/useColumnResizer';
@@ -25,6 +25,7 @@ type WBSInfoProps = {
 const WBSInfo: React.FC<WBSInfoProps> = ({ headerRow, visibleColumns, columns, setColumns, toggleColumnVisibility }) => {
   const dispatch = useDispatch();
   const data = useSelector((state: RootState) => state.wbsData.data);
+  const copiedRows = useSelector((state: RootState) => state.copiedRows.rows);
   const handleColumnResize = useColumnResizer(setColumns);
   const dataArray = Object.values(data);
   const customDateCellTemplate = new CustomDateCellTemplate();
@@ -49,7 +50,7 @@ const WBSInfo: React.FC<WBSInfoProps> = ({ headerRow, visibleColumns, columns, s
   }, [visibleColumns, headerRow]);
 
   const rows = getRows(dataArray);
-
+  
   const simpleHandleContextMenu = useCallback((
     selectedRowIds: Id[],
     selectedColIds: Id[],
@@ -64,7 +65,32 @@ const WBSInfo: React.FC<WBSInfoProps> = ({ headerRow, visibleColumns, columns, s
       });
     }
     if (selectionMode === 'row') {
+      menuOptions.length = 0;
       menuOptions.push(
+        {
+          id: "copyRow",
+          label: "Copy Row",
+          handler: () => handleCopySelectedRow(dispatch, selectedRowIds, dataArray)
+        },
+        {
+          id: "cutRow",
+          label: "Cut Row",
+          handler: () => handleCutRows(dispatch, selectedRowIds, dataArray)
+        },
+        {
+          id: "pasteRow",
+          label: "Paste Row",
+          handler: () => {
+            if (selectedRowIds.length > 0) {
+              handlePasteRows(dispatch, selectedRowIds[0], dataArray, copiedRows);
+            }
+          }
+        },
+        {
+          id: "removeSelectedRow",
+          label: "Remove Row",
+          handler: () => handleCutRows(dispatch, selectedRowIds, dataArray)
+        },
         {
           id: "addChartRow",
           label: "Add Chart Row",
@@ -76,14 +102,14 @@ const WBSInfo: React.FC<WBSInfoProps> = ({ headerRow, visibleColumns, columns, s
           handler: () => handleAddSeparatorRow(dispatch, selectedRowIds, dataArray)
         },
         {
-          id: "removeSelectedRow",
-          label: "Remove Selected Row",
-          handler: () => handleRemoveSelectedRow(dispatch, selectedRowIds, dataArray)
-        }
+          id: "addEventRow",
+          label: "Add Event Row",
+          handler: () => handleAddEventRow(dispatch, selectedRowIds, dataArray)
+        },
       );
     }
     return menuOptions;
-  }, [dispatch, dataArray, toggleColumnVisibility]);
+  }, [toggleColumnVisibility, dispatch, dataArray, copiedRows]);
 
   const handleRowsReorder = useCallback((targetRowId: Id, rowIds: Id[]) => {
     const targetIndex = dataArray.findIndex(data => data.id === targetRowId);
