@@ -16,7 +16,7 @@ export const handleGridChanges = (dispatch: Dispatch, data: { [id: string]: WBSD
     const rowId = change.rowId.toString();
     const rowData = updatedData[rowId];
 
-    if (rowData && rowData.rowType === 'Separator') {
+    if (rowData && (rowData.rowType === 'Separator' || rowData.rowType === 'Event')) {
       const newCell = change.newCell;
       useSimpleSetData = true;
       const customTextCell = newCell as CustomTextCell;

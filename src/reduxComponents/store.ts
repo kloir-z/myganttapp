@@ -201,6 +201,8 @@ export const wbsDataSlice = createSlice({
             }
           }
           state.data[id] = updatedChartRow;
+        } else {
+          state.data[id] = newRow;
         }
       });
       Object.keys(state.data).forEach(id => {
