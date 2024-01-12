@@ -11,7 +11,7 @@ interface CalendarProps {
 
 const Calendar: React.FC<CalendarProps> = memo(({ dateArray }) => {
   let previousMonth = dateArray[0].getMonth();
-  const holidays = useSelector((state: RootState) => state.wbsData.holidays);
+  const holidays = useSelector((state: RootState) => state.wbsData.present.holidays);
   const calendarWidth = dateArray.length * 21;
   const browserLocale = navigator.language.split('-')[0];
   let dateFormat: string;

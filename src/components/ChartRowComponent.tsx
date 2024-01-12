@@ -23,7 +23,7 @@ const ChartRowComponent: React.FC<ChartRowProps> = memo(({ entry, dateArray, gri
   const dispatch = useDispatch();
   const chartBarColor = convertAliasToChartBarColor(entry.color, aliasMapping) || 'green';
   const businessDays = entry.businessDays;
-  const holidays = useSelector((state: RootState) => state.wbsData.holidays);
+  const holidays = useSelector((state: RootState) => state.wbsData.present.holidays);
   const [localPlannedStartDate, setLocalPlannedStartDate] = useState(entry.plannedStartDate ? new Date(entry.plannedStartDate) : null);
   const [localPlannedEndDate, setLocalPlannedEndDate] = useState(entry.plannedEndDate ? new Date(entry.plannedEndDate) : null);
   const [localActualStartDate, setLocalActualStartDate] = useState(entry.actualStartDate ? new Date(entry.actualStartDate) : null);

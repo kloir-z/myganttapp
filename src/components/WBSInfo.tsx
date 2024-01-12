@@ -24,7 +24,7 @@ type WBSInfoProps = {
 
 const WBSInfo: React.FC<WBSInfoProps> = ({ headerRow, visibleColumns, columns, setColumns, toggleColumnVisibility }) => {
   const dispatch = useDispatch();
-  const data = useSelector((state: RootState) => state.wbsData.data);
+  const data = useSelector((state: RootState) => state.wbsData.present.data);
   const copiedRows = useSelector((state: RootState) => state.copiedRows.rows);
   const handleColumnResize = useColumnResizer(setColumns);
   const dataArray = Object.values(data);

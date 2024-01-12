@@ -11,7 +11,7 @@ interface CalendarProps {
 };
 
 const GridVertical: React.FC<CalendarProps> = memo(({ dateArray, gridHeight }) => {
-  const holidays = useSelector((state: RootState) => state.wbsData.holidays);
+  const holidays = useSelector((state: RootState) => state.wbsData.present.holidays);
   return (
     <GanttRow style={{height: '0px', borderBottom: 'none'}}>
       {dateArray.map((date, index) => {

@@ -18,10 +18,11 @@ import SettingsModal from './components/SettingsModal';
 import { ChartBarColor } from "./types/colorAliasMapping";
 import { useWBSData } from './hooks/useWBSData';
 import defaultHolidays from "./utils/defaultHolidays";
+import { ActionCreators } from 'redux-undo';
 
 function App() {
   const dispatch = useDispatch();
-  const data = useSelector((state: RootState) => state.wbsData.data); 
+  const data = useSelector((state: RootState) => state.wbsData.present.data); 
   const { headerRow, visibleColumns, columns, setColumns, toggleColumnVisibility } = useWBSData();
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [wbsWidth, setWbsWidth] = useState(550);
@@ -134,14 +135,39 @@ function App() {
       };
     }
   }, [handleMouseDown, handleMouseMove, handleMouseUp]);
-  
-    const openSettingsModal = () => {
-      setIsSettingsModalOpen(true);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey || event.metaKey) {
+        switch (event.key) {
+          case 'z':
+            event.preventDefault();
+            dispatch(ActionCreators.undo());
+            break;
+          case 'y':
+            event.preventDefault();
+            dispatch(ActionCreators.redo());
+            break;
+          default:
+            break;
+        }
+      }
     };
-  
-    const closeSettingsModal = () => {
-      setIsSettingsModalOpen(false);
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
     };
+  }, [dispatch]);
+
+  const openSettingsModal = () => {
+    setIsSettingsModalOpen(true);
+  };
+
+  const closeSettingsModal = () => {
+    setIsSettingsModalOpen(false);
+  };
 
   return (
     <div style={{position: 'fixed'}}>

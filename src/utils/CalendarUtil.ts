@@ -11,7 +11,6 @@ export const isHoliday = (date: Date, holidays: string[]): boolean => {
   const holidayDates = parseHolidays(holidays);
 
   if (isNaN(date.getTime())) {
-    console.error('Invalid date provided to isHoliday');
     return false;
   }
 
@@ -24,7 +23,6 @@ export const isHoliday = (date: Date, holidays: string[]): boolean => {
 
 export const generateDates = (start: Date, end: Date): Date[] => {
   if (isNaN(start.getTime()) || isNaN(end.getTime()) || start > end) {
-    console.error('Invalid start or end date provided to generateDates');
     return [];
   }
 
@@ -47,7 +45,6 @@ const getStartOfDay = (date: Date) => {
 
 export const calculateBusinessDays = (start: Date, end: Date, holidays: string[]): number => {
   if (isNaN(start.getTime()) || isNaN(end.getTime()) || start > end) {
-    console.error('Invalid start or end date provided to calculateBusinessDays');
     return 0;
   }
   let count = 0;
@@ -66,7 +63,6 @@ export const calculateBusinessDays = (start: Date, end: Date, holidays: string[]
 
 export const addBusinessDays = (start: Date, days: number | null, holidays: string[], includeStartDay: boolean = true): Date => {
   if (isNaN(start.getTime()) || days === null || days < 0) {
-    console.error('Invalid start date or negative days provided to addBusinessDays');
     return new Date(NaN);
   }
   let currentDate = new Date(start);

@@ -32,8 +32,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ show, onClose, dateRange,
   const [fadeStatus, setFadeStatus] = useState<'in' | 'out'>('in');
   const [startDate, setStartDate] = useState<Dayjs | null>(dayjs(dateRange.startDate));
   const [endDate, setEndDate] = useState<Dayjs | null>(dayjs(dateRange.endDate));
-  const data = useSelector((state: RootState) => state.wbsData.data);
-  const holidays = useSelector((state: RootState) => state.wbsData.holidays) as string[];
+  const data = useSelector((state: RootState) => state.wbsData.present.data);
+  const holidays = useSelector((state: RootState) => state.wbsData.present.holidays) as string[];
   const [holidayInput, setHolidayInput] = useState(holidays.join("\n"));
   const dispatch = useDispatch();
   const colors: ChartBarColor[] = ['lightblue', 'blue', 'purple', 'pink', 'red', 'yellow', 'green'];
